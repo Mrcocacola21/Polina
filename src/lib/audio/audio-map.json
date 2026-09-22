@@ -1,0 +1,21 @@
+{
+  "music": {
+    "NIGHT": "audio:music.night",
+    "MEMORIES": "audio:music.memories",
+    "VULNERABILITY": "audio:music.vulnerability",
+    "HEART_AND_SOUL": "audio:music.heartAndSoul"
+  },
+  "ambient": {
+    "LATE_NIGHT_ROOM": "audio:scenes.s01.cue01",
+    "MEMORY_SPACE": "audio:scenes.s03.cue03",
+    "MORNING_ROOM": "audio:scenes.s05.cue01",
+    "PAIN_DRONE": "audio:scenes.s09.cue01",
+    "SPARSE_RAIN": "audio:scenes.s09.cue02"
+  },
+  "voice": {
+    "A": "audio:global.soulVoiceA",
+    "B": "audio:global.soulVoiceB",
+    "C": "audio:global.soulVoiceC"
+  },
+  "requiem": "audio:requiem.fullRequiem"
+}

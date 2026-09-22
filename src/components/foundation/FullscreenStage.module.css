@@ -1,0 +1,10 @@
+.stage {
+  position: relative;
+  z-index: var(--layer-stage);
+  width: 100%;
+  height: var(--viewport-height);
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--color-black);
+  isolation: isolate;
+}

@@ -1,0 +1,73 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-scene);
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top))
+    max(24px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
+  background: var(--color-black);
+  text-align: center;
+}
+
+.content {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.brand,
+.position,
+.sceneId,
+.title,
+.phase,
+.end {
+  margin: 0;
+}
+
+.loading {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+}
+
+.brand {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+}
+
+.position,
+.phase {
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+}
+
+.sceneId {
+  color: var(--color-text-primary);
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.phase {
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.end {
+  margin-top: 12px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+}

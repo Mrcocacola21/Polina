@@ -1,0 +1,84 @@
+{
+  "global": {
+    "soulSpawn": "sfx/AUD-GLOBAL-01.mp3",
+    "soulVoiceA": "sfx/AUD-GLOBAL-02A.mp3",
+    "soulVoiceB": "sfx/AUD-GLOBAL-02B.mp3",
+    "soulVoiceC": "sfx/AUD-GLOBAL-02C.mp3",
+    "soulFly": "sfx/AUD-GLOBAL-03.mp3",
+    "softTransition": "sfx/AUD-GLOBAL-04.wav"
+  },
+  "prologue": {
+    "soulAwakening": "sfx/AUD-PRO-01.wav"
+  },
+  "scenes": {
+    "s01": {
+      "cue01": "sfx/AUD-S01-01.wav"
+    },
+    "s02": {
+      "cue01": "sfx/AUD-S02-01.wav",
+      "cue02": "sfx/AUD-S02-02.wav",
+      "cue03": "sfx/AUD-S02-03.wav"
+    },
+    "s03": {
+      "cue01": {
+        "a": "sfx/AUD-S03-01A.wav",
+        "b": "sfx/AUD-S03-01B.wav",
+        "c": "sfx/AUD-S03-01C.wav"
+      },
+      "cue02": "sfx/AUD-S03-02.wav",
+      "cue03": "sfx/AUD-S03-03.wav"
+    },
+    "s05": {
+      "cue01": "sfx/AUD-S05-01.wav",
+      "cue02": "sfx/AUD-S05-02.wav",
+      "cue03": {
+        "a": "sfx/AUD-S05-03A.wav",
+        "b": "sfx/AUD-S05-03B.wav",
+        "c": "sfx/AUD-S05-03C.wav"
+      }
+    },
+    "s06": {
+      "cue01": "sfx/AUD-S06-01.wav"
+    },
+    "s07": {
+      "cue01": "sfx/AUD-S07-01.wav",
+      "cue02": "sfx/AUD-S07-02.wav",
+      "cue03": "sfx/AUD-S07-03.wav"
+    },
+    "s08": {
+      "cue01": "sfx/AUD-S08-01.wav",
+      "cue02": "sfx/AUD-S08-02.wav",
+      "cue03": "sfx/AUD-S08-03.wav",
+      "cue04": "sfx/AUD-S08-04.wav"
+    },
+    "s09": {
+      "cue01": "sfx/AUD-S09-01.wav",
+      "cue02": "sfx/AUD-S09-02.wav",
+      "cue03": "sfx/AUD-S09-03.wav",
+      "cue04": "sfx/AUD-S09-04.wav",
+      "cue05": "sfx/AUD-S09-05.wav"
+    }
+  },
+  "requiem": {
+    "ring1": "sfx/AUD-REQ-01.wav",
+    "ring2": "sfx/AUD-REQ-02.wav",
+    "ring3": "sfx/AUD-REQ-03.wav",
+    "energyArcs": "sfx/AUD-REQ-04.wav",
+    "fullRequiem": "sfx/AUD-REQ-05.mp3"
+  },
+  "final": {
+    "soulHeartAwakening": "sfx/AUD-FIN-01.wav",
+    "twoSoulsMerge": "sfx/AUD-FIN-02.wav",
+    "haloBloom": "sfx/AUD-FIN-03.wav"
+  },
+  "yesEnding": {
+    "soulRelease": "sfx/AUD-YES-01.wav",
+    "finalResolve": "sfx/AUD-YES-02.wav"
+  },
+  "music": {
+    "night": "sfx/MUS-01.wav",
+    "memories": "sfx/MUS-02.wav",
+    "vulnerability": "sfx/MUS-03.wav",
+    "heartAndSoul": "sfx/MUS-04.wav"
+  }
+}

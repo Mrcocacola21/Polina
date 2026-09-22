@@ -1,0 +1,136 @@
+.panel {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: var(--layer-diagnostics);
+  width: min(760px, calc(100% - 24px));
+  max-height: min(58vh, 620px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 92%);
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+}
+
+.panel strong,
+.panel h2,
+.status dd {
+  color: var(--color-text-primary);
+}
+
+.panel h2 {
+  margin: 8px 0 5px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heading,
+.controls,
+.triplet,
+.status,
+.levels {
+  display: grid;
+  gap: 6px;
+}
+
+.heading {
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+}
+
+.status {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 8px 0;
+}
+
+.status div {
+  display: flex;
+  gap: 5px;
+}
+
+.status dt,
+.status dd {
+  margin: 0;
+}
+
+.levels {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.levels label,
+.triplet label {
+  display: grid;
+  gap: 3px;
+}
+
+.levels input {
+  width: 100%;
+}
+
+.controls {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.triplet {
+  grid-template-columns: repeat(3, 1fr);
+  margin: 6px 0;
+}
+
+.panel button,
+.panel select,
+.panel input[type="number"] {
+  min-height: 28px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 3px;
+  background: var(--color-charcoal);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.panel button {
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.panel select {
+  width: 100%;
+}
+
+.panel button:focus-visible,
+.panel select:focus-visible,
+.panel input:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}
+
+.inline,
+.scopeToggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 5px 0;
+}
+
+.error {
+  margin: 8px 0 0;
+  color: var(--color-crimson-bright);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .status,
+  .levels,
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

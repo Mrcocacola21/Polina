@@ -1,0 +1,88 @@
+.panel {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: var(--layer-diagnostics);
+  width: min(360px, calc(100% - 24px));
+  max-height: calc(var(--viewport-height) - 24px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 88%);
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+}
+
+.panel strong {
+  color: var(--color-text-primary);
+  letter-spacing: 0.1em;
+}
+
+.state {
+  display: grid;
+  gap: 3px;
+  margin: 10px 0;
+}
+
+.state div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.state dt,
+.state dd {
+  margin: 0;
+}
+
+.state dd {
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.jumpRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.panel select,
+.panel button {
+  min-height: 30px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 3px;
+  background: var(--color-charcoal);
+  color: var(--color-text-primary);
+  font-size: 10px;
+}
+
+.panel select {
+  min-width: 0;
+}
+
+.panel button {
+  padding: 5px 7px;
+  cursor: pointer;
+}
+
+.panel button:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.panel select:focus-visible,
+.panel button:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}

@@ -1,0 +1,66 @@
+{
+  "brand": {
+    "asset02": "BRAND/BRAND-02.png"
+  },
+  "finale": {
+    "asset01": "FIN/FIN-01.png",
+    "asset01VariantA": "FIN/FIN-01A.png",
+    "asset01VariantB": "FIN/FIN-01B.png",
+    "asset01VariantC": "FIN/FIN-01C.png",
+    "asset02": "FIN/FIN-02.png"
+  },
+  "global": {
+    "asset01": "Global/GLOBAL-01.png",
+    "asset01VariantA": "Global/GLOBAL-01A.png",
+    "asset01VariantB": "Global/GLOBAL-01B.png",
+    "asset02": "Global/GLOBAL-02.png",
+    "asset03": "Global/GLOBAL-03.png",
+    "asset04VariantA": "Global/GLOBAL-04A.mp4",
+    "asset04VariantB": "Global/GLOBAL-04B.mp4",
+    "asset04VariantC": "Global/GLOBAL-04C.mp4",
+    "asset06": "Global/GLOBAL-06.png",
+    "asset07": "Global/GLOBAL-07.png",
+    "asset09VariantA": "Global/GLOBAL-09A.png",
+    "asset09VariantB": "Global/GLOBAL-09B.png",
+    "asset09VariantC": "Global/GLOBAL-09C.png",
+    "asset09VariantD": "Global/GLOBAL-09D.png"
+  },
+  "requirements": {
+    "asset02": "REQ/REQ-02.png",
+    "asset03": "REQ/REQ-03.png",
+    "asset04": "REQ/REQ-04.mp4"
+  },
+  "sections": {
+    "section01Asset01": "S/S01-01.png",
+    "section03Asset02": "S/S03-02.png",
+    "section03Asset04": "S/S03-04.png",
+    "section05Asset01": "S/S05-01.png",
+    "section05Asset02": "S/S05-02.png",
+    "section07Asset01": "S/S07-01.png",
+    "section07Asset05": "S/S07-05.png",
+    "section08Asset01": "S/S08-01.png",
+    "section08Asset02": "S/S08-02.png",
+    "section08Asset03": "S/S08-03.png",
+    "section09Asset01": "S/S09-01.png",
+    "section09Asset02": "S/S09-02.mp4",
+    "section09Asset03": "S/S09-03.png",
+    "section09Asset04": "S/S09-04.png",
+    "section10Asset01": "S/S10-01.png",
+    "section10Asset02VariantA": "S/S10-02A.png",
+    "section10Asset02VariantB": "S/S10-02B.png",
+    "section10Asset02VariantC": "S/S10-02C.png"
+  },
+  "screens": {
+    "pain": "Screens/pain.png",
+    "discord": "Screens/discord.png",
+    "goodMorning": "Screens/good-morning.png",
+    "queenCantDie": "Screens/queen-cant-die.png",
+    "together": "Screens/together.jpg",
+    "minecraftTogether": "Screens/minecraft-together.png",
+    "prosOfDatingMe": "Screens/pros-of-dating-me.jpg",
+    "polina": "Screens/polina.png",
+    "polinaCircle": "Screens/polina-circle.mp4",
+    "livingTogether": "Screens/living-together.jpg",
+    "heartReaction": "Screens/heart-reaction.png"
+  }
+}

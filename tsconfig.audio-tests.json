@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/audio-tests",
+    "rootDir": "src",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/assets/manifests.ts",
+    "src/lib/assets/paths.ts",
+    "src/lib/media/types.ts",
+    "src/lib/media/catalog.ts",
+    "src/lib/audio/audio-map.json",
+    "src/lib/audio/types.ts",
+    "src/lib/audio/catalog.ts",
+    "src/lib/audio/buffers.ts",
+    "src/lib/audio/scheduling.ts",
+    "src/lib/audio/scopes.ts",
+    "src/lib/audio/ducking.ts",
+    "src/lib/audio/AudioEngine.ts",
+    "src/lib/audio/audio-engine.test.ts"
+  ]
+}

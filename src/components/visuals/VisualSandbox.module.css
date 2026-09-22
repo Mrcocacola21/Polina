@@ -1,0 +1,182 @@
+.sandbox {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-debug);
+  pointer-events: none;
+}
+
+.panel {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  width: min(470px, calc(100% - 24px));
+  max-height: calc(var(--viewport-height) - 24px);
+  overflow: hidden;
+  border: 1px solid rgb(222 36 64 / 36%);
+  border-radius: 5px;
+  background: rgb(5 5 6 / 94%);
+  box-shadow: 0 18px 70px rgb(0 0 0 / 58%);
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  pointer-events: auto;
+}
+
+.panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+
+.panel header div {
+  display: grid;
+  gap: 2px;
+}
+
+.panel strong,
+.panel h2,
+.metrics dd {
+  color: var(--color-text-primary);
+}
+
+.panel strong {
+  letter-spacing: 0.13em;
+}
+
+.body {
+  max-height: calc(var(--viewport-height) - 67px);
+  overflow: auto;
+  padding: 0 12px 12px;
+}
+
+.panel section {
+  padding: 10px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.panel h2 {
+  margin: 0 0 7px;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.panel button {
+  min-height: 27px;
+  padding: 4px 7px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 3px;
+  background: var(--color-charcoal);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.panel button:hover {
+  border-color: rgb(222 36 64 / 60%);
+}
+
+.panel button:focus-visible,
+.panel input:focus-visible {
+  outline: 2px solid var(--color-crimson-bright);
+  outline-offset: 2px;
+}
+
+.collapsed {
+  width: auto;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 14px;
+  margin: 0 0 8px;
+}
+
+.metrics div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metrics dt,
+.metrics dd {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.ranges {
+  display: grid;
+  gap: 4px;
+}
+
+.ranges label {
+  display: grid;
+  grid-template-columns: 58px 1fr 48px;
+  align-items: center;
+  gap: 6px;
+}
+
+.ranges span {
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+.domGlow {
+  display: grid;
+  place-items: center;
+  width: 105px;
+  min-height: 34px;
+  margin-top: 9px;
+  border: 1px solid rgb(222 36 64 / 38%);
+  color: var(--color-text-primary);
+  text-shadow: 0 0 12px rgb(222 36 64 / 75%);
+  box-shadow: 0 0 22px rgb(187 23 48 / 24%), inset 0 0 18px rgb(187 23 48 / 12%);
+}
+
+.reset {
+  width: 100%;
+  margin-top: 12px;
+  border-color: rgb(222 36 64 / 64%) !important;
+}
+
+.parallaxCard {
+  position: absolute;
+  top: 50%;
+  left: 35%;
+  display: grid;
+  width: min(330px, 42vw);
+  height: 180px;
+  place-content: center;
+  gap: 8px;
+  border: 1px solid rgb(222 36 64 / 25%);
+  background: linear-gradient(145deg, rgb(16 16 20 / 82%), rgb(5 5 6 / 88%));
+  box-shadow: 0 0 60px rgb(122 13 25 / 16%);
+  color: var(--color-text-primary);
+  letter-spacing: 0.14em;
+  text-align: center;
+  transform: translate3d(0, 0, 0);
+  translate: -50% -50%;
+  will-change: transform;
+}
+
+.parallaxCard small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 760px) {
+  .parallaxCard {
+    display: none;
+  }
+}
+

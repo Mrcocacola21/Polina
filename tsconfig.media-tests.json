@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/media-tests",
+    "rootDir": "src",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/assets/manifests.ts",
+    "src/lib/assets/paths.ts",
+    "src/lib/media/types.ts",
+    "src/lib/media/catalog.ts",
+    "src/lib/media/cache.ts",
+    "src/lib/media/preload-queue.ts",
+    "src/lib/media/preloaders.ts",
+    "src/lib/media/preload-plan.ts",
+    "src/lib/media/media-preloader.ts",
+    "src/lib/media/media-preloader.test.ts"
+  ]
+}

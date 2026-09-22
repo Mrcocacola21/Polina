@@ -1,0 +1,12 @@
+[
+  { "soulId": "SOUL_01", "sceneId": "S01", "slotIndex": 1 },
+  { "soulId": "SOUL_02", "sceneId": "S02", "slotIndex": 2 },
+  { "soulId": "SOUL_03", "sceneId": "S03", "slotIndex": 3 },
+  { "soulId": "SOUL_04", "sceneId": "S04", "slotIndex": 4 },
+  { "soulId": "SOUL_05", "sceneId": "S05", "slotIndex": 5 },
+  { "soulId": "SOUL_06", "sceneId": "S06", "slotIndex": 6 },
+  { "soulId": "SOUL_07", "sceneId": "S07", "slotIndex": 7 },
+  { "soulId": "SOUL_08", "sceneId": "S08", "slotIndex": 8 },
+  { "soulId": "SOUL_09", "sceneId": "S09", "slotIndex": 9 },
+  { "soulId": "SOUL_10", "sceneId": "S10", "slotIndex": 10 }
+]

@@ -1,0 +1,13 @@
+.director {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-scene-dom);
+  overflow: hidden;
+  background: var(--color-black);
+}
+
+.sandboxDirector {
+  z-index: var(--layer-background-media);
+  opacity: 0;
+  pointer-events: none;
+}

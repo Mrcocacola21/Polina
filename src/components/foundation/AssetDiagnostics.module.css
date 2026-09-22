@@ -1,0 +1,23 @@
+.panel {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: var(--layer-diagnostics);
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 72%);
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.panel strong {
+  color: var(--color-text-primary);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}

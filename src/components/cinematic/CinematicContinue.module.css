@@ -1,0 +1,25 @@
+.button {
+  position: absolute;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: var(--layer-overlay);
+  min-width: 112px;
+  padding: 10px 16px;
+  border: 1px solid rgb(255 255 255 / 32%);
+  border-radius: 999px;
+  background: var(--color-near-black);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.button:hover {
+  border-color: rgb(255 255 255 / 58%);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 4px;
+}

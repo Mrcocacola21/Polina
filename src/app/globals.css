@@ -1,0 +1,61 @@
+:root {
+  --color-black: #000000;
+  --color-near-black: #070506;
+  --color-charcoal: #171315;
+  --color-crimson-dark: #4d0715;
+  --color-crimson: #94152d;
+  --color-crimson-bright: #e02d4d;
+  --color-text-primary: #f5edef;
+  --color-text-muted: #9a8e92;
+
+  /* Stable cinematic layer contract; scene code should use these tokens. */
+  --layer-stage: 0;
+  --layer-background-media: 10;
+  --layer-fog: 20;
+  --layer-webgl: 30;
+  --layer-scene: 40;
+  --layer-scene-dom: 40;
+  --layer-ui: 50;
+  --layer-global-fx: 60;
+  --layer-transition: 70;
+  --layer-cursor: 80;
+  --layer-debug: 90;
+  --layer-overlay: 60;
+  --layer-diagnostics: 100;
+
+  --viewport-height: 100vh;
+  --cinematic-ease: cubic-bezier(0.65, 0, 0.35, 1);
+
+  color-scheme: dark;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: var(--color-black);
+}
+
+body {
+  color: var(--color-text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
