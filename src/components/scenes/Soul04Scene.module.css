@@ -1,0 +1,143 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #010101;
+  isolation: isolate;
+}
+
+.environment {
+  position: absolute;
+  inset: -3%;
+  opacity: 0.34;
+  filter: saturate(0.48) brightness(0.46) blur(1px);
+  transform: scale(1.05);
+}
+
+.environmentImage {
+  width: 100%;
+  height: 100%;
+}
+
+.memoryWorld {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  perspective: 1150px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.memory {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid rgb(241 222 226 / 8%);
+  border-radius: 4px;
+  background: #030202;
+  box-shadow: 0 28px 74px rgb(0 0 0 / 82%);
+  filter: saturate(0.68) brightness(0.7);
+  opacity: 0.48;
+  will-change: opacity, filter, transform;
+}
+
+.memoryOne {
+  top: 18%;
+  left: 9%;
+  width: clamp(230px, 28vw, 430px);
+  aspect-ratio: 1.26;
+  transform: translate3d(15px, 25px, -120px) rotateY(7deg) rotateZ(-1.5deg);
+}
+
+.memoryTwo {
+  top: 15%;
+  left: 46%;
+  width: clamp(390px, 43vw, 690px);
+  aspect-ratio: 1.78;
+  transform: translate3d(130px, -12px, -460px) rotateY(-9deg) rotateZ(1deg);
+}
+
+.memoryThree {
+  top: 62%;
+  left: 28%;
+  width: clamp(430px, 47vw, 760px);
+  aspect-ratio: 4.86;
+  transform: translate3d(-80px, 20px, -250px) rotateY(5deg);
+}
+
+.thread {
+  position: absolute;
+  inset: 4% 0 0;
+  z-index: 2;
+  width: 100%;
+  height: 96%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.thread path {
+  fill: none;
+  stroke: rgb(137 25 45 / 78%);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-dasharray: 760;
+  stroke-dashoffset: 760;
+  filter: drop-shadow(0 0 4px rgb(128 19 39 / 32%));
+  vector-effect: non-scaling-stroke;
+}
+
+.threadPoint {
+  position: absolute;
+  top: 48%;
+  left: 52%;
+  z-index: 3;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgb(181 45 68 / 84%);
+  box-shadow: 0 0 13px rgb(154 28 50 / 52%);
+  opacity: 0;
+}
+
+.phrase {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  width: min(760px, calc(100vw - 48px));
+  margin: 0;
+  color: rgb(243 228 231 / 91%);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 3.3vw, 50px);
+  line-height: 1.36;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 3px 32px rgb(0 0 0 / 92%);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .memoryOne {
+    left: 2%;
+    width: 56vw;
+  }
+
+  .memoryTwo {
+    top: 39%;
+    left: 26%;
+    width: 78vw;
+  }
+
+  .memoryThree {
+    top: 68%;
+    left: 5%;
+    width: 88vw;
+  }
+
+  .phrase {
+    width: calc(100vw - 42px);
+    font-size: clamp(25px, 7vw, 36px);
+  }
+}

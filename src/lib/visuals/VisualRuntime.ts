@@ -69,6 +69,7 @@ export type ParticleFieldRecord = {
   lifetime: number;
   fade: number;
   attraction: [number, number, number];
+  attractionStrength: number;
   color: string;
   depthRange: [number, number];
   createdAt: number;
@@ -99,6 +100,11 @@ export class SoulController {
 
   get disposed(): boolean {
     return this.#disposed;
+  }
+
+  getPosition(): Vec3 | undefined {
+    const record = this.#record();
+    return record ? [...record.position] : undefined;
   }
 
   #record(): SoulRecord | undefined {
@@ -143,6 +149,31 @@ export class SoulController {
     });
     this.#runtime.notify();
     return completed;
+  }
+
+  async awaken(options: Readonly<{
+    duration?: number;
+    expansion?: number;
+  }> = {}): Promise<boolean> {
+    const record = this.#record();
+    if (!record) return false;
+    const duration = options.duration ?? 1;
+    const expansion = Math.max(1, Math.min(1.18, options.expansion ?? 1.08));
+    const targetScale = record.baseScale * expansion;
+    const [stateChanged, expanded] = await Promise.all([
+      this.setState("ACTIVE", duration * 0.78),
+      this.#animate(record, {
+        glow: 1.05,
+        aura: 0.86,
+        scale: targetScale,
+        duration: duration * this.#runtime.motionIntensity,
+        ease: "power2.inOut",
+      }),
+    ]);
+    record.baseScale = targetScale;
+    record.state = "ACTIVE";
+    this.#runtime.notify();
+    return stateChanged && expanded;
   }
 
   async spawn(options: Readonly<{
@@ -326,6 +357,26 @@ export class SoulController {
     return completed;
   }
 
+  async fadeOut(options: Readonly<{
+    duration?: number;
+    expansion?: number;
+  }> = {}): Promise<boolean> {
+    const record = this.#record();
+    if (!record) return false;
+    record.orbit = undefined;
+    const completed = await this.#animate(record, {
+      opacity: 0,
+      glow: 0,
+      aura: 0,
+      scale: record.scale * Math.max(1, options.expansion ?? 1.08),
+      duration: (options.duration ?? 0.9) * this.#runtime.motionIntensity,
+      ease: "sine.out",
+    });
+    record.visible = false;
+    this.#runtime.notify();
+    return completed;
+  }
+
   cancelAnimations(): void {
     for (const animation of [...this.#animations]) animation.kill();
     this.#animations.clear();
@@ -350,16 +401,28 @@ export class ParticleFieldController {
   }
 
   update(options: Partial<ParticleFieldOptions>): void {
+    this.#applyUpdate(options, true);
+  }
+
+  /** Updates frame-driven values without forcing a React/R3F tree render. */
+  updateContinuous(options: Partial<ParticleFieldOptions>): void {
+    this.#applyUpdate(options, false);
+  }
+
+  #applyUpdate(options: Partial<ParticleFieldOptions>, notify: boolean): void {
     const field = this.#runtime.particleFields.get(this.id);
     if (!field || this.#disposed) return;
     if (options.mode) field.mode = options.mode;
     if (options.position) field.position = [...options.position];
     if (options.spread) field.spread = [...options.spread];
     if (options.attraction) field.attraction = [...options.attraction];
+    if (typeof options.attractionStrength === "number") {
+      field.attractionStrength = Math.max(0, options.attractionStrength);
+    }
     if (typeof options.opacity === "number") field.opacity = options.opacity;
     if (typeof options.velocity === "number") field.velocity = options.velocity;
     if (typeof options.drift === "number") field.drift = options.drift;
-    this.#runtime.notify();
+    if (notify) this.#runtime.notify();
   }
 
   attract(target: Vec3): void {
@@ -398,6 +461,8 @@ export class VisualRuntime {
   #particleControllers = new Map<string, ParticleFieldController>();
   #camera?: CameraBridge;
   #transitionElement?: HTMLElement;
+  #absoluteBlackElement?: HTMLElement;
+  #fogElement?: HTMLElement;
   #transitionTween?: gsap.core.Tween;
   #transitionResolver?: (completed: boolean) => void;
   #fogTimer?: ReturnType<typeof setTimeout>;
@@ -406,6 +471,7 @@ export class VisualRuntime {
   #viewport: [number, number] = [0, 0];
   #pointerType: VisualMetrics["pointerType"] = "unknown";
   #fx: VisualFxState = {
+    absoluteBlack: false,
     fog: null,
     fogOpacity: 0,
     fogDuration: 0.7,
@@ -559,6 +625,7 @@ export class VisualRuntime {
       lifetime: options.lifetime ?? 0,
       fade: options.fade ?? 0.3,
       attraction: [...(options.attraction ?? [0, 0, 0])],
+      attractionStrength: Math.max(0, options.attractionStrength ?? 1.2),
       color: options.color ?? "#de2440",
       depthRange: [...(options.depthRange ?? [-2, 2])],
       createdAt: performance.now() / 1000,
@@ -611,6 +678,20 @@ export class VisualRuntime {
     this.notify();
   }
 
+  /** Keeps the fog video mounted while allowing RAF-driven opacity without render churn. */
+  setFogOpacityContinuous(opacity: number): void {
+    const next = clamp01(opacity);
+    this.#fx = { ...this.#fx, fogOpacity: next, fogDuration: 0 };
+    if (this.#fogElement) {
+      this.#fogElement.style.transitionDuration = "0s";
+      this.#fogElement.style.opacity = String(next);
+    }
+  }
+
+  registerFogElement(element?: HTMLElement): void {
+    this.#fogElement = element;
+  }
+
   fadeFog(opacity: number, duration = 0.7): void {
     if (opacity <= 0) this.hideFog(duration);
     else this.setFogOpacity(opacity, duration);
@@ -650,6 +731,43 @@ export class VisualRuntime {
 
   setCursorMode(cursor: CursorMode): void {
     this.#fx = { ...this.#fx, cursor };
+    this.notify();
+  }
+
+  registerAbsoluteBlackElement(element?: HTMLElement): void {
+    this.#absoluteBlackElement = element;
+    if (element) {
+      element.style.display = this.#fx.absoluteBlack ? "block" : "none";
+      element.style.opacity = this.#fx.absoluteBlack ? "1" : "0";
+    }
+  }
+
+  /** Immediate, transition-free global visual kill switch. */
+  enterAbsoluteBlack(): void {
+    if (this.#absoluteBlackElement) {
+      this.#absoluteBlackElement.style.display = "block";
+      this.#absoluteBlackElement.style.opacity = "1";
+    }
+    this.#fx = {
+      ...this.#fx,
+      absoluteBlack: true,
+      fog: null,
+      fogOpacity: 0,
+      grain: 0,
+      vignette: 0,
+      lightLeak: 0,
+      lightLeakDrift: false,
+      cursor: "HIDDEN",
+    };
+    this.notify();
+  }
+
+  leaveAbsoluteBlack(): void {
+    if (this.#absoluteBlackElement) {
+      this.#absoluteBlackElement.style.opacity = "0";
+      this.#absoluteBlackElement.style.display = "none";
+    }
+    this.#fx = { ...this.#fx, absoluteBlack: false };
     this.notify();
   }
 
@@ -758,8 +876,13 @@ export class VisualRuntime {
     this.#fogTimer = undefined;
     this.clearTemporaryVisuals();
     this.cancelTransition();
+    if (this.#absoluteBlackElement) {
+      this.#absoluteBlackElement.style.opacity = "0";
+      this.#absoluteBlackElement.style.display = "none";
+    }
     this.#fx = {
       ...this.#fx,
+      absoluteBlack: false,
       fog: null,
       fogOpacity: 0,
       grain: 0.055,
@@ -779,5 +902,6 @@ export class VisualRuntime {
     this.#listeners.clear();
     this.#camera = undefined;
     this.#transitionElement = undefined;
+    this.#absoluteBlackElement = undefined;
   }
 }

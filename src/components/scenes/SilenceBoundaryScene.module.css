@@ -1,0 +1,50 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-scene-dom);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+.copy {
+  position: relative;
+  width: min(84vw, 860px);
+  min-height: 8rem;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  inset: 50% 0 auto;
+  margin: 0;
+  color: rgb(241 237 238 / 88%);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(18px, 2vw, 31px);
+  font-weight: 360;
+  letter-spacing: -.018em;
+  line-height: 1.4;
+  opacity: 0;
+  text-align: center;
+  text-wrap: balance;
+  transform: translateY(-50%);
+  will-change: opacity, filter, transform;
+}
+
+@media (max-width: 700px) {
+  .copy {
+    width: min(88vw, 560px);
+  }
+
+  .line {
+    font-size: clamp(18px, 5.4vw, 25px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    will-change: opacity;
+  }
+}

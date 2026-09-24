@@ -1,0 +1,19 @@
+.scene { position: absolute; inset: 0; overflow: hidden; background: #020202; isolation: isolate; }
+.atmosphere { position: absolute; inset: 0; background: radial-gradient(circle at 42% 48%, rgb(111 10 28 / 15%), transparent 34%), radial-gradient(circle at 50% 110%, rgb(94 10 25 / 10%), transparent 42%); pointer-events: none; }
+.reactionMedia { position: absolute; left: clamp(32px, 14vw, 230px); top: 50%; z-index: 2; width: clamp(300px, 38vw, 620px); aspect-ratio: 11 / 4; transform: translateY(-58%); overflow: visible; border-radius: 12px; box-shadow: 0 30px 90px rgb(0 0 0 / 72%), 0 0 46px rgb(177 22 48 / 8%); will-change: opacity, filter, transform; }
+.reactionMedia > div { border-radius: inherit; background: transparent; }
+.heartHotspot { position: absolute; z-index: 6; left: 12%; top: 72%; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle, rgb(226 50 70 / 13%), transparent 68%); transform: translate(-50%, -50%); cursor: pointer; transition: box-shadow 300ms ease, background 300ms ease; }
+.heartHotspot:not(:disabled):hover, .heartHotspot:not(:disabled):focus-visible { background: radial-gradient(circle, rgb(237 68 86 / 25%), transparent 67%); box-shadow: 0 0 24px rgb(222 36 64 / 18%); }
+.heartHotspot:focus-visible { outline: 1px solid rgb(255 224 228 / 64%); outline-offset: 3px; }
+.heartHotspot:disabled { pointer-events: none; }
+.shockwave { position: absolute; left: 12%; top: 72%; width: 46px; height: 46px; border: 1px solid rgb(237 88 106 / 70%); border-radius: 50%; box-shadow: 0 0 18px rgb(222 36 64 / 17%); opacity: 0; transform: translate(-50%, -50%) scale(.2); pointer-events: none; }
+.energyPoint { position: absolute; z-index: 5; left: 12%; top: 72%; width: 7px; height: 7px; border-radius: 50%; background: #ffe8e6; box-shadow: 0 0 12px #dd3148, 0 0 30px rgb(203 24 53 / 36%); opacity: .28; transform: translate(-50%, -50%); pointer-events: none; }
+.phrase { position: absolute; right: clamp(28px, 8vw, 130px); bottom: clamp(70px, 13vh, 145px); z-index: 4; width: min(690px, calc(100vw - 56px)); margin: 0; color: rgb(249 240 238 / 92%); font-family: Georgia, "Times New Roman", serif; font-size: clamp(24px, 2.45vw, 40px); line-height: 1.36; text-align: right; text-wrap: balance; text-shadow: 0 3px 30px rgb(0 0 0 / 90%); pointer-events: none; }
+.phrase span { display: block; opacity: 0; will-change: opacity, filter, transform; }
+.phrase span + span { margin-top: .16em; }
+.phrase em { color: inherit; font-style: normal; }
+@media (max-width: 760px) {
+  .reactionMedia { left: 7vw; top: 34%; width: 86vw; transform: translateY(-50%); }
+  .phrase { right: 22px; bottom: 72px; width: calc(100vw - 44px); font-size: clamp(21px, 6vw, 31px); }
+}
+@media (prefers-reduced-motion: reduce) { .heartHotspot { transition: none; } }

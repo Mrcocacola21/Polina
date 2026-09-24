@@ -1,0 +1,123 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgb(73 8 21 / 12%), transparent 31%);
+}
+
+.content {
+  display: grid;
+  width: min(360px, calc(100vw - 48px));
+  place-items: center;
+  color: var(--color-text-primary);
+  text-align: center;
+  will-change: opacity, filter, transform;
+}
+
+.sigilWrap {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  margin-bottom: 30px;
+}
+
+.sigil {
+  position: absolute;
+  inset: 20px;
+  opacity: 0.72;
+  filter: saturate(0.72) drop-shadow(0 0 16px rgb(148 21 45 / 24%));
+}
+
+.progressRing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.progressTrack,
+.progressValue {
+  fill: none;
+  stroke-width: 0.75;
+}
+
+.progressTrack {
+  stroke: rgb(255 255 255 / 8%);
+}
+
+.progressValue {
+  stroke: rgb(185 31 57 / 76%);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 240ms ease;
+  filter: drop-shadow(0 0 4px rgb(224 45 77 / 35%));
+}
+
+.eyebrow,
+.status,
+.degraded {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: rgb(245 237 239 / 34%);
+  font-size: 8px;
+  letter-spacing: 0.42em;
+}
+
+.content h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-indent: 0.22em;
+  text-shadow: 0 0 28px rgb(148 21 45 / 15%);
+}
+
+.status {
+  display: flex;
+  width: 142px;
+  justify-content: space-between;
+  margin-top: 28px;
+  color: rgb(245 237 239 / 35%);
+  font-size: 8px;
+  letter-spacing: 0.13em;
+}
+
+.degraded {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  margin: 0;
+  color: rgb(245 237 239 / 25%);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 480px) {
+  .sigilWrap {
+    width: 92px;
+    height: 92px;
+    margin-bottom: 24px;
+  }
+
+  .content h1 {
+    font-size: 28px;
+    letter-spacing: 0.17em;
+    text-indent: 0.17em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressValue,
+  .content {
+    transition-duration: 1ms;
+  }
+}

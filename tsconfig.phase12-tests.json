@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase12-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/cinematic/phase12.ts",
+    "src/lib/cinematic/phase12.test.ts",
+    "src/lib/cinematic/requiem-cues.json",
+    "src/lib/souls/registry.ts",
+    "src/lib/souls/soul-registry.json",
+    "src/lib/cinematic/scenes.ts"
+  ]
+}

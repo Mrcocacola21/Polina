@@ -13,7 +13,10 @@ export class VisualScope {
       return () => undefined;
     }
     this.#cleanups.add(cleanup);
-    return () => this.#cleanups.delete(cleanup);
+    return () => {
+      if (!this.#cleanups.delete(cleanup)) return;
+      cleanup();
+    };
   }
 
   dispose(): void {

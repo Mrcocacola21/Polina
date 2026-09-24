@@ -15,6 +15,7 @@ import type {
   AmbientHandle,
   AmbientOptions,
   AmbientState,
+  AudioAnalysis,
   AudioBusName,
   AudioEngineSnapshot,
   AudioLevels,
@@ -26,6 +27,8 @@ import type {
   LowRumbleOptions,
   MusicOptions,
   MusicState,
+  MusicToneHandle,
+  MusicToneOptions,
   ProceduralHandle,
   PulseHandle,
   RatingRiseOptions,
@@ -98,14 +101,22 @@ export class AudioEngine {
   #unlockPromise: Promise<UnlockAudioResult> | null = null;
   #masterGain: GainNode | null = null;
   #muteGain: GainNode | null = null;
+  #cinematicGain: GainNode | null = null;
   #buses: Record<AudioBusName, BusGraph> | null = null;
   #musicDecks: readonly [MusicDeck, MusicDeck] | null = null;
+  #musicToneFilter: BiquadFilterNode | null = null;
+  #musicPresenceGain: GainNode | null = null;
+  #musicToneFrequency = 20_000;
+  #musicTonePresence = 1;
+  #musicToneSequence = 0;
   #activeMusicDeck: 0 | 1 | null = null;
   #musicTransition = 0;
   #musicTimer: number | null = null;
   #musicTicker: number | null = null;
   #noiseBuffer: AudioBuffer | null = null;
   #isMuted = false;
+  #cinematicSilence = false;
+  #cinematicSilenceScheduledAt: number | null = null;
   #sequence = 0;
   #revision = 0;
   #lastError: string | null = null;
@@ -130,6 +141,10 @@ export class AudioEngine {
       contextCreationCount: this.#contextCreationCount,
       isUnlocked: this.#context?.state === "running",
       isMuted: this.#isMuted,
+      cinematicSilence: {
+        active: this.#cinematicSilence,
+        scheduledAt: this.#cinematicSilenceScheduledAt,
+      },
       levels: { ...this.#levels },
       effectiveDucks: {
         music: this.#ducks.getTarget("music"),
@@ -148,6 +163,11 @@ export class AudioEngine {
           typeof duration === "number" && Number.isFinite(duration)
             ? duration
             : null,
+      },
+      musicTone: {
+        frequency: this.#musicToneFrequency,
+        presence: this.#musicTonePresence,
+        active: this.#musicToneFrequency < 19_500 || this.#musicTonePresence < 0.995,
       },
       activeMusicDeckCount:
         this.#musicDecks?.filter((deck) => !deck.element.paused).length ?? 0,
@@ -276,6 +296,91 @@ export class AudioEngine {
     else this.mute();
   }
 
+  /** Current time of the one shared AudioContext, or null before unlock. */
+  getCurrentTime(): number | null {
+    return this.#context?.currentTime ?? null;
+  }
+
+  enterCinematicSilence(options: Readonly<{ atAudioTime?: number }> = {}): number | null {
+    const context = this.#context;
+    const gate = this.#cinematicGain;
+    this.#cinematicSilence = true;
+    if (!context || !gate) {
+      this.#cinematicSilenceScheduledAt = null;
+      this.#notify();
+      return null;
+    }
+    const at = Math.max(context.currentTime, options.atAudioTime ?? context.currentTime);
+    gate.gain.cancelScheduledValues(context.currentTime);
+    gate.gain.setValueAtTime(gate.gain.value, context.currentTime);
+    gate.gain.setValueAtTime(0, at);
+    this.#cinematicSilenceScheduledAt = at;
+    this.#notify();
+    return at;
+  }
+
+  leaveCinematicSilence(): void {
+    this.#cinematicSilence = false;
+    this.#cinematicSilenceScheduledAt = null;
+    if (this.#context && this.#cinematicGain) {
+      this.#cinematicGain.gain.cancelScheduledValues(this.#context.currentTime);
+      this.#cinematicGain.gain.setValueAtTime(1, this.#context.currentTime);
+    }
+    this.#notify();
+  }
+
+  applyMusicTone(options: MusicToneOptions = {}): MusicToneHandle | null {
+    const context = this.#requireGraph("music tone");
+    const filter = this.#musicToneFilter;
+    const presence = this.#musicPresenceGain;
+    if (!context || !filter || !presence || !this.#scopeAllows(options.scopeId)) {
+      return null;
+    }
+
+    const frequency = clamp(options.frequency ?? 1600, 180, 20_000);
+    const presenceValue = clampGain(options.presence ?? 0.78);
+    const ramp = normalizedSeconds(options.rampSeconds, 0.8);
+    const token = ++this.#musicToneSequence;
+    const id = createId("music-tone", token);
+    let active = true;
+    let unregisterScope: () => void = () => undefined;
+    this.#musicToneFrequency = frequency;
+    this.#musicTonePresence = presenceValue;
+    setParamSmooth(filter.frequency, frequency, context, ramp);
+    rampGain(presence, presenceValue, context, ramp);
+
+    const release = (rampSeconds = 0.8) => {
+      if (!active) return;
+      active = false;
+      unregisterScope();
+      if (token !== this.#musicToneSequence) return;
+      this.resetMusicTone(rampSeconds);
+    };
+    const handle: MusicToneHandle = {
+      id,
+      isActive: () => active,
+      release,
+    };
+    unregisterScope = this.#registerScopeCleanup(options.scopeId, () => release(0.65));
+    this.#notify();
+    return handle;
+  }
+
+  resetMusicTone(rampSeconds = 0.8): void {
+    const context = this.#context;
+    const filter = this.#musicToneFilter;
+    const presence = this.#musicPresenceGain;
+    ++this.#musicToneSequence;
+    this.#musicToneFrequency = 20_000;
+    this.#musicTonePresence = 1;
+    if (context && filter && presence) {
+      const ramp = normalizedSeconds(rampSeconds, 0.8);
+      setParamSmooth(filter.frequency, 20_000, context, ramp);
+      rampGain(presence, 1, context, ramp);
+    }
+    this.#notify();
+  }
+
   activateScope(scopeId: AudioScopeId): void {
     this.#scopes.activate(scopeId);
     this.#notify();
@@ -334,6 +439,9 @@ export class AudioEngine {
       try {
         await incoming.element.play();
       } catch (error) {
+        if (transition !== this.#musicTransition) {
+          return false;
+        }
         if (transition === this.#musicTransition) {
           incoming.element.removeAttribute("src");
           incoming.element.load();
@@ -556,6 +664,7 @@ export class AudioEngine {
           ? context.createStereoPanner()
           : null;
       source.buffer = buffer;
+      source.loop = options.loop ?? false;
       source.playbackRate.setValueAtTime(
         clampPlaybackRate(options.playbackRate ?? 1),
         context.currentTime,
@@ -569,11 +678,14 @@ export class AudioEngine {
       }
 
       let active = true;
+      let stopping = false;
+      let stopTimer: number | null = null;
       let duck: DuckHandle | null = null;
       let unregisterScope: () => void = () => undefined;
       const finalize = () => {
         if (!active) return;
         active = false;
+        if (stopTimer !== null) window.clearTimeout(stopTimer);
         unregisterScope();
         duck?.release();
         source.disconnect();
@@ -586,13 +698,21 @@ export class AudioEngine {
         id,
         kind: "sfx",
         isActive: () => active,
-        stop: () => {
-          if (!active) return;
-          try {
-            source.stop();
-          } catch {
-            finalize();
-          }
+        stop: (stopOptions = {}) => {
+          if (!active || stopping) return;
+          stopping = true;
+          const fade = normalizedSeconds(stopOptions.fadeSeconds, 0);
+          rampGain(gain, 0, context, fade);
+          const stopSource = () => {
+            if (!active) return;
+            try {
+              source.stop();
+            } catch {
+              finalize();
+            }
+          };
+          if (fade === 0) stopSource();
+          else stopTimer = window.setTimeout(stopSource, fade * 1000 + 10);
         },
         setGain: (value, rampSeconds = 0.03) =>
           rampGain(gain, clampGain(value), context, rampSeconds),
@@ -626,7 +746,10 @@ export class AudioEngine {
             : { scopeId: options.scopeId, holdSeconds: 0 },
         );
       }
-      source.start(context.currentTime + normalizedSeconds(options.delaySeconds, 0));
+      const requestedStart = typeof options.when === "number"
+        ? options.when
+        : context.currentTime + normalizedSeconds(options.delaySeconds, 0);
+      source.start(Math.max(context.currentTime, requestedStart));
       this.#notify();
       return handle;
     } catch (error) {
@@ -688,6 +811,56 @@ export class AudioEngine {
     );
     this.#notify();
     return results.filter(Boolean).length;
+  }
+
+  /** Development waveform analysis using this engine's existing AudioContext. */
+  async analyzeSfx(assetIdOrRef: string, windowMs = 20): Promise<AudioAnalysis | null> {
+    const context = this.#requireGraph("SFX analysis");
+    if (!context) return null;
+    try {
+      const catalog = await this.#getCatalog();
+      const asset = assetIdOrRef.startsWith("audio:")
+        ? catalog.getBySemanticRef(assetIdOrRef)
+        : catalog.getById(assetIdOrRef);
+      const buffer = await this.#decodeSfx(asset);
+      const windowSamples = Math.max(1, Math.round(buffer.sampleRate * windowMs / 1000));
+      const windowCount = Math.ceil(buffer.length / windowSamples);
+      const peakEnvelope = new Array<number>(windowCount).fill(0);
+      const rmsEnvelope = new Array<number>(windowCount).fill(0);
+      let globalPeak = 0;
+      let globalRms = 0;
+      for (let windowIndex = 0; windowIndex < windowCount; windowIndex += 1) {
+        const start = windowIndex * windowSamples;
+        const end = Math.min(buffer.length, start + windowSamples);
+        let peak = 0;
+        let sumSquares = 0;
+        let sampleCount = 0;
+        for (let channelIndex = 0; channelIndex < buffer.numberOfChannels; channelIndex += 1) {
+          const channel = buffer.getChannelData(channelIndex);
+          for (let sampleIndex = start; sampleIndex < end; sampleIndex += 1) {
+            const value = channel[sampleIndex] ?? 0;
+            peak = Math.max(peak, Math.abs(value));
+            sumSquares += value * value;
+            sampleCount += 1;
+          }
+        }
+        const rms = Math.sqrt(sumSquares / Math.max(1, sampleCount));
+        peakEnvelope[windowIndex] = peak;
+        rmsEnvelope[windowIndex] = rms;
+        globalPeak = Math.max(globalPeak, peak);
+        globalRms = Math.max(globalRms, rms);
+      }
+      return {
+        assetId: asset.id,
+        duration: buffer.duration,
+        windowMs,
+        peakEnvelope: peakEnvelope.map((value) => value / Math.max(globalPeak, 0.000001)),
+        rmsEnvelope: rmsEnvelope.map((value) => value / Math.max(globalRms, 0.000001)),
+      };
+    } catch (error) {
+      this.#reportError(`SFX analysis failed (${assetIdOrRef})`, error);
+      return null;
+    }
   }
 
   clearDecodedSfxCache(): void {
@@ -935,9 +1108,14 @@ export class AudioEngine {
   #initializeGraph(context: AudioContext): void {
     this.#masterGain = context.createGain();
     this.#muteGain = context.createGain();
+    this.#cinematicGain = context.createGain();
     this.#masterGain.gain.value = this.#levels.master;
     this.#muteGain.gain.value = this.#isMuted ? 0 : 1;
-    this.#masterGain.connect(this.#muteGain).connect(context.destination);
+    this.#cinematicGain.gain.value = this.#cinematicSilence ? 0 : 1;
+    this.#masterGain
+      .connect(this.#muteGain)
+      .connect(this.#cinematicGain)
+      .connect(context.destination);
 
     this.#buses = Object.fromEntries(
       (["music", "ambient", "sfx", "procedural"] as const).map((name) => {
@@ -949,6 +1127,20 @@ export class AudioEngine {
         return [name, { level, duck }];
       }),
     ) as Record<AudioBusName, BusGraph>;
+
+    const musicLevel = this.#buses.music.level;
+    const musicDuck = this.#buses.music.duck;
+    musicLevel.disconnect();
+    this.#musicToneFilter = context.createBiquadFilter();
+    this.#musicToneFilter.type = "lowpass";
+    this.#musicToneFilter.frequency.value = this.#musicToneFrequency;
+    this.#musicToneFilter.Q.value = 0.52;
+    this.#musicPresenceGain = context.createGain();
+    this.#musicPresenceGain.gain.value = this.#musicTonePresence;
+    musicLevel
+      .connect(this.#musicToneFilter)
+      .connect(this.#musicPresenceGain)
+      .connect(musicDuck);
 
     const musicBus = this.#buses.music.level;
     const createDeck = (name: "A" | "B"): MusicDeck => {

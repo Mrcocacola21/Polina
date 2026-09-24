@@ -129,8 +129,13 @@ export function SoulCollectionSandbox() {
               <div><dt>HUD</dt><dd>{snapshot.hudMode}</dd></div>
               <div><dt>release</dt><dd>{snapshot.releaseState}</dd></div>
               <div><dt>released</dt><dd>{snapshot.releasedCount}</dd></div>
-              <div><dt>audio</dt><dd>{audioSnapshot.contextState}</dd></div>
+              <div><dt>audio</dt><dd data-testid="collection-audio-context">{audioSnapshot.contextState}</dd></div>
+              <div><dt>cinematic gate</dt><dd data-testid="collection-cinematic-silence">{audioSnapshot.cinematicSilence.active ? "active" : "open"}</dd></div>
+              <div><dt>music</dt><dd data-testid="collection-music-state">{audioSnapshot.music.state ?? "none"} / decks {audioSnapshot.activeMusicDeckCount}</dd></div>
+              <div><dt>ambient</dt><dd data-testid="collection-ambient-active">{audioSnapshot.activeAmbientCount}</dd></div>
               <div><dt>active SFX</dt><dd data-testid="collection-audio-active">{audioSnapshot.activeSfxCount}</dd></div>
+              <div><dt>procedural</dt><dd data-testid="collection-procedural-active">{audioSnapshot.activeProceduralCount}</dd></div>
+              <div><dt>music tone</dt><dd data-testid="collection-music-tone">{Math.round(audioSnapshot.musicTone.frequency)} Hz / {audioSnapshot.musicTone.presence.toFixed(2)}</dd></div>
               <div><dt>visual Souls</dt><dd data-testid="collection-visual-souls">{visualSnapshot.souls}</dd></div>
               <div><dt>particles / trails</dt><dd data-testid="collection-visual-effects">{visualSnapshot.particleSystems} / {visualSnapshot.trails}</dd></div>
               <div><dt>binding</dt><dd>{boundOwner ? `${boundOwner.sceneId}#${boundOwner.runId}` : "debug global"}</dd></div>
@@ -201,7 +206,7 @@ export function SoulCollectionSandbox() {
           <section>
             <h2>Seed / release</h2>
             <div className={styles.row}>
-              {[0, 1, 5, 10].map((count) => (
+              {[0, 1, 5, 9, 10].map((count) => (
                 <button key={count} type="button" onClick={() => seed(count)}>SEED {count}</button>
               ))}
               <button type="button" data-testid="release-souls" onClick={() => void release()}>RELEASE ALL FOR REQUIEM</button>

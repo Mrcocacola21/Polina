@@ -10,15 +10,17 @@ type HomeProps = {
     debug?: string | string[];
     visualSandbox?: string | string[];
     soulSandbox?: string | string[];
+    requiemSandbox?: string | string[];
   }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { debug, visualSandbox, soulSandbox } = await searchParams;
+  const { debug, visualSandbox, soulSandbox, requiemSandbox } = await searchParams;
   const debugEnabled =
     process.env.NODE_ENV === "development" && debug === "1";
   const visualSandboxEnabled = debugEnabled && visualSandbox === "1";
   const soulSandboxEnabled = debugEnabled && soulSandbox === "1";
+  const requiemSandboxEnabled = debugEnabled && requiemSandbox === "1";
   const anySandboxEnabled = visualSandboxEnabled || soulSandboxEnabled;
 
   return (
@@ -32,6 +34,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <SceneDirector
               debugEnabled={debugEnabled && !anySandboxEnabled}
               sandboxEnabled={anySandboxEnabled}
+              requiemSandboxEnabled={requiemSandboxEnabled}
             />
           </GlobalVisualRoot>
         </AudioEngineProvider>

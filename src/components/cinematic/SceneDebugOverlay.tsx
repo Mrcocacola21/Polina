@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   getNextScene,
@@ -13,6 +13,8 @@ import {
   type SceneId,
 } from "@/lib/cinematic/scenes";
 import type { CinematicState } from "@/lib/cinematic/types";
+import { getSoulForScene } from "@/lib/souls/registry";
+import { useSoulCollectionSnapshot } from "@/lib/souls/SoulCollectionContext";
 
 import styles from "./SceneDebugOverlay.module.css";
 
@@ -32,9 +34,23 @@ export function SceneDebugOverlay({
   const [selectedSceneId, setSelectedSceneId] = useState<SceneId>(
     currentScene.id,
   );
+  const [elapsed, setElapsed] = useState(0);
+  const souls = useSoulCollectionSnapshot();
+  const sceneSoul = getSoulForScene(currentScene.id);
+  const collectionStatus = sceneSoul
+    ? souls.slots.find((slot) => slot.soulId === sceneSoul.soulId)?.status ?? "UNKNOWN"
+    : "N/A";
   const previousScene = getPreviousScene(currentScene.id);
   const nextScene = getNextScene(currentScene.id);
   const transitionLocked = state.phase !== "active" || !state.canAdvance;
+
+  useEffect(() => {
+    const startedAt = performance.now();
+    const timer = window.setInterval(() => {
+      setElapsed((performance.now() - startedAt) / 1000);
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [state.runId]);
 
   function handleSelection(value: string) {
     if (isSceneId(value)) {
@@ -69,6 +85,14 @@ export function SceneDebugOverlay({
         <div>
           <dt>runId</dt>
           <dd data-testid="debug-run-id">{state.runId}</dd>
+        </div>
+        <div>
+          <dt>elapsed</dt>
+          <dd data-testid="debug-elapsed">{elapsed.toFixed(1)}s</dd>
+        </div>
+        <div>
+          <dt>collection</dt>
+          <dd data-testid="debug-collection-status">{collectionStatus}</dd>
         </div>
         <div>
           <dt>canAdvance</dt>

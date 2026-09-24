@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase14-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/cinematic/phase14.ts",
+    "src/lib/cinematic/phase14.test.ts",
+    "src/lib/cinematic/scenes.ts"
+  ]
+}

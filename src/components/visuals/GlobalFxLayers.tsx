@@ -16,6 +16,12 @@ function FogLayer() {
   const runtime = useVisualRuntime();
   const fx = useVisualFx();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    runtime.registerFogElement(layerRef.current ?? undefined);
+    return () => runtime.registerFogElement(undefined);
+  }, [fx.fog, runtime]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -42,6 +48,7 @@ function FogLayer() {
   if (!fx.fog) return null;
   return (
     <div
+      ref={layerRef}
       className={styles.fogLayer}
       style={{ opacity: fx.fogOpacity, transitionDuration: `${fx.fogDuration}s` }}
       data-fog-variant={fx.fog}
@@ -133,14 +140,36 @@ function TransitionLayer() {
   );
 }
 
+function AbsoluteBlackLayer() {
+  const runtime = useVisualRuntime();
+  const fx = useVisualFx();
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    runtime.registerAbsoluteBlackElement(elementRef.current ?? undefined);
+    return () => runtime.registerAbsoluteBlackElement(undefined);
+  }, [runtime]);
+
+  return (
+    <div
+      ref={elementRef}
+      className={styles.absoluteBlackLayer}
+      data-absolute-black={fx.absoluteBlack ? "true" : "false"}
+      aria-hidden="true"
+    />
+  );
+}
+
 export function GlobalFxLayers() {
+  const fx = useVisualFx();
   return (
     <>
-      <FogLayer />
-      <GrainLayer />
-      <VignetteLayer />
-      <LightLeakLayer />
+      {!fx.absoluteBlack ? <FogLayer /> : null}
+      {!fx.absoluteBlack ? <GrainLayer /> : null}
+      {!fx.absoluteBlack ? <VignetteLayer /> : null}
+      {!fx.absoluteBlack ? <LightLeakLayer /> : null}
       <TransitionLayer />
+      <AbsoluteBlackLayer />
     </>
   );
 }

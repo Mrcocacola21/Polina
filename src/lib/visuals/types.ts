@@ -34,6 +34,7 @@ export type ParticleFieldOptions = Readonly<{
   lifetime?: number;
   fade?: number;
   attraction?: Vec3;
+  attractionStrength?: number;
   color?: string;
   depthRange?: readonly [number, number];
   scopeId?: string;
@@ -63,6 +64,7 @@ export type VisualMetrics = Readonly<{
 }>;
 
 export type VisualFxState = Readonly<{
+  absoluteBlack: boolean;
   fog: FogVariant | null;
   fogOpacity: number;
   fogDuration: number;
@@ -79,4 +81,3 @@ export type VisualFxState = Readonly<{
   transitionType: TransitionType;
   transitionState: VisualMetrics["transition"];
 }>;
-

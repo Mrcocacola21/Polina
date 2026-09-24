@@ -116,7 +116,7 @@ function ParticleField({ record, texture }: Readonly<{
       const vy = velocityAttribute.getY(index);
       const vz = velocityAttribute.getZ(index);
       if (record.mode === "ATTRACT") {
-        const strength = Math.min(5, 1.2 * delta);
+        const strength = Math.min(5, record.attractionStrength * delta);
         positionAttribute.setXYZ(
           index,
           px + (record.attraction[0] - px) * strength,

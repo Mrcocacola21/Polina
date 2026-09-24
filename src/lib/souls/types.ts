@@ -35,6 +35,11 @@ export type CollectionSource =
   | Readonly<{
       type: "POINT";
       point: readonly [number, number];
+    }>
+  | Readonly<{
+      type: "POINTS";
+      points: readonly (readonly [number, number])[];
+      convergence: readonly [number, number];
     }>;
 
 export type CollectionTiming = Readonly<{
@@ -80,4 +85,3 @@ export type ReleaseResult = Readonly<{
   count: number;
   releasedCount: number;
 }>;
-

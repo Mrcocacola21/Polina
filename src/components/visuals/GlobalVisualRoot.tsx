@@ -10,6 +10,7 @@ import { SoulCollectionSandbox } from "@/components/souls/SoulCollectionSandbox"
 import { CustomCursor } from "./CustomCursor";
 import { GlobalFxLayers } from "./GlobalFxLayers";
 import { GlobalWebGLCanvas } from "./GlobalWebGLCanvas";
+import { MotionPreference } from "./MotionPreference";
 import { VisualSandbox } from "./VisualSandbox";
 
 export function GlobalVisualRoot({
@@ -23,6 +24,7 @@ export function GlobalVisualRoot({
 }>) {
   return (
     <VisualRuntimeProvider>
+      <MotionPreference />
       <SoulCollectionProvider>
         <GlobalFxLayers />
         <GlobalWebGLCanvas />

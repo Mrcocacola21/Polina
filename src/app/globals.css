@@ -19,6 +19,7 @@
   --layer-global-fx: 60;
   --layer-transition: 70;
   --layer-cursor: 80;
+  --layer-absolute-black: 85;
   --layer-debug: 90;
   --layer-overlay: 60;
   --layer-diagnostics: 100;

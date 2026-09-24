@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import type { SceneId } from "../cinematic/scenes";
-import type { ScenePhase } from "../cinematic/types";
 import { useSceneRuntime } from "../cinematic/SceneRuntimeContext";
 import { AudioEngine, getAudioEngine } from "./AudioEngine";
 import { createSceneAudioScopeId } from "./scopes";
@@ -21,6 +20,7 @@ import type {
   DuckOptions,
   FilteredNoiseOptions,
   LowRumbleOptions,
+  MusicToneOptions,
   RatingRiseOptions,
   SfxOptions,
   SoulHumOptions,
@@ -60,7 +60,6 @@ export function useAudioSnapshot(): AudioEngineSnapshot {
 export function useSceneAudioScopeLifecycle(
   sceneId: SceneId,
   runId: number,
-  phase: ScenePhase,
 ): void {
   const engine = useAudioEngine();
   const scopeId = createSceneAudioScopeId(sceneId, runId);
@@ -69,10 +68,6 @@ export function useSceneAudioScopeLifecycle(
     engine.activateScope(scopeId);
     return () => engine.cleanupScope(scopeId);
   }, [engine, scopeId]);
-
-  useEffect(() => {
-    if (phase === "exiting") engine.cleanupScope(scopeId);
-  }, [engine, phase, scopeId]);
 }
 
 export function useSceneAudio() {
@@ -91,6 +86,8 @@ export function useSceneAudio() {
       ) => engine.playAmbient(ambient, { ...options, scopeId }),
       duckMusic: (options: DuckOptions = {}) =>
         engine.duckBus("music", { ...options, scopeId }),
+      applyMusicTone: (options: MusicToneOptions = {}) =>
+        engine.applyMusicTone({ ...options, scopeId }),
       createLowRumble: (options: LowRumbleOptions = {}) =>
         engine.createLowRumble({ ...options, scopeId }),
       createPulse: () => engine.createPulse(scopeId),

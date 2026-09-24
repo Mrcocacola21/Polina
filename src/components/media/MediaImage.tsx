@@ -13,6 +13,7 @@ type MediaImageProps = Readonly<{
   className?: string;
   sizes?: string;
   objectFit?: CSSProperties["objectFit"];
+  eager?: boolean;
   developmentLabel?: boolean;
 }>;
 
@@ -22,6 +23,7 @@ export function MediaImage({
   className,
   sizes = "100vw",
   objectFit = "cover",
+  eager = false,
   developmentLabel = false,
 }: MediaImageProps) {
   const [renderStatus, setRenderStatus] = useState<"loading" | "ready" | "error">(
@@ -41,6 +43,7 @@ export function MediaImage({
           sizes={sizes}
           unoptimized
           decoding="async"
+          loading={eager ? "eager" : "lazy"}
           onLoad={() => setRenderStatus("ready")}
           onError={() => setRenderStatus("error")}
           style={{ objectFit }}

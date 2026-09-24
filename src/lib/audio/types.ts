@@ -47,9 +47,14 @@ export type AudioEngineSnapshot = Readonly<{
   contextCreationCount: number;
   isUnlocked: boolean;
   isMuted: boolean;
+  cinematicSilence: Readonly<{
+    active: boolean;
+    scheduledAt: number | null;
+  }>;
   levels: AudioLevels;
   effectiveDucks: Readonly<Record<AudioBusName, number>>;
   music: MusicSnapshot;
+  musicTone: Readonly<{ frequency: number; presence: number; active: boolean }>;
   activeMusicDeckCount: number;
   activeAmbientCount: number;
   activeSfxCount: number;
@@ -103,6 +108,19 @@ export interface DuckHandle {
   isActive(): boolean;
 }
 
+export interface MusicToneHandle {
+  readonly id: string;
+  release(rampSeconds?: number): void;
+  isActive(): boolean;
+}
+
+export type MusicToneOptions = Readonly<{
+  frequency?: number;
+  presence?: number;
+  rampSeconds?: number;
+  scopeId?: AudioScopeId;
+}>;
+
 export type MusicOptions = Readonly<{
   crossfadeSeconds?: number;
   restart?: boolean;
@@ -126,12 +144,23 @@ export type DuckOptions = Readonly<{
 }>;
 
 export type SfxOptions = Readonly<{
+  loop?: boolean;
   gain?: number;
   pan?: number;
   playbackRate?: number;
   delaySeconds?: number;
+  /** Absolute AudioContext time. Takes precedence over delaySeconds. */
+  when?: number;
   scopeId?: AudioScopeId;
   duckMusic?: boolean | DuckOptions;
+}>;
+
+export type AudioAnalysis = Readonly<{
+  assetId: string;
+  duration: number;
+  windowMs: number;
+  peakEnvelope: readonly number[];
+  rmsEnvelope: readonly number[];
 }>;
 
 export type LowRumbleOptions = Readonly<{

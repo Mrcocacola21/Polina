@@ -142,8 +142,10 @@ export function AudioDebugPanel({ sceneId, runId }: AudioDebugPanelProps) {
       <dl className={styles.status}>
         <div><dt>context</dt><dd data-testid="audio-context-state">{snapshot.contextState}</dd></div>
         <div><dt>contexts</dt><dd>{snapshot.contextCreationCount}</dd></div>
+        <div><dt>cinematic gate</dt><dd data-testid="audio-cinematic-silence">{snapshot.cinematicSilence.active ? "active" : "open"}</dd></div>
         <div><dt>music</dt><dd data-testid="audio-music-state">{snapshot.music.state ?? "none"} / {snapshot.music.deck ?? "—"} / decks {snapshot.activeMusicDeckCount}</dd></div>
         <div><dt>time</dt><dd data-testid="audio-music-time">{snapshot.music.currentTime.toFixed(1)} / {snapshot.music.duration?.toFixed(1) ?? "?"}</dd></div>
+        <div><dt>music tone</dt><dd data-testid="audio-music-tone">{Math.round(snapshot.musicTone.frequency)} Hz / {snapshot.musicTone.presence.toFixed(2)} / {snapshot.musicTone.active ? "active" : "neutral"}</dd></div>
         <div><dt>active</dt><dd data-testid="audio-active-counts">A {snapshot.activeAmbientCount} · S {snapshot.activeSfxCount} · P {snapshot.activeProceduralCount}</dd></div>
         <div><dt>scope/duck</dt><dd>{snapshot.activeScopeCount} / {snapshot.activeDuckCount}</dd></div>
         <div><dt>music duck</dt><dd data-testid="audio-music-duck">{snapshot.effectiveDucks.music.toFixed(2)}</dd></div>

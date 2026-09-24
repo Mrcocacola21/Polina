@@ -158,6 +158,24 @@ export function useMediaStatus(asset: MediaAsset): MediaCacheSnapshot {
   return service?.getAssetStatus(asset) ?? { asset, status: "idle" };
 }
 
+export function useMediaAsset(
+  semanticRef: string,
+): MediaAsset | null {
+  const { service } = useMediaPreloadContext();
+  useServiceRevision(service);
+
+  if (!service) return null;
+
+  try {
+    return service.getCatalog().getBySemanticRef(semanticRef);
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(`Unable to resolve media asset ${semanticRef}.`, error);
+    }
+    return null;
+  }
+}
+
 export function useMediaDiagnostics(): MediaDiagnostics<PreloadGroupId> {
   const { service, initializationError } = useMediaPreloadContext();
   useServiceRevision(service);

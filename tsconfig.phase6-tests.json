@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase6-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/cinematic/phase6.ts",
+    "src/lib/cinematic/phase6.test.ts",
+    "src/lib/audio/types.ts",
+    "src/lib/media/types.ts",
+    "src/lib/souls/types.ts",
+    "src/lib/souls/registry.ts",
+    "src/lib/souls/soul-registry.json",
+    "src/lib/visuals/types.ts",
+    "src/lib/visuals/quality.ts",
+    "src/lib/cinematic/scenes.ts"
+  ]
+}

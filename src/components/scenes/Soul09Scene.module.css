@@ -1,0 +1,278 @@
+.scene {
+  --absorb-progress: 0;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: rgb(238 225 226 / 92%);
+  background:
+    radial-gradient(circle at 61% 46%, rgb(90 18 29 / 10%), transparent 28%),
+    linear-gradient(145deg, #030304 0%, #070608 48%, #020203 100%);
+  isolation: isolate;
+}
+
+.scene::after {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: linear-gradient(90deg, rgb(0 0 0 / 20%), transparent 38%, rgb(0 0 0 / 30%));
+  content: "";
+  pointer-events: none;
+}
+
+.camera {
+  position: absolute;
+  inset: 0;
+  transform-origin: 54% 48%;
+  will-change: transform;
+}
+
+.environment,
+.rain,
+.fractured,
+.fragmentIdentity {
+  position: absolute;
+  inset: -3%;
+  pointer-events: none;
+}
+
+.environment {
+  z-index: 0;
+  background: #050506;
+  opacity: 0;
+}
+
+.environment > div,
+.rain > div,
+.fractured > div,
+.fragmentIdentity > div {
+  width: 100%;
+  height: 100%;
+}
+
+.rain {
+  z-index: 3;
+  opacity: 0.13;
+  filter: grayscale(0.7) brightness(0.46) contrast(1.08);
+  mix-blend-mode: screen;
+}
+
+.rain video {
+  object-fit: cover;
+  transform: scale(1.035);
+}
+
+.fractured {
+  z-index: 2;
+  opacity: 0;
+  filter: brightness(0.46) saturate(0.42);
+  mix-blend-mode: screen;
+  transform: translate3d(9px, -4px, 0) scale(1.018);
+  transform-origin: 61% 47%;
+  will-change: opacity, filter, transform;
+}
+
+.fragmentIdentity {
+  z-index: 4;
+  opacity: 0;
+  filter: brightness(0.42) saturate(0.48) contrast(1.12);
+  mix-blend-mode: screen;
+  transform-origin: 61% 49%;
+  will-change: opacity, transform;
+}
+
+.painAnchor {
+  position: absolute;
+  top: 22%;
+  right: clamp(34px, 8vw, 148px);
+  z-index: 3;
+  width: clamp(250px, 27vw, 410px);
+  max-height: 62vh;
+  aspect-ratio: 498 / 676;
+  overflow: hidden;
+  border: 1px solid rgb(182 132 139 / 8%);
+  border-radius: 4px;
+  background: rgb(5 5 7 / 46%);
+  box-shadow: 0 32px 90px rgb(0 0 0 / 68%), inset 0 0 50px rgb(0 0 0 / 24%);
+  opacity: 0;
+  will-change: opacity, filter, transform;
+}
+
+.painAnchor::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgb(10 8 10 / 20%), transparent 54%, rgb(20 4 8 / 18%));
+  content: "";
+  pointer-events: none;
+}
+
+.painAnchor > div {
+  width: 100%;
+  height: 100%;
+  background: rgb(4 4 5 / 42%);
+}
+
+.painFallback {
+  position: absolute;
+  inset: 23%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(116 33 44 / 15%), transparent 68%);
+}
+
+.copy {
+  position: absolute;
+  left: clamp(26px, 7vw, 116px);
+  top: 23%;
+  z-index: 7;
+  width: min(45vw, 690px);
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.02rem, 1.65vw, 1.7rem);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.012em;
+  text-wrap: balance;
+  text-shadow: 0 2px 28px rgb(0 0 0 / 90%);
+}
+
+.copy > span {
+  display: block;
+  margin-bottom: clamp(14px, 2.2vh, 27px);
+  opacity: 0;
+  will-change: opacity, filter, transform;
+}
+
+.copy .finalLine {
+  margin-top: clamp(20px, 3.2vh, 38px);
+  color: rgb(226 205 208 / 88%);
+  font-size: 0.96em;
+  letter-spacing: 0.018em;
+}
+
+.holdControl {
+  --absorb-progress: 0;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(64px, 11vh, 118px);
+  z-index: 9;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: rgb(204 175 180 / 66%);
+  background: transparent;
+  cursor: none;
+  opacity: 0;
+  outline: none;
+  place-items: center;
+  touch-action: none;
+  user-select: none;
+  transform: translateX(-50%);
+  -webkit-touch-callout: none;
+}
+
+.holdControl:disabled {
+  pointer-events: none;
+}
+
+.holdControl:focus-visible .holdField {
+  box-shadow: 0 0 0 1px rgb(222 178 185 / 48%), 0 0 34px rgb(125 22 39 / 20%);
+}
+
+.holdField,
+.holdCore {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.holdField {
+  inset: 15px;
+  border: 1px solid rgb(154 67 80 / 22%);
+  background: conic-gradient(from -90deg, rgb(145 39 55 / 46%) calc(var(--absorb-progress) * 1turn), rgb(107 75 80 / 8%) 0);
+  box-shadow: 0 0 calc(13px + var(--absorb-progress) * 17px) rgb(103 18 33 / 16%);
+  mask: radial-gradient(circle, transparent 66%, #000 68%);
+  -webkit-mask: radial-gradient(circle, transparent 66%, #000 68%);
+  transform: rotate(calc(var(--absorb-progress) * 28deg)) scale(calc(1 - var(--absorb-progress) * 0.08));
+}
+
+.holdCore {
+  width: calc(8px + var(--absorb-progress) * 4px);
+  height: calc(8px + var(--absorb-progress) * 4px);
+  background: rgb(128 29 44 / calc(42% + var(--absorb-progress) * 26%));
+  box-shadow: 0 0 calc(16px + var(--absorb-progress) * 20px) rgb(145 30 49 / 38%);
+}
+
+.holdLabel {
+  position: absolute;
+  top: calc(100% + 3px);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .painAnchor {
+    top: 9%;
+    right: 14vw;
+    width: 72vw;
+    max-height: 37vh;
+    aspect-ratio: 1.25;
+    opacity: 0;
+  }
+
+  .copy {
+    top: 43%;
+    left: 8vw;
+    width: 84vw;
+    font-size: clamp(0.94rem, 4vw, 1.17rem);
+    line-height: 1.48;
+  }
+
+  .copy > span {
+    margin-bottom: 11px;
+  }
+
+  .copy .finalLine {
+    margin-top: 15px;
+  }
+
+  .holdControl {
+    bottom: max(38px, 6vh);
+    width: 112px;
+    height: 112px;
+  }
+}
+
+@media (max-height: 680px) {
+  .copy {
+    top: 16%;
+    font-size: clamp(0.9rem, 1.45vw, 1.25rem);
+    line-height: 1.42;
+  }
+
+  .copy > span {
+    margin-bottom: 10px;
+  }
+
+  .holdControl {
+    bottom: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera,
+  .fractured,
+  .fragmentIdentity,
+  .holdField {
+    transition: none;
+  }
+
+  .rain {
+    opacity: 0.08;
+  }
+}

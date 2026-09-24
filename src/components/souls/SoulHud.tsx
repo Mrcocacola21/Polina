@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 
 import { type SoulId } from "@/lib/souls/registry";
 import {
@@ -28,6 +28,7 @@ function SoulHudSlot({ slot }: Readonly<{ slot: SoulSlot }>) {
       data-soul-id={slot.soulId}
       data-slot-index={slot.slotIndex}
       data-slot-status={slot.status}
+      style={{ "--release-index": slot.slotIndex - 1 } as CSSProperties}
       aria-hidden="true"
     >
       <span />
@@ -64,4 +65,3 @@ export function SoulHud() {
 }
 
 export type { SoulId };
-

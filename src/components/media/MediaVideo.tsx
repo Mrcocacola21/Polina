@@ -88,6 +88,7 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             poster={poster?.kind === "image" ? poster.url : undefined}
             muted={muted}
             playsInline={playsInline}
+            autoPlay={autoPlay}
             preload="auto"
             loop={loop}
             onCanPlay={() => void handleCanPlay()}

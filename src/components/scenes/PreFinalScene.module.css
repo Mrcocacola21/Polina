@@ -1,0 +1,80 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+  opacity: 0;
+}
+
+.copy {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  color: rgb(240 234 235 / 86%);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(20px, 2.1vw, 34px);
+  font-weight: 380;
+  letter-spacing: -.025em;
+  line-height: 1.35;
+  pointer-events: none;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  width: min(76vw, 820px);
+  opacity: 0;
+  text-shadow: 0 3px 24px rgb(0 0 0 / 96%);
+  transform: translate(-50%, -50%);
+  will-change: opacity, filter, transform;
+}
+
+.line:nth-child(1) {
+  top: calc(50% - 3.4rem);
+}
+
+.line:nth-child(2) {
+  top: 50%;
+}
+
+.line:nth-child(3) {
+  top: calc(50% + 3.4rem);
+}
+
+.finalLine {
+  top: 50%;
+  color: rgb(246 240 241 / 92%);
+  font-size: .94em;
+  font-weight: 360;
+  letter-spacing: -.015em;
+}
+
+@media (max-width: 760px) {
+  .copy {
+    font-size: clamp(19px, 5.2vw, 28px);
+    line-height: 1.4;
+  }
+
+  .line {
+    width: min(86vw, 620px);
+  }
+
+  .line:nth-child(1) {
+    top: calc(50% - 3.9rem);
+  }
+
+  .line:nth-child(3) {
+    top: calc(50% + 3.9rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    will-change: auto;
+  }
+}

@@ -1,0 +1,223 @@
+.scene {
+  --hero-envelope: 0;
+  --hero-distortion: 0;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: transparent;
+  opacity: 0;
+  isolation: isolate;
+}
+
+.camera,
+.fogSuction,
+.displacement,
+.lightLeak,
+.smokeBurst,
+.flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.camera {
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.fogSuction {
+  opacity: .18;
+  mix-blend-mode: screen;
+  filter: brightness(.32) saturate(.95) contrast(1.18);
+  mask-image: radial-gradient(circle, #000 0 22%, rgb(0 0 0 / 82%) 42%, transparent 82%);
+  animation: fog-inhale 4.05s cubic-bezier(.45, 0, .8, 1) both;
+}
+
+.fogSuction > div,
+.fogSuction video { width: 100%; height: 100%; object-fit: cover; }
+
+.sigil {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(72vmin, 760px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 calc(12px + var(--hero-envelope) * 32px) rgb(212 27 55 / 46%));
+}
+
+.sigilBase,
+.ring,
+.core {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sigil-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.sigilBase { opacity: .055; filter: brightness(.62) saturate(.7); }
+
+.ring {
+  transform-origin: center;
+  transition: opacity .16s linear, filter .25s ease;
+}
+
+.ring1 {
+  mask-image: radial-gradient(circle, transparent 0 20%, #000 22% 33%, transparent 35%);
+  animation: ring-spin-1 24s linear infinite;
+}
+.ring2 {
+  mask-image: radial-gradient(circle, transparent 0 32%, #000 34% 43%, transparent 45%);
+  animation: ring-spin-2 18s linear infinite reverse;
+}
+.ring3 {
+  mask-image: radial-gradient(circle, transparent 0 42%, #000 44% 50%, transparent 51%);
+  animation: ring-spin-3 14s linear infinite;
+}
+
+.scene[data-rings="1"] .ring1,
+.scene[data-rings="2"] .ring1,
+.scene[data-rings="3"] .ring1 { opacity: .42; filter: brightness(.8) saturate(.85); }
+.scene[data-rings="2"] .ring2,
+.scene[data-rings="3"] .ring2 { opacity: .58; filter: brightness(.95) saturate(.92); }
+.scene[data-rings="3"] .ring3 { opacity: .72; filter: brightness(1.08) saturate(1.02); }
+
+.core {
+  inset: 43%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 236 238 / 92%), rgb(220 35 64 / 64%) 28%, transparent 72%);
+  opacity: calc(.18 + var(--hero-envelope) * .75);
+  transform: scale(calc(.72 + var(--hero-envelope) * .42));
+}
+
+.arcs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(76vmin, 800px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.arc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48%;
+  height: 18%;
+  background-image: var(--arc-image);
+  background-repeat: no-repeat;
+  background-size: 200% 300%;
+  filter: brightness(1.45) saturate(1.1) drop-shadow(0 0 8px rgb(225 38 67 / 42%));
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(var(--arc-rotation)) translateX(49%);
+  transform-origin: 50% 50%;
+}
+
+.scene[data-requiem-phase="arcs"] .arc,
+.scene[data-requiem-phase="compressed"] .arc,
+.scene[data-requiem-phase="hero"] .arc { opacity: .38; animation: arc-flicker .72s steps(2, end) infinite alternate; }
+.scene[data-requiem-phase="release"] .arc { opacity: calc(.2 + var(--hero-envelope) * .55); animation: arc-flicker .32s steps(2, end) infinite alternate; }
+.scene[data-requiem-phase="tail"] .arc { opacity: .05; transition: opacity .55s linear; }
+
+.smokeBurst { z-index: 5; opacity: 0; mix-blend-mode: screen; filter: brightness(.85) saturate(1.15) contrast(1.18); }
+.smokeBurst > div,
+.smokeBurst video { width: 100%; height: 100%; object-fit: cover; }
+.scene[data-requiem-phase="release"] .smokeBurst { opacity: .62; animation: smoke-impact 2.4s ease-out both; }
+
+.displacement {
+  z-index: 7;
+  opacity: calc(var(--hero-distortion) * 1.35);
+  mix-blend-mode: screen;
+  filter: brightness(.44) sepia(.3) saturate(1.6) hue-rotate(325deg) contrast(1.45);
+  transform: scale(calc(1 + var(--hero-distortion) * .035)) translateX(calc(var(--hero-distortion) * 10px));
+}
+.displacement > div { width: 100%; height: 100%; background: transparent; }
+
+.lightLeak {
+  z-index: 6;
+  background: var(--leak-image) center / cover no-repeat;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+.scene[data-pulse="primary"] .lightLeak { animation: leak-impact .48s ease-out both; }
+
+.shockwave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 8;
+  width: 14vmin;
+  aspect-ratio: 1;
+  border: 2px solid rgb(241 81 104 / 72%);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgb(221 32 61 / 40%), inset 0 0 12px rgb(255 214 220 / 18%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.3);
+  pointer-events: none;
+}
+.scene[data-pulse="primary"] .shockwaveA { animation: shockwave 1.05s cubic-bezier(.12, .62, .3, 1) both; }
+.scene[data-pulse="secondary"] .shockwaveB,
+.scene[data-pulse="final"] .shockwaveB { animation: shockwave .82s cubic-bezier(.12, .62, .3, 1) both; }
+
+.flash { z-index: 10; background: radial-gradient(circle, #fff 0, #ffced5 12%, rgb(209 34 61 / 76%) 34%, transparent 72%); opacity: 0; }
+.scene[data-pulse="primary"] .flash { animation: safe-flash 90ms linear both; }
+
+.warning {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: #e02d4d;
+  font: 11px/1.4 ui-monospace, monospace;
+  transform: translate(-50%, -50%);
+}
+
+.syncPanel {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: var(--layer-debug);
+  display: grid;
+  gap: 4px;
+  width: min(410px, calc(100vw - 28px));
+  padding: 10px;
+  border: 1px solid rgb(224 45 77 / 38%);
+  background: rgb(0 0 0 / 82%);
+  color: rgb(245 237 239 / 78%);
+  font: 10px/1.25 ui-monospace, monospace;
+  pointer-events: none;
+}
+.waveform { display: flex; align-items: end; height: 46px; gap: 1px; }
+.waveform i { flex: 1 1 0; min-width: 1px; background: #d52243; opacity: .72; }
+
+@keyframes fog-inhale {
+  from { opacity: .1; transform: scale(1.24); }
+  72% { opacity: .32; transform: scale(.96); }
+  to { opacity: .46; transform: scale(.84); }
+}
+@keyframes ring-spin-1 { to { transform: rotate(360deg); } }
+@keyframes ring-spin-2 { to { transform: rotate(360deg); } }
+@keyframes ring-spin-3 { to { transform: rotate(360deg); } }
+@keyframes arc-flicker { from { filter: brightness(1.05) saturate(.9); } to { filter: brightness(1.65) saturate(1.2) drop-shadow(0 0 10px #d82445); } }
+@keyframes smoke-impact { from { opacity: .72; transform: scale(.72); } 55% { opacity: .5; } to { opacity: 0; transform: scale(1.35); } }
+@keyframes leak-impact { 0% { opacity: 0; } 15% { opacity: .42; } 100% { opacity: 0; } }
+@keyframes shockwave { 0% { opacity: .78; transform: translate(-50%, -50%) scale(.3); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(9); } }
+@keyframes safe-flash { 0% { opacity: 0; } 28% { opacity: .78; } 100% { opacity: 0; } }
+
+@media (max-width: 700px) {
+  .sigil { width: min(86vmin, 620px); }
+  .arcs { width: min(90vmin, 650px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fogSuction { animation-duration: 4.05s; transform: scale(.95); }
+  .ring { animation: none; }
+  .arc { animation-duration: 1.4s !important; }
+  .scene[data-pulse="primary"] .flash { animation: none; opacity: 0; }
+  .displacement { opacity: calc(var(--hero-distortion) * .35); transform: none; }
+}

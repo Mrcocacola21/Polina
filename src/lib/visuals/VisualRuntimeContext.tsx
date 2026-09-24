@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import type { SceneId } from "@/lib/cinematic/scenes";
-import type { ScenePhase } from "@/lib/cinematic/types";
 
 import { VisualRuntime } from "./VisualRuntime";
 import { createSceneVisualScopeId } from "./VisualScope";
@@ -58,7 +57,6 @@ export function useVisualFx() {
 export function useSceneVisualScopeLifecycle(
   sceneId: SceneId,
   runId: number,
-  phase: ScenePhase,
 ): string {
   const runtime = useVisualRuntime();
   const scopeId = createSceneVisualScopeId(sceneId, runId);
@@ -67,11 +65,5 @@ export function useSceneVisualScopeLifecycle(
     runtime.activateScope(scopeId);
     return () => runtime.cleanupScope(scopeId);
   }, [runtime, scopeId]);
-
-  useEffect(() => {
-    if (phase === "exiting") runtime.cleanupScope(scopeId);
-  }, [phase, runtime, scopeId]);
-
   return scopeId;
 }
-

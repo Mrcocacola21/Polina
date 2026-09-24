@@ -25,6 +25,7 @@ import {
 } from "./collection-state";
 import type { SoulId } from "./registry";
 import { createTextFragmentOverlay, type TextFragmentOverlay } from "./text-source";
+import { createPointSourceOverlay, type PointSourceOverlay } from "./points-source";
 import type {
   CollectSoulOptions,
   CollectionResult,
@@ -77,7 +78,7 @@ type ActiveTransaction = {
   owner?: SceneOwner;
   controller: AbortController;
   promise: Promise<CollectionResult>;
-  overlay?: TextFragmentOverlay;
+  overlay?: TextFragmentOverlay | PointSourceOverlay;
   sourceElement?: HTMLElement;
   particle?: ParticleFieldController;
   soul?: SoulController;
@@ -391,6 +392,13 @@ export class SoulCollectionRuntime {
     if (options.source.type === "POINT") {
       return options.convergence ?? options.source.point;
     }
+    if (options.source.type === "POINTS") {
+      const convergence = options.convergence ?? options.source.convergence;
+      const overlay = createPointSourceOverlay(options.source.points, convergence);
+      if (!overlay) throw new Error("Points source contains no measurable points.");
+      transaction.overlay = overlay;
+      return convergence;
+    }
     const overlay = createTextFragmentOverlay(options.source.element, transaction.id * 97);
     if (!overlay) throw new Error("Text source contains no measurable graphemes.");
     transaction.sourceElement = options.source.element;
@@ -561,7 +569,10 @@ export class SoulCollectionRuntime {
         if (!world) throw new Error("Unable to convert a HUD slot to world space.");
         const controller = this.#visual.createSoul({
           position: world,
-          scale: 0.48,
+          // The release scene owns the visible, staggered spawn. Keeping the
+          // persistent controller microscopic here preserves the exact HUD
+          // origin without flashing all ten Souls into view at once.
+          scale: 0.02,
           state: slot.visualState ?? "ACTIVE",
           scopeId: RELEASE_SCOPE_ID,
         });
@@ -586,6 +597,37 @@ export class SoulCollectionRuntime {
 
   getReleasedSouls(): readonly ReleasedSoul[] {
     return [...this.#released];
+  }
+
+  /** Development replay path for the one-way release transaction. */
+  restoreReleasedSoulsToHudSlotsForReplay(): ReleaseResult {
+    const count = deriveSoulCount(this.#state);
+    if (process.env.NODE_ENV !== "development" || count !== 10 || this.#state.releaseState !== "RELEASED") {
+      return { status: "failed", count, releasedCount: this.#released.length };
+    }
+    const targets = this.#state.slots.map((slot) => ({ slot, center: this.getSlotCenter(slot.soulId) }));
+    if (targets.some((target) => !target.center)) {
+      return { status: "failed", count, releasedCount: this.#released.length };
+    }
+    this.disposeReleasedSouls();
+    this.#visual.activateScope(RELEASE_SCOPE_ID);
+    this.#released = targets.map(({ slot, center }) => {
+      const point = center as readonly [number, number];
+      const world = this.#visual.screenToWorld(point[0], point[1]);
+      if (!world) throw new Error("Unable to restore a released Soul to its HUD slot.");
+      return {
+        soulId: slot.soulId,
+        slotIndex: slot.slotIndex,
+        controller: this.#visual.createSoul({
+          position: world,
+          scale: 0.02,
+          state: slot.visualState ?? "ACTIVE",
+          scopeId: RELEASE_SCOPE_ID,
+        }),
+      };
+    });
+    this.#notify();
+    return { status: "already-released", count, releasedCount: this.#released.length };
   }
 
   disposeReleasedSouls(): void {

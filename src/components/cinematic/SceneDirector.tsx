@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import {
   getNextScene,
@@ -15,42 +15,46 @@ import {
 import { SceneRuntimeProvider } from "@/lib/cinematic/SceneRuntimeContext";
 import { MediaDebugPanel } from "@/components/media/MediaDebugPanel";
 import { AudioDebugPanel } from "@/components/audio/AudioDebugPanel";
-import { useSceneAudioScopeLifecycle } from "@/lib/audio/AudioEngineContext";
+import { useAudioEngine, useSceneAudioScopeLifecycle } from "@/lib/audio/AudioEngineContext";
 import { requestMediaForScene } from "@/lib/media/media-preloader";
 import { useProgressiveMediaPrefetch } from "@/lib/media/MediaPreloadContext";
-import { useSceneVisualScopeLifecycle } from "@/lib/visuals/VisualRuntimeContext";
-import { useSoulCollectionSceneLifecycle } from "@/lib/souls/SoulCollectionContext";
+import { useSceneVisualScopeLifecycle, useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
+import { useSoulCollectionRuntime, useSoulCollectionSceneLifecycle } from "@/lib/souls/SoulCollectionContext";
+import { SceneRenderer } from "@/components/scenes/SceneRenderer";
 
 import { CinematicContinue } from "./CinematicContinue";
-import { PlaceholderScene } from "./PlaceholderScene";
 import { SceneDebugOverlay } from "./SceneDebugOverlay";
 import styles from "./SceneDirector.module.css";
 
 type SceneDirectorProps = Readonly<{
   debugEnabled?: boolean;
   sandboxEnabled?: boolean;
+  requiemSandboxEnabled?: boolean;
 }>;
 
 export function SceneDirector({
   debugEnabled = false,
   sandboxEnabled = false,
+  requiemSandboxEnabled = false,
 }: SceneDirectorProps) {
+  const sandboxPreparedRef = useRef(false);
   const [state, dispatch] = useReducer(
     cinematicReducer,
     INITIAL_CINEMATIC_STATE,
   );
   const currentScene = getSceneById(state.currentSceneId);
   const nextScene = getNextScene(state.currentSceneId);
+  const audio = useAudioEngine();
+  const visual = useVisualRuntime();
+  const collection = useSoulCollectionRuntime();
   useProgressiveMediaPrefetch(state.currentSceneId, state.phase);
   useSceneAudioScopeLifecycle(
     state.currentSceneId,
     state.runId,
-    state.phase,
   );
   useSceneVisualScopeLifecycle(
     state.currentSceneId,
     state.runId,
-    state.phase,
   );
   useSoulCollectionSceneLifecycle(
     state.currentSceneId,
@@ -67,13 +71,27 @@ export function SceneDirector({
   }, []);
 
   const jumpToScene = useCallback((sceneId: SceneId) => {
+    if (sceneId === "SILENCE" || sceneId === "FINAL") {
+      audio.enterCinematicSilence();
+      visual.enterAbsoluteBlack();
+    } else {
+      audio.leaveCinematicSilence();
+      visual.leaveAbsoluteBlack();
+    }
     void requestMediaForScene(sceneId).catch((error: unknown) => {
       if (process.env.NODE_ENV === "development") {
         console.error("Unable to request media for debug scene jump.", error);
       }
     });
     dispatch({ type: "JUMP_TO_SCENE", sceneId });
-  }, []);
+  }, [audio, visual]);
+
+  useEffect(() => {
+    if (!requiemSandboxEnabled || sandboxPreparedRef.current) return;
+    sandboxPreparedRef.current = true;
+    collection.seedCollectedSouls(10);
+    jumpToScene("SOULS_RELEASE");
+  }, [collection, jumpToScene, requiemSandboxEnabled]);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
@@ -111,7 +129,7 @@ export function SceneDirector({
         state={state}
         dispatch={dispatch}
       >
-        <PlaceholderScene scene={currentScene} />
+        <SceneRenderer scene={currentScene} />
       </SceneRuntimeProvider>
 
       <CinematicContinue

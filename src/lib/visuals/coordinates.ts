@@ -1,4 +1,4 @@
-import { Vector3, type Camera } from "three";
+import { Raycaster, Vector2, Vector3, type Camera } from "three";
 
 import type { Vec3 } from "./types";
 
@@ -20,10 +20,16 @@ export function screenToWorld(
   worldZ = 0,
 ): Vec3 {
   const [ndcX, ndcY] = screenToNdc(x, y, width, height);
-  const projected = new Vector3(ndcX, ndcY, 0.5).unproject(camera);
-  const direction = projected.sub(camera.position).normalize();
-  const distance = (worldZ - camera.position.z) / direction.z;
-  const world = camera.position.clone().add(direction.multiplyScalar(distance));
+  // Raycaster accounts for the materially different ray origins used by
+  // orthographic and perspective cameras. Building a direction from
+  // camera.position collapses orthographic screen coordinates toward the
+  // centre, which is especially visible in the Requiem soul circle.
+  const raycaster = new Raycaster();
+  raycaster.setFromCamera(new Vector2(ndcX, ndcY), camera);
+  const { origin, direction } = raycaster.ray;
+  if (Math.abs(direction.z) < Number.EPSILON) return [origin.x, origin.y, worldZ];
+  const distance = (worldZ - origin.z) / direction.z;
+  const world = origin.clone().add(direction.clone().multiplyScalar(distance));
   return [world.x, world.y, world.z];
 }
 
@@ -36,4 +42,3 @@ export function worldToScreen(
   const projected = new Vector3(...position).project(camera);
   return [((projected.x + 1) / 2) * width, ((1 - projected.y) / 2) * height];
 }
-
