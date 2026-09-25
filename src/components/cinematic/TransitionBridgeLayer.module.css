@@ -1,0 +1,303 @@
+.bridge {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-transition-bridge);
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  opacity: 1;
+}
+
+.bridge[data-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.field,
+.memory,
+.thread,
+.motif,
+.motifSecondary,
+.aperture,
+.haze,
+.ring,
+.ringSecondary,
+.fracture,
+.particles,
+.particles i {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+}
+
+.field,
+.haze,
+.fracture,
+.particles {
+  inset: 0;
+}
+
+.motif,
+.motifSecondary,
+.aperture,
+.ring,
+.ringSecondary {
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+}
+
+.field {
+  background: radial-gradient(circle at 50% 50%, rgb(132 14 38 / 18%), transparent 32%), #0000;
+  opacity: 0;
+}
+
+.motif,
+.motifSecondary {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #b91c36;
+  box-shadow: 0 0 16px rgb(224 45 77 / 70%), 0 0 50px rgb(148 21 45 / 36%);
+  opacity: 0;
+}
+
+.motifSecondary {
+  background: #eee6dc;
+  box-shadow: 0 0 20px rgb(255 241 220 / 70%), 0 0 64px rgb(255 218 171 / 28%);
+}
+
+.ring,
+.ringSecondary {
+  width: min(35vw, 42vh);
+  aspect-ratio: 1;
+  border: 1px solid rgb(222 36 64 / 34%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 28px rgb(148 21 45 / 14%), 0 0 34px rgb(148 21 45 / 20%);
+  opacity: 0;
+}
+
+.ringSecondary {
+  width: min(48vw, 58vh);
+  border-color: rgb(224 45 77 / 18%);
+}
+
+.aperture {
+  width: 2px;
+  height: 120%;
+  background: linear-gradient(180deg, transparent, #eee7d8 18%, #fff8e8 50%, #eee7d8 82%, transparent);
+  box-shadow: 0 0 24px rgb(255 237 202 / 50%);
+  opacity: 0;
+}
+
+.thread {
+  left: 50%;
+  top: 5%;
+  width: 1px;
+  height: 92%;
+  background: linear-gradient(180deg, transparent, rgb(212 34 64 / 12%) 12%, rgb(222 36 64 / 70%) 56%, transparent);
+  filter: drop-shadow(0 0 5px #b91730);
+  opacity: 0;
+  transform: rotate(5deg);
+  transform-origin: center;
+}
+
+.memory {
+  width: min(26vw, 360px);
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 5px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 16px 60px rgb(0 0 0 / 68%);
+  opacity: 0;
+}
+
+.memoryOne { left: 14%; top: 18%; background-image: linear-gradient(rgb(27 4 9 / 48%), rgb(0 0 0 / 68%)), var(--memory-image); }
+.memoryTwo { right: 12%; top: 31%; background-image: linear-gradient(rgb(27 4 9 / 50%), rgb(0 0 0 / 72%)), var(--memory-image); }
+.memoryThree { left: 34%; bottom: 10%; background-image: linear-gradient(rgb(27 4 9 / 54%), rgb(0 0 0 / 76%)), var(--memory-image); }
+
+.haze {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgb(103 13 31 / 22%), transparent 46%),
+    linear-gradient(180deg, transparent 20%, rgb(0 0 0 / 72%) 92%);
+  opacity: 0;
+}
+
+.fracture {
+  background:
+    linear-gradient(103deg, transparent 48.8%, rgb(210 35 63 / 38%) 49.2%, transparent 49.7%),
+    linear-gradient(77deg, transparent 50.2%, rgb(238 238 241 / 15%) 50.45%, transparent 50.8%);
+  opacity: 0;
+}
+
+.particles i {
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #8d3544;
+  box-shadow: 0 0 8px rgb(187 23 48 / 40%);
+  opacity: 0;
+}
+
+.particles i:nth-child(1) { left: 21%; top: 28%; }
+.particles i:nth-child(2) { left: 32%; top: 19%; width: 2px; }
+.particles i:nth-child(3) { left: 47%; top: 25%; height: 5px; }
+.particles i:nth-child(4) { left: 61%; top: 18%; }
+.particles i:nth-child(5) { left: 76%; top: 31%; width: 4px; }
+.particles i:nth-child(6) { left: 84%; top: 47%; height: 2px; }
+.particles i:nth-child(7) { left: 73%; top: 61%; }
+.particles i:nth-child(8) { left: 64%; top: 76%; width: 2px; }
+.particles i:nth-child(9) { left: 48%; top: 68%; height: 4px; }
+.particles i:nth-child(10) { left: 35%; top: 79%; }
+.particles i:nth-child(11) { left: 18%; top: 64%; width: 4px; }
+.particles i:nth-child(12) { left: 27%; top: 48%; height: 2px; }
+.particles i:nth-child(13) { left: 42%; top: 42%; }
+.particles i:nth-child(14) { left: 59%; top: 51%; width: 2px; }
+
+/* Soul grows through the frame, then leaves a cold room-shaped glow behind. */
+.bridge[data-transition-bridge="SOUL_CIRCLE_TO_ROOM"][data-transition-state="outgoing"] .ring {
+  animation: soul-circle-out 1.05s cubic-bezier(.65, 0, .35, 1) both;
+}
+.bridge[data-transition-bridge="SOUL_CIRCLE_TO_ROOM"][data-transition-state="incoming"] .field,
+.bridge[data-transition-bridge="SOUL_CIRCLE_TO_ROOM"][data-transition-state="revealing"] .field {
+  animation: room-from-soul 1.05s ease-out both;
+}
+
+/* The last monitor glow becomes the first notification point. */
+.bridge[data-transition-bridge="ROOM_TO_NOTIFICATION"][data-transition-state="outgoing"] .field {
+  animation: room-compress .9s ease-in-out both;
+}
+.bridge[data-transition-bridge="ROOM_TO_NOTIFICATION"][data-transition-state="incoming"] .motif,
+.bridge[data-transition-bridge="ROOM_TO_NOTIFICATION"][data-transition-state="revealing"] .motif {
+  animation: notification-resolve .72s ease-out both;
+}
+
+.bridge[data-transition-bridge="NOTIFICATION_TO_MEMORY"][data-transition-state="outgoing"] .motif {
+  animation: notification-depth 1.35s cubic-bezier(.7, 0, .3, 1) both;
+}
+.bridge[data-transition-bridge="NOTIFICATION_TO_MEMORY"][data-transition-state="incoming"] .ring,
+.bridge[data-transition-bridge="NOTIFICATION_TO_MEMORY"][data-transition-state="revealing"] .ring {
+  animation: memory-depth-open 1.05s ease-out both;
+}
+
+/* Lightweight copies of the final three planes survive the component handoff. */
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memory {
+  animation: memory-drain 1.55s ease-in-out both;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryTwo { animation-delay: .08s; }
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThree { animation-delay: .16s; }
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="incoming"] .memory,
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="revealing"] .memory {
+  animation: memory-release .55s ease-in both;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"] .thread {
+  animation: thread-remains 1.55s ease-in-out both;
+}
+
+.bridge[data-transition-bridge="THREAD_TO_MORNING"][data-transition-state="outgoing"] .thread {
+  animation: thread-collapse 1.2s ease-in-out both;
+}
+.bridge[data-transition-bridge="THREAD_TO_MORNING"][data-transition-state="incoming"] .aperture,
+.bridge[data-transition-bridge="THREAD_TO_MORNING"][data-transition-state="revealing"] .aperture {
+  animation: morning-aperture 1.25s ease-out both;
+}
+
+.bridge[data-transition-bridge="LIGHT_TO_HEART"][data-transition-state="outgoing"] .motifSecondary {
+  animation: light-contract 1.15s ease-in-out both;
+}
+.bridge[data-transition-bridge="LIGHT_TO_HEART"][data-transition-state="incoming"] .motif,
+.bridge[data-transition-bridge="LIGHT_TO_HEART"][data-transition-state="revealing"] .motif {
+  animation: heart-point .8s ease-out both;
+}
+
+.bridge[data-transition-bridge="HEART_TO_HALO"][data-transition-state="outgoing"] .particles i {
+  animation: particles-inward 1.15s ease-in-out both;
+  animation-delay: calc(var(--particle-index) * 18ms);
+}
+.bridge[data-transition-bridge="HEART_TO_HALO"][data-transition-state="incoming"] .ring,
+.bridge[data-transition-bridge="HEART_TO_HALO"][data-transition-state="revealing"] .ring {
+  animation: halo-resolve .95s ease-out both;
+}
+
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="outgoing"] .ring,
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="outgoing"] .ringSecondary {
+  animation: orbit-rupture 1.2s cubic-bezier(.7, 0, .3, 1) both;
+}
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="outgoing"] .fracture { animation: fracture-pulse 1.2s ease-in-out both; }
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="incoming"] .field,
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="revealing"] .field { animation: throne-field .92s ease-out both; }
+
+.bridge[data-transition-bridge="ASH_TO_HEAVINESS"][data-transition-state="outgoing"] .particles i {
+  animation: ash-fall 1.25s ease-in both;
+  animation-delay: calc(var(--particle-index) * 22ms);
+}
+.bridge[data-transition-bridge="ASH_TO_HEAVINESS"][data-transition-state="incoming"] .haze,
+.bridge[data-transition-bridge="ASH_TO_HEAVINESS"][data-transition-state="revealing"] .haze { animation: heavy-arrival 1s ease-out both; }
+
+.bridge[data-transition-bridge="ENVIRONMENT_TO_VOID"][data-transition-state="outgoing"] .field { animation: environment-collapse 1.25s ease-in-out both; }
+.bridge[data-transition-bridge="ENVIRONMENT_TO_VOID"][data-transition-state="incoming"] .motif,
+.bridge[data-transition-bridge="ENVIRONMENT_TO_VOID"][data-transition-state="revealing"] .motif { animation: thought-remains .9s ease-out both; }
+
+.bridge[data-transition-bridge="VOID_TO_VULNERABILITY"][data-transition-state="outgoing"] .haze { animation: void-strip 1.25s ease-in both; }
+.bridge[data-transition-bridge="VOID_TO_VULNERABILITY"][data-transition-state="incoming"] .field,
+.bridge[data-transition-bridge="VOID_TO_VULNERABILITY"][data-transition-state="revealing"] .field { animation: honest-black .75s ease-out both; }
+
+.bridge[data-transition-bridge="HUD_TO_RELEASE"][data-transition-state="outgoing"] .motif {
+  animation: release-tension .85s ease-in-out both;
+}
+.bridge[data-transition-bridge="HUD_TO_RELEASE"][data-transition-state="incoming"] .particles i,
+.bridge[data-transition-bridge="HUD_TO_RELEASE"][data-transition-state="revealing"] .particles i {
+  animation: release-awaken .65s ease-out both;
+  animation-delay: calc(var(--particle-index) * 12ms);
+}
+
+.bridge[data-transition-bridge="SOULS_TO_REQUIEM"][data-transition-state="outgoing"] .ring,
+.bridge[data-transition-bridge="SOULS_TO_REQUIEM"][data-transition-state="incoming"] .ring,
+.bridge[data-transition-bridge="SOULS_TO_REQUIEM"][data-transition-state="revealing"] .ring {
+  animation: requiem-form .9s ease-in-out both;
+}
+
+@keyframes soul-circle-out { 0% { opacity: 0; scale: .55; } 32% { opacity: .75; } 100% { opacity: .08; scale: 5.5; filter: blur(5px); } }
+@keyframes room-from-soul { from { opacity: .4; background-color: #050104; filter: blur(7px); } to { opacity: 0; filter: blur(0); } }
+@keyframes room-compress { from { opacity: 0; background: radial-gradient(ellipse at 65% 48%, rgb(104 126 151 / 18%), transparent 52%); } to { opacity: .75; background: radial-gradient(circle at 50% 48%, rgb(139 162 188 / 34%) 0 3px, transparent 16px); } }
+@keyframes notification-resolve { 0% { opacity: .8; scale: .35; background: #9ba8b6; } 45% { opacity: .9; scale: .7; } 100% { opacity: 0; scale: 1.3; } }
+@keyframes notification-depth { 0% { opacity: .9; scale: 1; } 68% { opacity: .9; scale: .24; filter: blur(0); } 100% { opacity: 0; scale: .05; filter: blur(2px); } }
+@keyframes memory-depth-open { from { opacity: .5; scale: .05; } to { opacity: 0; scale: 4; filter: blur(6px); } }
+@keyframes memory-drain { from { opacity: .42; transform: perspective(900px) translateZ(-40px); filter: saturate(.7); } to { opacity: .1; transform: perspective(900px) translateZ(-420px) scale(.72); filter: saturate(.15) blur(6px); } }
+@keyframes memory-release { from { opacity: .1; transform: perspective(900px) translateZ(-420px) scale(.72); } to { opacity: 0; transform: perspective(900px) translateZ(-560px) scale(.62); filter: blur(10px); } }
+@keyframes thread-remains { 0% { opacity: 0; transform: rotate(8deg) scaleY(.7); } 58% { opacity: .7; } 100% { opacity: .3; transform: rotate(0) scaleY(1); } }
+@keyframes thread-collapse { from { opacity: .7; transform: rotate(0) scaleX(1); background: #bb1730; } to { opacity: .8; transform: rotate(0) scaleX(2); background: #eee7d8; } }
+@keyframes morning-aperture { 0% { opacity: .8; scale: 1 1; } 58% { opacity: .58; scale: 36 1; } 100% { opacity: 0; scale: 120 1; filter: blur(4px); } }
+@keyframes light-contract { 0% { opacity: 0; scale: 16; } 45% { opacity: .65; } 100% { opacity: .9; scale: .55; } }
+@keyframes heart-point { 0% { opacity: .92; scale: .45; } 45% { scale: 1.35; } 100% { opacity: 0; scale: 2.1; } }
+@keyframes particles-inward { 0% { opacity: 0; transform: translateY(24px) scale(.5); } 35% { opacity: .7; } 100% { opacity: .15; transform: translateY(-10px) scale(1.2); } }
+@keyframes halo-resolve { 0% { opacity: .55; scale: .72; filter: blur(4px); } 60% { opacity: .42; } 100% { opacity: 0; scale: 1.08; filter: blur(0); } }
+@keyframes orbit-rupture { 0% { opacity: .42; transform: rotate(0) scale(1); } 38% { opacity: .7; transform: rotate(18deg) scale(.98); } 52% { transform: rotate(-4deg) scale(1.08, .84); } 100% { opacity: 0; transform: rotate(34deg) scale(2.7, .18); } }
+@keyframes fracture-pulse { 0%, 34% { opacity: 0; } 46% { opacity: .7; transform: translateX(-1%); } 58% { opacity: .18; transform: translateX(1%); } 100% { opacity: 0; } }
+@keyframes throne-field { from { opacity: .7; background-color: rgb(31 1 8 / 72%); } to { opacity: 0; } }
+@keyframes ash-fall { 0% { opacity: .6; transform: translateY(-8px) scale(1); background: #75182b; } 100% { opacity: 0; transform: translateY(90px) scale(.35); background: #373238; filter: blur(2px); } }
+@keyframes heavy-arrival { from { opacity: .1; filter: blur(8px); } to { opacity: 0; filter: blur(0); } }
+@keyframes environment-collapse { 0% { opacity: .34; background: radial-gradient(ellipse at center, transparent 20%, rgb(52 4 15 / 32%) 64%, #000 100%); } 100% { opacity: .75; background: radial-gradient(circle at center, rgb(152 22 45 / 24%) 0 3px, #000 10%); } }
+@keyframes thought-remains { 0% { opacity: .72; scale: .4; } 100% { opacity: 0; scale: 1.5; } }
+@keyframes void-strip { from { opacity: .55; background: radial-gradient(circle, rgb(113 12 31 / 18%), #000 64%); } to { opacity: 0; background: #000; } }
+@keyframes honest-black { from { opacity: .36; background: #000; } to { opacity: 0; } }
+@keyframes release-tension { 0%, 28% { opacity: 0; scale: .35; } 62% { opacity: .8; scale: .62; } 100% { opacity: .28; scale: 1; } }
+@keyframes release-awaken { from { opacity: .65; transform: translateY(18px) scale(.4); } to { opacity: 0; transform: translateY(-18px) scale(1.15); } }
+@keyframes requiem-form { 0% { opacity: .14; scale: .72; } 55% { opacity: .4; scale: 1; } 100% { opacity: 0; scale: 1.22; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bridge * {
+    animation-duration: 160ms !important;
+    animation-delay: 0ms !important;
+  }
+  .memory,
+  .particles,
+  .fracture,
+  .ringSecondary {
+    display: none;
+  }
+}

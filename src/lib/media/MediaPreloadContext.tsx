@@ -193,7 +193,7 @@ export function useMediaDiagnostics(): MediaDiagnostics<PreloadGroupId> {
 
   return {
     groups,
-    queue: { queued: 0, active: 0, concurrency: 5 },
+    queue: { queued: 0, active: 0, concurrency: 3 },
     cachedAssets: 0,
     failures: [],
   };
@@ -240,6 +240,9 @@ export function useProgressiveMediaPrefetch(
       void preloadGroup("DURING_S03");
     } else if (sceneId === "S07") {
       void preloadGroup("DURING_S07");
+      void preloadGroup("BEFORE_REQUIEM");
+    } else if (sceneId === "S09") {
+      void preloadGroup("BEFORE_FINAL");
     }
   }, [phase, preloadGroup, sceneId]);
 }

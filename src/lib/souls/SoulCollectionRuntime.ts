@@ -1,6 +1,7 @@
 import type { AudioEngine } from "@/lib/audio/AudioEngine";
 import type { AudioHandle } from "@/lib/audio/types";
 import type { SceneId } from "@/lib/cinematic/scenes";
+import { COLLECTION_TIMING, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import type { ScenePhase } from "@/lib/cinematic/types";
 import type {
   ParticleFieldController,
@@ -40,35 +41,7 @@ import type {
 
 const RELEASE_SCOPE_ID = "soul-collection:released";
 
-const TIMINGS: Readonly<Record<CollectionVariant, CollectionTiming>> = {
-  NORMAL: {
-    glow: 0.55,
-    fragment: 0.65,
-    gather: 0.62,
-    spawn: 0.72,
-    stabilize: 0.3,
-    flight: 0.92,
-    absorb: 0.34,
-  },
-  SILENT: {
-    glow: 0.55,
-    fragment: 0.65,
-    gather: 0.62,
-    spawn: 0.72,
-    stabilize: 0.3,
-    flight: 0.92,
-    absorb: 0.34,
-  },
-  DEEP: {
-    glow: 0.68,
-    fragment: 0.78,
-    gather: 0.8,
-    spawn: 0.88,
-    stabilize: 0.46,
-    flight: 1.12,
-    absorb: 0.48,
-  },
-};
+const TIMINGS: Readonly<Record<CollectionVariant, CollectionTiming>> = COLLECTION_TIMING;
 
 type SceneOwner = Readonly<{ sceneId: SceneId; runId: number }>;
 
@@ -351,7 +324,9 @@ export class SoulCollectionRuntime {
         const tone = this.#audio.playUiTone({
           frequency: variant === "DEEP" ? 196 : 294,
           durationSeconds: variant === "DEEP" ? 0.18 : 0.12,
-          gain: variant === "DEEP" ? 0.018 : 0.025,
+          gain: variant === "DEEP"
+            ? FILM_MIX.collection.absorptionToneDeep
+            : FILM_MIX.collection.absorptionToneNormal,
           scopeId: options.owner
             ? createSceneAudioScopeId(options.owner.sceneId, options.owner.runId)
             : undefined,
@@ -456,7 +431,7 @@ export class SoulCollectionRuntime {
     if (variant === "SILENT") return;
     this.#trackAudio(transaction, this.#audio.playSfx("audio:global.soulSpawn", {
       scopeId: this.#scopeId(transaction),
-      gain: variant === "DEEP" ? 0.58 : 0.82,
+      gain: variant === "DEEP" ? FILM_MIX.collection.deepSpawn : FILM_MIX.collection.normalSpawn,
       playbackRate: variant === "DEEP" ? 0.88 : 1,
     }));
   }
@@ -465,7 +440,7 @@ export class SoulCollectionRuntime {
     if (variant === "SILENT") return;
     this.#trackAudio(transaction, this.#audio.playSfx("audio:global.soulFly", {
       scopeId: this.#scopeId(transaction),
-      gain: variant === "DEEP" ? 0.5 : 0.72,
+      gain: variant === "DEEP" ? FILM_MIX.collection.deepFly : FILM_MIX.collection.normalFly,
       playbackRate: variant === "DEEP" ? 0.9 : 1,
     }));
   }
@@ -478,14 +453,13 @@ export class SoulCollectionRuntime {
     if (variant === "SILENT" || voice === "NONE") return;
     this.#trackAudio(transaction, this.#audio.playVoiceLine(voice, {
       scopeId: this.#scopeId(transaction),
-      gain: variant === "DEEP" ? 0.62 : 0.82,
+      gain: FILM_MIX.voice[voice],
       playbackRate: variant === "DEEP" ? 0.94 : 1,
-      duckMusic: {
-        to: 0.55,
-        attackSeconds: 0.15,
-        holdSeconds: 1.1,
-        releaseSeconds: 0.7,
-      },
+      duckMusic: voice === "A"
+        ? DUCK_PRESETS.voiceA
+        : voice === "B"
+          ? DUCK_PRESETS.voiceB
+          : DUCK_PRESETS.voiceC,
     }));
   }
 

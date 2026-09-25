@@ -9,6 +9,8 @@ export const PRELOAD_GROUP_IDS = [
   "AFTER_OPEN_SOUL",
   "DURING_S03",
   "DURING_S07",
+  "BEFORE_REQUIEM",
+  "BEFORE_FINAL",
 ] as const;
 
 export type PreloadGroupId = (typeof PRELOAD_GROUP_IDS)[number];
@@ -23,6 +25,8 @@ export const PRELOAD_GROUP_PRIORITY: Readonly<
   AFTER_OPEN_SOUL: "high",
   DURING_S03: "background",
   DURING_S07: "background",
+  BEFORE_REQUIEM: "background",
+  BEFORE_FINAL: "background",
 };
 
 const SCENE_PRELOAD_DEPENDENCY: Readonly<Record<SceneId, PreloadGroupId>> = {
@@ -38,11 +42,11 @@ const SCENE_PRELOAD_DEPENDENCY: Readonly<Record<SceneId, PreloadGroupId>> = {
   S08: "DURING_S03",
   S09: "DURING_S07",
   S10: "DURING_S07",
-  PRE_FINAL: "DURING_S07",
-  SOULS_RELEASE: "DURING_S07",
-  REQUIEM: "DURING_S07",
-  SILENCE: "DURING_S07",
-  FINAL: "DURING_S07",
+  PRE_FINAL: "BEFORE_REQUIEM",
+  SOULS_RELEASE: "BEFORE_REQUIEM",
+  REQUIEM: "BEFORE_REQUIEM",
+  SILENCE: "BEFORE_FINAL",
+  FINAL: "BEFORE_FINAL",
 };
 
 export function getPreloadGroupRefs(

@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulSlotStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_TIMING } from "./directing";
+
 export const S10_COPY = Object.freeze({
   full: "Я тревожусь по маленьким поводам и могу надумать себе всякого, потому что люблю тебя и боюсь, что снова сделал что-то не так и потеряю тебя, твой интерес к себе или ты уйдешь к другому мальчику",
   segments: Object.freeze([
@@ -36,34 +38,8 @@ export const S10_COLLECTION = Object.freeze({
   voice: "NONE" satisfies SoulVoice,
 });
 
-export const S10_TIMING = Object.freeze({
-  entryReveal: 2.4,
-  first: 4,
-  second: 8,
-  calm: 13,
-  calmHold: 3.4,
-  fear: 18,
-  loss: 23,
-  interest: 26,
-  finalFear: 29,
-  finalHold: 5,
-  collection: 34,
-  hudSettle: 2,
-  exit: 1.8,
-  directMusicCrossfade: 3.5,
-});
-
-export const PRE_FINAL_TIMING = Object.freeze({
-  entryReveal: 1.8,
-  first: 2,
-  second: 5,
-  third: 7.5,
-  final: 12,
-  finalHold: 4,
-  continue: 16.5,
-  exit: 1.1,
-  directMusicCrossfade: 3.5,
-});
+export const S10_TIMING = FILM_TIMING.s10;
+export const PRE_FINAL_TIMING = FILM_TIMING.preFinal;
 
 export const S10_DISTORTION = Object.freeze({
   stable: Object.freeze({ jitter: 0, liquid: 0, edge: 0 }),

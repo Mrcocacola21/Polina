@@ -15,6 +15,7 @@ import {
   S03_TIMING,
   type MemoryCameraFrame,
 } from "@/lib/cinematic/phase7";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
@@ -115,16 +116,12 @@ export function Soul03Scene() {
 
   useEffect(() => {
     if (phase !== "entering") return;
-    const reveal = visual.reveal("FADE", 1.15);
     const timeline = gsap.fromTo(
       rootRef.current,
       { opacity: 0, filter: "brightness(0.45)" },
       { opacity: 1, filter: "brightness(1)", duration: 1.15, ease: "power2.out" },
     );
-    void Promise.all([
-      reveal,
-      new Promise<void>((resolve) => timeline.eventCallback("onComplete", resolve)),
-    ]).then(() => completeEnter());
+    timeline.eventCallback("onComplete", completeEnter);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
   }, [completeEnter, phase, scopeId, visual]);
 
@@ -132,7 +129,7 @@ export function Soul03Scene() {
     if (phase !== "active") return;
     if (audio.getSnapshot().isUnlocked) {
       void sceneAudio.playAmbient("MEMORY_SPACE", {
-        gain: 0.12,
+        gain: FILM_MIX.ambient.s03Memory,
         fadeInSeconds: 2.4,
         loop: true,
       }).then((handle) => {
@@ -173,29 +170,30 @@ export function Soul03Scene() {
       if (audio.getSnapshot().isUnlocked) {
         void audio.setMusicState(PHASE7_MUSIC_STATE, {
           crossfadeSeconds: S03_TIMING.musicCrossfade,
+          gain: FILM_MIX.music.s03,
         });
       }
     }, [], 0.9);
     revealMemory(memoryOneRef.current, S03_TIMING.memoryOne);
     timeline.call(
-      () => playCue("audio:scenes.s03.cue01.a", 0.48, 0.18),
+      () => playCue("audio:scenes.s03.cue01.a", FILM_MIX.sfx.s03Memory, 0.18),
       [],
       S03_TIMING.memoryOne,
     );
     revealMemory(memoryTwoRef.current, S03_TIMING.memoryTwo);
     timeline.call(
-      () => playCue("audio:scenes.s03.cue01.b", 0.48, -0.22),
+      () => playCue("audio:scenes.s03.cue01.b", FILM_MIX.sfx.s03Memory, -0.22),
       [],
       S03_TIMING.memoryTwo,
     );
     timeline.call(
-      () => playCue("audio:scenes.s03.cue02", 0.42, -0.42),
+      () => playCue("audio:scenes.s03.cue02", FILM_MIX.sfx.s03Pass, -0.36),
       [],
       S03_TIMING.memoryTwoPass,
     );
     revealMemory(memoryThreeRef.current, S03_TIMING.memoryThree);
     timeline.call(
-      () => playCue("audio:scenes.s03.cue01.c", 0.48, 0.28),
+      () => playCue("audio:scenes.s03.cue01.c", FILM_MIX.sfx.s03Memory, 0.28),
       [],
       S03_TIMING.memoryThree,
     );
@@ -256,6 +254,7 @@ export function Soul03Scene() {
       variant: S03_COLLECTION.variant,
       visualState: S03_COLLECTION.visualState,
       voice: S03_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S03,
     });
     setCollectionStatus(result.status);
     if (phase7CollectionAllowsContinue(result.status)) scheduleContinue();

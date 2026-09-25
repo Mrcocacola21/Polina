@@ -4,7 +4,12 @@ export type MediaAsset = Readonly<{
   id: string;
   relativePath: string;
   url: string;
+  masterUrl: string;
   kind: MediaKind;
+  delivery: "master" | "optimized";
+  deliveryProfile?: "default" | "mobile";
+  usage?: "buffer" | "stream";
+  mimeType?: string;
   semanticRefs: readonly string[];
 }>;
 

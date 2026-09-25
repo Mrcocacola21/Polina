@@ -36,6 +36,7 @@ export type MusicSnapshot = Readonly<{
   state: MusicState | null;
   assetId: string | null;
   deck: "A" | "B" | null;
+  gain: number;
   playing: boolean;
   paused: boolean;
   currentTime: number;
@@ -123,6 +124,9 @@ export type MusicToneOptions = Readonly<{
 
 export type MusicOptions = Readonly<{
   crossfadeSeconds?: number;
+  /** Internal cinematic coefficient. User Music volume remains independent. */
+  gain?: number;
+  gainRampSeconds?: number;
   restart?: boolean;
   loop?: boolean;
 }>;

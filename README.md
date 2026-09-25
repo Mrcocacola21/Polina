@@ -8,8 +8,14 @@ Current roadmap status:
 - Phase 3 — complete: native Web Audio mixer, semantic music, lazy SFX decoding, ambience, ducking, procedural sound, and scene audio scopes.
 - Phase 4 — complete: persistent WebGL visual root, reusable Soul and particle runtimes, global FX, cursor/parallax, transitions, and scoped cleanup.
 - Phase 5 — complete: persistent ten-slot Soul HUD, transactional collection ritual, scene-run cancellation, and Requiem release handoff.
-
-Real cinematic scenes, Requiem choreography, Final Heart, and final sound choreography are intentionally not implemented yet.
+- Phases 6–11 — complete: production scenes S01–S10 and PRE_FINAL.
+- Phase 12 — complete: SOULS_RELEASE, persistent ten-Soul Requiem handoff, and hard-cut choreography.
+- Phase 13 — complete: cinematic SILENCE boundary and Final Heart confession.
+- Phase 14 — complete: atomic YES / THINK endings and local answer persistence.
+- Phase 15 — complete: typed transition choreography, persistent semantic bridges, incoming-media preparation, Transition Lab, cancellation invariants, and transition QA.
+- Phase 16 — complete: full-film directing pass, centralized timing and cinematic mix, reading holds, collection-rhythm variation, semantic music gain automation, voice ducking, and uninterrupted YES/THINK production playback QA.
+- Phase 17 — complete: desktop art direction, responsive cinematic typography, media/black-level integration, restrained depth and glow hierarchy, polished HUD/cursor/controls, and a visual lock for 1920×1080 and 2560×1440 at 100% zoom.
+- Phase 19 — complete: content-addressed lossless image and streamed-audio delivery, staged preloading, media lifecycle cleanup, adaptive quality, leak-cycle QA, and production performance reporting.
 
 ## Commands
 
@@ -21,19 +27,52 @@ npm run validate:preload
 npm run validate:audio
 npm run validate:visuals
 npm run validate:souls
+npm run validate:requiem
+npm run validate:ending
+npm run validate:transitions
+npm run validate:directing
+npm run validate:desktop
 npm run test:cinematic
 npm run test:media
 npm run test:audio
 npm run test:souls
+npm run test:phase15
+npm run test:phase16
+npm run test:phase17
+npm run test:phase17:responsive
+npm run optimize:assets
+npm run validate:optimized-assets
+npm run validate:performance
+npm run test:phase19
 npm run lint
 npm run typecheck
 npm run build
 npm run start
 ```
 
+## Desktop visual lock
+
+Phase 17 locks the desktop art direction at 1920×1080 and 2560×1440 CSS pixels at 100% browser zoom. Later mobile, performance, and accessibility work may adapt the experience while preserving the locked desktop typography, line breaks, compositions, asset scales, grading, glow hierarchy, particle targets, camera framing, cursor, and controls.
+
+Shared palette, typography, spacing, safe-area, and control tokens live in `src/app/globals.css`. Executable reference viewport and quality constants live in `src/lib/visuals/desktop.ts`. `npm run test:phase17:film` performs a natural production-path traversal and writes audited key-frame PNGs under `.next`; `npm run test:phase17:responsive` exercises the layered scenes at the three secondary desktop canvases in development. The complete lock rationale and QA record are in `docs/phase17-desktop-visual-lock.md`.
+
+## Final directing and mix
+
+Phase 16 keeps the Phase 0–15 architecture and source media intact. Production timing, internal gains, duck presets, and semantic crossfades are collected in `src/lib/cinematic/directing.ts`; user mixer values remain independent multipliers. The mix preserves a quiet opening, warmer S03–S07 body, a controlled Queen peak, a larger Requiem peak, exact digital zero through SILENCE, an intimate Final rebuild, and distinct warm YES/THINK resolutions.
+
+The final production-like, no-debug runs measured 371.668 seconds to stable YES and 362.695 seconds to stable THINK with immediate natural interactions. Both traversed all 17 scene runs with zero browser errors, empty frames, or white frames. The detailed timing/mix sheet and QA notes are in `docs/phase16-directors-report.md`.
+
 Open `http://localhost:3000` to traverse the placeholder cinematic timeline. In development only, `http://localhost:3000/?debug=1` displays the existing diagnostics. Open `http://localhost:3000/?debug=1&visualSandbox=1` for the Phase 4 Visual Sandbox.
 
 Open `http://localhost:3000/?debug=1&soulSandbox=1` for the Phase 5 Soul Collection Sandbox.
+
+Open `http://localhost:3000/?debug=1&transitionLab=1` for the development-only Phase 15 Transition Lab. It can seed the required Soul count, run every canonical boundary repeatedly, and reports run IDs, bridge/mask state, fog, music, ambience, videos, particles, cursor, HUD, and camera baseline.
+
+## Transition continuity
+
+`SceneDirector` remains the sole scene lifecycle authority and still renders one production scene at a time. A persistent, pointer-transparent bridge layer carries only the outgoing semantic motif across the keyed React boundary; the incoming scene is requested from the media cache as soon as EXITING starts. Bridge state is bound to outgoing and incoming run IDs, and restart/debug jump cancels both bridge and mask state before changing scenes.
+
+The registry in `src/lib/cinematic/transitions.ts` centralizes all canonical pair timings and handoff metadata. Scene audio scopes still own ambiences and one-shots, persistent music is not restarted at ordinary boundaries, HUD/Soul ownership remains in `SoulCollectionRuntime`, and the same ten released Soul controllers cross from SOULS_RELEASE into REQUIEM. `REQUIEM → SILENCE` is the single intentional non-interpolated boundary: absolute black, zero audio, hidden cursor/HUD, and no softened fade. `SILENCE → FINAL` retains that exact black frame until Final awakening begins.
 
 ## Soul collection
 
@@ -53,7 +92,7 @@ The runtime exposes GPU-oriented particle fields (one `THREE.Points` buffer per 
 
 Scene-owned Souls, fields, trails, and animations bind to a `VisualScope` derived from `sceneId + runId`. Restart, exit, and debug jump dispose obsolete scopes without destroying the renderer. Shared textures loaded by R3F are never disposed by an individual Soul; owned dynamic geometries are disposed when their field/trail components unmount.
 
-Quality tiers cap DPR at 2 / 1.5 / 1 and scale particle counts to 100% / 70% / 40%. The default is MEDIUM. WebGL loss leaves the DOM composition running; masked transitions include a plain black-fade fallback.
+Quality tiers cap DPR at 2 / 1.5 / 1 and scale particle counts to 100% / 70% / 40%. AUTO starts from capability hints and uses sustained frame-time hysteresis to move one tier at a time. WebGL loss leaves the DOM composition running; masked transitions include a plain black-fade fallback.
 
 ## Cinematic engine
 
@@ -67,15 +106,17 @@ PRELOADER → PROLOGUE → S01 → S02 → S03 → S04 → S05 → S06 → S07 �
 
 ## Progressive media loading
 
-The media catalog is derived from the two authoritative manifests. A bounded queue runs at most five preparation operations concurrently and deduplicates both concurrent and completed requests.
+The media catalog is derived from the authoritative manifests plus an optional optimized-delivery manifest. A bounded queue runs at most three preparation operations concurrently and deduplicates both concurrent and completed requests.
 
 - `BOOT_CRITICAL` starts at application startup and gates the PRELOADER continue control.
 - `AFTER_OPEN_SOUL` starts only through the semantic `startAfterOpenSoulPrefetch()` trigger; the development panel exposes it until the real interaction exists.
 - `DURING_S03` starts when S03 becomes active.
 - `DURING_S07` starts when S07 becomes active.
+- `BEFORE_REQUIEM` starts alongside the S07 late-film look-ahead.
+- `BEFORE_FINAL` starts when S09 becomes active.
 - Development scene jumps request the target scene's dependency group before normal chronological triggers are assumed.
 
-Image readiness means the browser load event and, where available, decode have completed. Video readiness means `loadeddata` has fired; it does not promise a full-file download. Audio readiness means a successful fetch has warmed the browser cache; no decoding or playback occurs in Phase 2.
+Image readiness means the browser load event and, where available, decode have completed. Video readiness means `loadeddata` has fired; it does not promise a full-file download. Short-audio readiness warms the browser cache; long-form music/ambience readiness is metadata-only so preload does not duplicate a full stream.
 
 Retries are manual and restricted to failures classified as transient. A group settles as `ready-with-errors` when a failure occurs, so loading cannot remain locked indefinitely. `npm run validate:preload` verifies all group references and reports catalog media that are intentionally unassigned.
 
@@ -95,6 +136,8 @@ Runtime assets live in `public/assets` and are available at `/assets/*` URLs. Th
 - `public/assets/audio-manifest.json`
 
 `npm run validate:assets` checks every manifest path for duplicates and missing files without modifying either manifest.
+
+Source masters remain authoritative. Reproducible content-addressed delivery variants live in `public/assets-optimized`; unsupported formats fall back to the master URL. The complete baseline, budgets, decisions, limitations, and runtime evidence are in `docs/phase19-performance-loading-report.md`.
 
 ## Foundation dependencies
 

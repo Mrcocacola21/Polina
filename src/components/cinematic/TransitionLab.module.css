@@ -1,0 +1,67 @@
+.panel {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: var(--layer-diagnostics);
+  width: min(330px, calc(100% - 24px));
+  max-height: calc(var(--viewport-height) - 24px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgb(224 45 77 / 28%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 90%);
+  color: var(--color-text-muted);
+  font: 10px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.panel strong {
+  color: var(--color-text-primary);
+  letter-spacing: .1em;
+}
+
+.selector {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.panel select,
+.panel button {
+  min-height: 30px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 3px;
+  background: var(--color-charcoal);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.panel button { cursor: pointer; }
+
+.metrics {
+  display: grid;
+  gap: 3px;
+  margin: 10px 0 0;
+}
+
+.metrics div {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 7px;
+}
+
+.metrics dt,
+.metrics dd { margin: 0; }
+.metrics dd { color: var(--color-text-primary); overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .panel { top: auto; bottom: max(12px, env(safe-area-inset-bottom)); }
+}

@@ -8,12 +8,14 @@ import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import {
   createPhase8ActivationLock,
   normalizedPointInRect,
+  PHASE8_MUSIC_STATE,
   phase8CollectionAllowsContinue,
   S06_COLLECTION,
   S06_COPY,
   S06_HEART_HOTSPOT,
   S06_TIMING,
 } from "@/lib/cinematic/phase8";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -75,6 +77,9 @@ export function Soul06Scene() {
 
   useEffect(() => {
     if (phase !== "entering") return;
+    if (audio.getSnapshot().isUnlocked) {
+      void audio.setMusicState(PHASE8_MUSIC_STATE, { gain: FILM_MIX.music.s06, gainRampSeconds: 1.2 });
+    }
     const timeline = gsap.timeline({ onComplete: completeEnter });
     timeline.fromTo(rootRef.current, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "sine.out" });
     timeline.fromTo(mediaRef.current, { opacity: 0, filter: "blur(12px)", scale: 0.97 }, {
@@ -85,7 +90,7 @@ export function Soul06Scene() {
       ease: "power2.out",
     }, 0.12);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
-  }, [completeEnter, phase, scopeId, visual]);
+  }, [audio, completeEnter, phase, scopeId, visual]);
 
   function hotspotPoint(): readonly [number, number] | null {
     const element = mediaRef.current;
@@ -114,7 +119,7 @@ export function Soul06Scene() {
     setActivated(true);
     visual.setCursorMode("DEFAULT");
     if (audio.getSnapshot().isUnlocked) {
-      void sceneAudio.playSfx("audio:scenes.s06.cue01", { gain: 0.56 });
+      void sceneAudio.playSfx("audio:scenes.s06.cue01", { gain: FILM_MIX.sfx.s06Heart });
     }
     const point = hotspotPoint();
     const world = point ? visual.screenToWorld(point[0], point[1]) : undefined;
@@ -190,6 +195,7 @@ export function Soul06Scene() {
       variant: S06_COLLECTION.variant,
       visualState: S06_COLLECTION.visualState,
       voice: S06_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S06,
     });
     setCollectionStatus(result.status);
     if (phase8CollectionAllowsContinue(result.status)) scheduleContinue();

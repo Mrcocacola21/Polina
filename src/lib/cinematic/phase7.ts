@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_TIMING } from "./directing";
+
 export const S03_COPY = Object.freeze({
   full: "Я бы хотел разделять с тобой каждый момент этой жизни, они меня делают счастливыми",
   first: "Я бы хотел разделять с тобой каждый момент этой жизни,",
@@ -45,41 +47,9 @@ export const S05_COLLECTION = Object.freeze({
   voice: "NONE" satisfies SoulVoice,
 });
 
-export const S03_TIMING = Object.freeze({
-  cameraDuration: 17.5,
-  memoryOne: 2.8,
-  memoryTwo: 7.1,
-  memoryTwoPass: 8.65,
-  memoryThree: 11.45,
-  phraseOne: 18.15,
-  phraseTwo: 20.9,
-  collection: 24.6,
-  continueDelay: 1.45,
-  musicCrossfade: 5,
-});
-
-export const S04_TIMING = Object.freeze({
-  memoryOneRecede: 0.35,
-  memoryTwoRecede: 1.15,
-  memoryThreeRecede: 1.95,
-  phrase: 4.35,
-  phraseOut: 8.25,
-  collection: 9.15,
-  continueDelay: 1.35,
-  toneFrequency: 1450,
-  tonePresence: 0.72,
-  toneRamp: 1.8,
-});
-
-export const S05_TIMING = Object.freeze({
-  lightReveal: 1.6,
-  screenshotReadable: 3.4,
-  phraseOne: 5.15,
-  phraseTwo: 7.95,
-  finalBeat: 10.45,
-  collection: 13.25,
-  continueDelay: 1.45,
-});
+export const S03_TIMING = FILM_TIMING.s03;
+export const S04_TIMING = FILM_TIMING.s04;
+export const S05_TIMING = FILM_TIMING.s05;
 
 export type MemoryCameraFrame = Readonly<{
   x: number;

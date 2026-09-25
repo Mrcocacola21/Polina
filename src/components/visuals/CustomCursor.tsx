@@ -33,10 +33,10 @@ export function CustomCursor() {
     };
     const animate = () => {
       const pointer = pointerRef.current;
-      pointer.x += (pointer.targetX - pointer.x) * 0.24;
-      pointer.y += (pointer.targetY - pointer.y) * 0.24;
-      runtime.pointer.smoothed.x += (runtime.pointer.raw.x - runtime.pointer.smoothed.x) * 0.12;
-      runtime.pointer.smoothed.y += (runtime.pointer.raw.y - runtime.pointer.smoothed.y) * 0.12;
+      pointer.x += (pointer.targetX - pointer.x) * 0.18;
+      pointer.y += (pointer.targetY - pointer.y) * 0.18;
+      runtime.pointer.smoothed.x += (runtime.pointer.raw.x - runtime.pointer.smoothed.x) * 0.095;
+      runtime.pointer.smoothed.y += (runtime.pointer.raw.y - runtime.pointer.smoothed.y) * 0.095;
       if (rootRef.current) {
         rootRef.current.style.transform = `translate3d(${pointer.x}px, ${pointer.y}px, 0)`;
         rootRef.current.style.opacity = visible ? "1" : "0";

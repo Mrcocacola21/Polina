@@ -11,6 +11,7 @@ import {
   S02_COPY,
   S02_TIMING,
 } from "@/lib/cinematic/phase6";
+import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import {
   useSceneSoulCollection,
@@ -74,11 +75,9 @@ export function Soul02Scene() {
 
   useEffect(() => {
     if (phase !== "entering") return;
-    const reveal = visual.reveal("FADE", 0.78);
     const timeline = gsap.timeline();
     timeline.fromTo(rootRef.current, { opacity: 0 }, { opacity: 1, duration: 0.72, ease: "power1.out" });
-    void Promise.all([reveal, new Promise<void>((resolve) => timeline.eventCallback("onComplete", resolve))])
-      .then(() => completeEnter());
+    timeline.eventCallback("onComplete", completeEnter);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
   }, [completeEnter, phase, scopeId, visual]);
 
@@ -113,14 +112,14 @@ export function Soul02Scene() {
       }, at);
     };
     const timeline = gsap.timeline();
-    timeline.call(() => playCue("audio:scenes.s02.cue01", 0.52), [], S02_TIMING.ordinaryOne);
+    timeline.call(() => playCue("audio:scenes.s02.cue01", FILM_MIX.sfx.s02Ordinary), [], S02_TIMING.ordinaryOne);
     appear(ordinaryOneRef.current, S02_TIMING.ordinaryOne);
     disappear(ordinaryOneRef.current, S02_TIMING.ordinaryOneOut);
-    timeline.call(() => playCue("audio:scenes.s02.cue01", 0.48), [], S02_TIMING.ordinaryTwo);
+    timeline.call(() => playCue("audio:scenes.s02.cue01", FILM_MIX.sfx.s02Ordinary * 0.94), [], S02_TIMING.ordinaryTwo);
     appear(ordinaryTwoRef.current, S02_TIMING.ordinaryTwo);
     disappear(ordinaryTwoRef.current, S02_TIMING.ordinaryTwoOut);
     timeline.call(() => {
-      playCue("audio:scenes.s02.cue02", 0.62);
+      playCue("audio:scenes.s02.cue02", FILM_MIX.sfx.s02Warm);
       setSpecialReady(true);
     }, [], S02_TIMING.special);
     appear(specialRef.current, S02_TIMING.special);
@@ -147,8 +146,8 @@ export function Soul02Scene() {
     particlesRef.current?.attract([0.35, 0, 0]);
     if (audio.getSnapshot().isUnlocked) {
       void sceneAudio.playSfx("audio:scenes.s02.cue03", {
-        gain: 0.62,
-        duckMusic: { to: 0.78, attackSeconds: 0.08, holdSeconds: 0.28, releaseSeconds: 0.8 },
+        gain: FILM_MIX.sfx.s02Open,
+        duckMusic: DUCK_PRESETS.intimateNotification,
       });
     }
 
@@ -220,6 +219,7 @@ export function Soul02Scene() {
       variant: S02_COLLECTION.variant,
       visualState: S02_COLLECTION.visualState,
       voice: S02_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S02,
     });
     setCollectionStatus(result.status);
     if (collectionAllowsContinue(result.status)) scheduleContinue();

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import { SOULS_RELEASE_TIMING, releasePreconditionMet } from "@/lib/cinematic/phase12";
+import { FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
 import type { ReleasedSoul } from "@/lib/souls/SoulCollectionRuntime";
@@ -129,7 +130,7 @@ export function SoulsReleaseScene() {
         });
         if ([0, 3, 6, 9].includes(index) && audio.getSnapshot().isUnlocked) {
           void sceneAudio.playSfx("audio:global.soulFly", {
-            gain: 0.11,
+            gain: FILM_MIX.sfx.releaseFly,
             pan: -0.42 + index * 0.09,
             playbackRate: 0.9 + index * 0.018,
           });

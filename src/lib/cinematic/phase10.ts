@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulSlotStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_MIX, FILM_TIMING } from "./directing";
+
 export const S09_COPY = Object.freeze({
   full: "Когда ты чувствуешь себя плохо, я честно стараюсь каждый раз тебя хоть как-то пожалеть или подбодрить, и если бы это было возможно - забрать всю боль, что ты чувствуешь",
   first: "Когда ты чувствуешь себя плохо,",
@@ -31,25 +33,14 @@ export const S09_AUDIO = Object.freeze({
 export const ABSORB_DURATION = 2.5;
 export const ABSORB_RELEASE_DECAY = 1.25;
 
-export const S09_TIMING = Object.freeze({
-  entryReveal: 1.35,
-  painReveal: 3.2,
-  first: 5.6,
-  second: 8.8,
-  third: 13.7,
-  interaction: 16.7,
-  finalHold: 3.25,
-  continueDelay: 1.7,
-  exit: 1.15,
-  musicCrossfade: 6.5,
-});
+export const S09_TIMING = FILM_TIMING.s09;
 
 export const S09_MIX = Object.freeze({
-  drone: 0.24,
-  rain: 0.17,
-  absorptionPeak: 0.34,
-  fracturedLight: 0.24,
-  completion: 0.46,
+  drone: FILM_MIX.ambient.s09Drone,
+  rain: FILM_MIX.ambient.s09Rain,
+  absorptionPeak: FILM_MIX.sfx.s09AbsorptionPeak,
+  fracturedLight: FILM_MIX.sfx.s09FracturedLight,
+  completion: FILM_MIX.sfx.s09Completion,
 });
 
 export const S09_VISUAL_LEVELS = Object.freeze({

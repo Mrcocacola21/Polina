@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulSlotStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_TIMING } from "./directing";
+
 export const S08_COPY = Object.freeze({
   full: "Королеву не убить, Я умру за королеву",
   first: "Королеву не убить",
@@ -28,18 +30,7 @@ export const S08_AUDIO_CUE_ORDER = Object.freeze([
 
 export type S08AudioCue = (typeof S08_AUDIO_CUE_ORDER)[number];
 
-export const S08_TIMING = Object.freeze({
-  entryReveal: 0.82,
-  sigilPresence: 1.15,
-  sigilActivation: 2.25,
-  screenshot: 3.55,
-  firstDeclaration: 5.15,
-  fragments: 7.25,
-  secondDeclaration: 9.65,
-  deescalate: 11.35,
-  collection: 13.75,
-  continueDelay: 1.55,
-});
+export const S08_TIMING = FILM_TIMING.s08;
 
 export const S08_CAMERA = Object.freeze({
   start: Object.freeze({ x: 0, y: 0, scale: 1, rotation: 0 }),

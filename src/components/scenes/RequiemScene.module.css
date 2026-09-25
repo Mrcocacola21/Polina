@@ -40,7 +40,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(72vmin, 760px);
+  width: min(68vmin, 900px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 0 calc(12px + var(--hero-envelope) * 32px) rgb(212 27 55 / 46%));
@@ -81,10 +81,10 @@
 
 .scene[data-rings="1"] .ring1,
 .scene[data-rings="2"] .ring1,
-.scene[data-rings="3"] .ring1 { opacity: .42; filter: brightness(.8) saturate(.85); }
+.scene[data-rings="3"] .ring1 { opacity: .34; filter: brightness(.8) saturate(.85); }
 .scene[data-rings="2"] .ring2,
-.scene[data-rings="3"] .ring2 { opacity: .58; filter: brightness(.95) saturate(.92); }
-.scene[data-rings="3"] .ring3 { opacity: .72; filter: brightness(1.08) saturate(1.02); }
+.scene[data-rings="3"] .ring2 { opacity: .48; filter: brightness(.95) saturate(.92); }
+.scene[data-rings="3"] .ring3 { opacity: .62; filter: brightness(1.08) saturate(1.02); }
 
 .core {
   inset: 43%;
@@ -98,7 +98,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(76vmin, 800px);
+  width: min(72vmin, 940px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -121,7 +121,7 @@
 
 .scene[data-requiem-phase="arcs"] .arc,
 .scene[data-requiem-phase="compressed"] .arc,
-.scene[data-requiem-phase="hero"] .arc { opacity: .38; animation: arc-flicker .72s steps(2, end) infinite alternate; }
+.scene[data-requiem-phase="hero"] .arc { opacity: .32; animation: arc-flicker .72s steps(2, end) infinite alternate; }
 .scene[data-requiem-phase="release"] .arc { opacity: calc(.2 + var(--hero-envelope) * .55); animation: arc-flicker .32s steps(2, end) infinite alternate; }
 .scene[data-requiem-phase="tail"] .arc { opacity: .05; transition: opacity .55s linear; }
 
@@ -132,10 +132,10 @@
 
 .displacement {
   z-index: 7;
-  opacity: calc(var(--hero-distortion) * 1.35);
+  opacity: calc(var(--hero-distortion) * 1);
   mix-blend-mode: screen;
   filter: brightness(.44) sepia(.3) saturate(1.6) hue-rotate(325deg) contrast(1.45);
-  transform: scale(calc(1 + var(--hero-distortion) * .035)) translateX(calc(var(--hero-distortion) * 10px));
+  transform: scale(calc(1 + var(--hero-distortion) * .035)) translateX(calc(var(--hero-distortion) * 6px));
 }
 .displacement > div { width: 100%; height: 100%; background: transparent; }
 

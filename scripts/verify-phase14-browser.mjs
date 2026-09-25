@@ -71,6 +71,7 @@ async function snapshot() {
     return {
       scene: document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id'),
       phase: document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-phase'),
+      runId: Number(document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-run-id') ?? 0),
       beat: root?.getAttribute('data-scene-beat'),
       answer: root?.getAttribute('data-answer-state'),
       locked: root?.getAttribute('data-answer-locked'),
@@ -226,6 +227,19 @@ await waitFor("debug reset", `document.querySelector('[data-testid="final-scene"
 state = await snapshot();
 assert.deepEqual(state.labels, ["Да ❤️", "Подумать, но нежно"]);
 assert.equal(state.stored, null);
+
+await evaluate(`document.querySelector('[data-testid="final-scene"] fieldset button')?.click()`);
+await waitFor("restart test YES release", `document.querySelector('[data-testid="final-scene"]')?.getAttribute('data-soul-echoes') === '10'`, 2_000);
+const branchRunId = (await snapshot()).runId;
+await evaluate(`window.dispatchEvent(new Event('soulbound:debug-restart-scene'))`);
+await waitFor("YES restart cleanup", `(() => { const director = document.querySelector('[data-testid="scene-director"]'); const final = document.querySelector('[data-testid="final-scene"]'); return Number(director?.getAttribute('data-run-id')) !== ${branchRunId} && final?.getAttribute('data-answer-state') === 'YES'; })()`, 8_000);
+state = await snapshot();
+assert.equal(state.echoes, 0);
+assert.equal(state.particles, 0);
+assert.equal(state.canvases, 1);
+await evaluate(`document.querySelector('[data-testid="answer-debug-panel"] button')?.click()`);
+await waitFor("post-restart debug reset", `document.querySelector('[data-testid="final-scene"]')?.getAttribute('data-answer-state') === 'UNANSWERED'`);
+
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await sleep(900);
 const mobileLayout = await evaluate(`(() => {
@@ -261,7 +275,7 @@ assert.equal(state.cueFires, 0);
 assert.equal(state.echoes, 0);
 assert.equal(state.particles, 0);
 assert.ok(state.heartOpacity > 0.7);
-assert.match(state.musicTone, /0\.64/);
+assert.match(state.musicTone, /1\.00/);
 assert.match(state.stored, /"result":"THINK"/);
 await sleep(idleMilliseconds);
 state = await snapshot();

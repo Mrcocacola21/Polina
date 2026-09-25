@@ -157,6 +157,36 @@ export async function preloadVideo(asset: MediaAsset): Promise<void> {
 }
 
 export async function preloadAudio(asset: MediaAsset): Promise<void> {
+  if (asset.usage === "stream" && typeof Audio !== "undefined") {
+    const audio = new Audio();
+    audio.preload = "metadata";
+    await new Promise<void>((resolve, reject) => {
+      const cleanup = () => {
+        window.clearTimeout(timeoutId);
+        audio.removeEventListener("loadedmetadata", ready);
+        audio.removeEventListener("error", failed);
+      };
+      const ready = () => { cleanup(); resolve(); };
+      const failed = () => {
+        cleanup();
+        reject(new MediaPreloadError(`Audio metadata failed to load: ${asset.url}`, { retryable: true }));
+      };
+      const timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new MediaPreloadError(`Audio metadata timed out: ${asset.url}`, { retryable: true }));
+      }, DEFAULT_MEDIA_LOAD_TIMEOUT_MS);
+      audio.addEventListener("loadedmetadata", ready, { once: true });
+      audio.addEventListener("error", failed, { once: true });
+      audio.src = asset.url;
+      audio.load();
+    }).finally(() => {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    });
+    return;
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),

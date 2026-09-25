@@ -1,4 +1,4 @@
-import { loadMediaManifests } from "../assets/manifests";
+import { loadMediaManifests, type OptimizedAssetManifest, type OptimizedAssetVariant } from "../assets/manifests";
 import { assetUrl } from "../assets/paths";
 
 import type { MediaAsset, MediaKind } from "./types";
@@ -9,10 +9,52 @@ const EXTENSION_KIND: Readonly<Record<string, MediaKind>> = {
   ".png": "image",
   ".jpg": "image",
   ".jpeg": "image",
+  ".webp": "image",
   ".mp4": "video",
   ".wav": "audio",
   ".mp3": "audio",
+  ".webm": "audio",
 };
+
+export type MediaCapabilities = Readonly<{
+  webp: boolean;
+  opusWebm: boolean;
+  mobileProfile: boolean;
+}>;
+
+export function detectMediaCapabilities(): MediaCapabilities {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return { webp: false, opusWebm: false, mobileProfile: false };
+  }
+  const audio = document.createElement("audio");
+  const coarse = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  return {
+    webp: true,
+    opusWebm: audio.canPlayType("audio/webm; codecs=opus") !== "",
+    mobileProfile: coarse || window.innerWidth < 720 || (memory !== undefined && memory <= 4),
+  };
+}
+
+function optimizedUrl(path: string): string {
+  return `/assets-optimized/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+export function selectOptimizedVariant(
+  entry: OptimizedAssetManifest["assets"][string] | undefined,
+  capabilities: MediaCapabilities,
+): OptimizedAssetVariant | undefined {
+  if (!entry) return undefined;
+  const compatible = entry.variants.filter(() =>
+    (entry.kind !== "image" || capabilities.webp) &&
+    (entry.kind !== "audio" || capabilities.opusWebm),
+  );
+  if (capabilities.mobileProfile) {
+    const mobile = compatible.find((variant) => variant.profile === "mobile");
+    if (mobile) return mobile;
+  }
+  return compatible.find((variant) => variant.profile === "default");
+}
 
 function getExtension(relativePath: string): string {
   const extensionIndex = relativePath.lastIndexOf(".");
@@ -60,7 +102,12 @@ export class MediaCatalog {
   readonly #byUrl: ReadonlyMap<string, MediaAsset>;
   readonly #bySemanticRef: ReadonlyMap<string, MediaAsset>;
 
-  constructor(visualManifest: unknown, audioManifest: unknown) {
+  constructor(
+    visualManifest: unknown,
+    audioManifest: unknown,
+    optimizedManifest: OptimizedAssetManifest | null = null,
+    capabilities: MediaCapabilities = detectMediaCapabilities(),
+  ) {
     const manifestEntries = [
       ...collectManifestMedia(visualManifest, "visual"),
       ...collectManifestMedia(audioManifest, "audio"),
@@ -70,8 +117,11 @@ export class MediaCatalog {
 
     for (const { semanticRef, relativePath } of manifestEntries) {
       const url = assetUrl(relativePath);
-      const existing = mutableByUrl.get(url);
-      semanticPathByRef.set(semanticRef, url);
+      const entry = optimizedManifest?.assets[relativePath];
+      const variant = selectOptimizedVariant(entry, capabilities);
+      const deliveryUrl = variant ? optimizedUrl(variant.path) : url;
+      const existing = mutableByUrl.get(deliveryUrl);
+      semanticPathByRef.set(semanticRef, deliveryUrl);
 
       if (existing) {
         mutableByUrl.set(
@@ -89,8 +139,13 @@ export class MediaCatalog {
         Object.freeze({
           id: `media:${relativePath}`,
           relativePath,
-          url,
+          url: deliveryUrl,
+          masterUrl: url,
           kind: classifyMediaPath(relativePath),
+          delivery: variant ? "optimized" : "master",
+          deliveryProfile: variant?.profile,
+          usage: entry?.usage ?? "buffer",
+          mimeType: variant?.mimeType,
           semanticRefs: Object.freeze([semanticRef]),
         }),
       );
@@ -99,6 +154,9 @@ export class MediaCatalog {
     this.#assets = Object.freeze([...mutableByUrl.values()]);
     this.#byId = new Map(this.#assets.map((asset) => [asset.id, asset]));
     this.#byUrl = new Map(this.#assets.map((asset) => [asset.url, asset]));
+    for (const asset of this.#assets) {
+      (this.#byUrl as Map<string, MediaAsset>).set(asset.masterUrl, asset);
+    }
     this.#bySemanticRef = new Map(
       [...semanticPathByRef].map(([semanticRef, url]) => [
         semanticRef,
@@ -136,7 +194,7 @@ let catalogPromise: Promise<MediaCatalog> | undefined;
 
 export function loadMediaCatalog(): Promise<MediaCatalog> {
   catalogPromise ??= loadMediaManifests().then(
-    ({ visual, audio }) => new MediaCatalog(visual, audio),
+    ({ visual, audio, optimized }) => new MediaCatalog(visual, audio, optimized ?? null),
   );
   return catalogPromise;
 }

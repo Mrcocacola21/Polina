@@ -1,0 +1,33 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase17-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/audio/types.ts",
+    "src/lib/cinematic/directing.ts",
+    "src/lib/cinematic/scenes.ts",
+    "src/lib/cinematic/transitions.ts",
+    "src/lib/cinematic/phase6.ts",
+    "src/lib/cinematic/phase7.ts",
+    "src/lib/cinematic/phase8.ts",
+    "src/lib/cinematic/phase9.ts",
+    "src/lib/cinematic/phase10.ts",
+    "src/lib/cinematic/phase11.ts",
+    "src/lib/cinematic/phase13.ts",
+    "src/lib/cinematic/phase14.ts",
+    "src/lib/cinematic/phase17.test.ts",
+    "src/lib/media/types.ts",
+    "src/lib/visuals/desktop.ts",
+    "src/lib/visuals/quality.ts",
+    "src/lib/visuals/types.ts"
+  ]
+}
+

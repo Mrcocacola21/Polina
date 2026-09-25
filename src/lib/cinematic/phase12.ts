@@ -1,30 +1,12 @@
 import { SOUL_IDS, type SoulId } from "../souls/registry";
 
 import cueMetadata from "./requiem-cues.json";
+import { FILM_TIMING } from "./directing";
 
 export const REQUIEM_SOUL_IDS = SOUL_IDS;
 
-export const SOULS_RELEASE_TIMING = Object.freeze({
-  musicFade: 1.4,
-  detachStagger: 0.18,
-  detachSpawn: 0.32,
-  constellationFlight: 1.35,
-  hudDisintegrateAt: 2.65,
-  autoAdvance: 5.8,
-  exit: 0.08,
-});
-
-export const REQUIEM_BUILDUP_TIMING = Object.freeze({
-  arrangement: 1.75,
-  arrangementStagger: 0.055,
-  scheduleLead: 0.18,
-  ring1: 0.55,
-  ring2: 1.35,
-  ring3: 2.15,
-  arcs: 2.9,
-  contraction: 3.48,
-  heroStart: 4.05,
-});
+export const SOULS_RELEASE_TIMING = FILM_TIMING.soulsRelease;
+export const REQUIEM_BUILDUP_TIMING = FILM_TIMING.requiem;
 
 export const REQUIEM_RADIAL_CONFIG = Object.freeze({
   startAngle: -Math.PI / 2,

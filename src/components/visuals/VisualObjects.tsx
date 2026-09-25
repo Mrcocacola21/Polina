@@ -58,10 +58,10 @@ function ParticleField({ record, texture }: Readonly<{
   const materialRef = useRef<ShaderMaterial>(null);
   const geometry = useMemo(() => {
     const result = new BufferGeometry();
-    const positions = new Float32Array(record.count * 3);
-    const velocities = new Float32Array(record.count * 3);
-    const sizes = new Float32Array(record.count);
-    for (let index = 0; index < record.count; index += 1) {
+    const positions = new Float32Array(record.capacity * 3);
+    const velocities = new Float32Array(record.capacity * 3);
+    const sizes = new Float32Array(record.capacity);
+    for (let index = 0; index < record.capacity; index += 1) {
       const offset = index * 3;
       positions[offset] = (seeded(index * 3, record.seed) - 0.5) * record.spread[0] + record.position[0];
       positions[offset + 1] = (seeded(index * 3 + 1, record.seed) - 0.5) * record.spread[1] + record.position[1];
@@ -94,7 +94,11 @@ function ParticleField({ record, texture }: Readonly<{
 
   useEffect(() => () => geometry.dispose(), [geometry]);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
+    const step = Math.max(1, Math.ceil(record.capacity * delta / 2.5));
+    if (record.count < record.targetCount) record.count = Math.min(record.targetCount, record.count + step);
+    else if (record.count > record.targetCount) record.count = Math.max(record.targetCount, record.count - step);
+    geometry.setDrawRange(0, record.count);
     const positionAttribute = geometry.getAttribute("position") as BufferAttribute;
     const velocityAttribute = geometry.getAttribute("velocity") as BufferAttribute;
     const age = performance.now() / 1000 - record.createdAt;
@@ -206,16 +210,17 @@ function SoulTrail({ record, texture }: Readonly<{ record: SoulRecord; texture: 
   useFrame(() => {
     const geometry = geometryRef.current;
     if (!geometry) return;
-    const samples = record.trail.slice(-64);
+    const sampleCount = Math.min(64, record.trail.length);
+    const sampleStart = record.trail.length - sampleCount;
     for (let index = 0; index < 64; index += 1) {
-      const point = samples[Math.min(index, Math.max(0, samples.length - 1))] ?? record.position;
+      const point = record.trail[sampleStart + Math.min(index, Math.max(0, sampleCount - 1))] ?? record.position;
       buffer[index * 3] = point[0];
       buffer[index * 3 + 1] = point[1];
       buffer[index * 3 + 2] = point[2] - 0.01;
     }
     const attribute = geometry.getAttribute("position") as BufferAttribute;
     attribute.needsUpdate = true;
-    geometry.setDrawRange(0, samples.length);
+    geometry.setDrawRange(0, sampleCount);
     if (materialRef.current) materialRef.current.opacity = record.trailOpacity;
   });
 
@@ -271,9 +276,9 @@ function SoulObject({ record, textures }: Readonly<{
       const angle = (now - orbit.startedAt) * orbit.speed + orbit.phase;
       const a = Math.cos(angle) * orbit.radius;
       const b = Math.sin(angle) * orbit.radius;
-      if (orbit.plane === "XY") record.position = [orbit.center[0] + a, orbit.center[1] + b, orbit.center[2]];
-      if (orbit.plane === "XZ") record.position = [orbit.center[0] + a, orbit.center[1], orbit.center[2] + b];
-      if (orbit.plane === "YZ") record.position = [orbit.center[0], orbit.center[1] + a, orbit.center[2] + b];
+      if (orbit.plane === "XY") { record.position[0] = orbit.center[0] + a; record.position[1] = orbit.center[1] + b; record.position[2] = orbit.center[2]; }
+      if (orbit.plane === "XZ") { record.position[0] = orbit.center[0] + a; record.position[1] = orbit.center[1]; record.position[2] = orbit.center[2] + b; }
+      if (orbit.plane === "YZ") { record.position[0] = orbit.center[0]; record.position[1] = orbit.center[1] + a; record.position[2] = orbit.center[2] + b; }
     }
     const breathing = record.breathing
       ? 1 + Math.sin(now * 1.45 + Number(record.id.replace(/\D/g, ""))) * record.breathAmount

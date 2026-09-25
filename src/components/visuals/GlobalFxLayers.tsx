@@ -42,6 +42,8 @@ function FogLayer() {
       } catch {
         // The owned element is already paused; metadata may not exist yet.
       }
+      video.removeAttribute("src");
+      video.load();
     };
   }, [fx.fog, fx.fogOpacity, runtime]);
 
@@ -92,6 +94,7 @@ function VignetteLayer() {
 
 function LightLeakLayer() {
   const fx = useVisualFx();
+  if (fx.lightLeak <= 0) return null;
   const style: FxStyle = {
     opacity: fx.lightLeak,
     backgroundImage: `url(${VISUAL_ASSETS.lightLeak})`,
@@ -133,6 +136,7 @@ function TransitionLayer() {
       ref={elementRef}
       className={`${styles.transitionLayer} ${masked ? styles.maskedTransition : ""}`}
       style={style}
+      data-testid="transition-mask"
       data-transition-type={fx.transitionType}
       data-transition-state={fx.transitionState}
       aria-hidden="true"

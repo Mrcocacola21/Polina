@@ -4,6 +4,25 @@ import type { AudioManifest, VisualManifest } from "./types";
 export type MediaManifests = Readonly<{
   visual: VisualManifest;
   audio: AudioManifest;
+  optimized?: OptimizedAssetManifest | null;
+}>;
+
+export type OptimizedAssetVariant = Readonly<{
+  path: string;
+  bytes: number;
+  sha256: string;
+  profile: "default" | "mobile";
+  mimeType: string;
+}>;
+
+export type OptimizedAssetManifest = Readonly<{
+  version: number;
+  assets: Readonly<Record<string, Readonly<{
+    kind: "image" | "video" | "audio";
+    usage?: "stream";
+    master: Readonly<{ path: string; bytes: number; sha256: string }>;
+    variants: readonly OptimizedAssetVariant[];
+  }>>>;
 }>;
 
 let mediaManifestsPromise: Promise<MediaManifests> | undefined;
@@ -80,8 +99,11 @@ export function loadMediaManifests(): Promise<MediaManifests> {
   mediaManifestsPromise ??= Promise.all([
     loadVisualManifest(),
     loadAudioManifest(),
+    fetch("/assets-optimized/manifest.json", { cache: "force-cache" })
+      .then((response) => response.ok ? response.json() as Promise<OptimizedAssetManifest> : null)
+      .catch(() => null),
   ])
-    .then(([visual, audio]) => ({ visual, audio }))
+    .then(([visual, audio, optimized]) => ({ visual, audio, optimized }))
     .catch((error: unknown) => {
       mediaManifestsPromise = undefined;
       throw error;

@@ -11,7 +11,7 @@
 
 .copy {
   position: relative;
-  width: min(84vw, 860px);
+  width: min(84vw, 28ch);
   min-height: 8rem;
   pointer-events: none;
 }
@@ -21,8 +21,8 @@
   inset: 50% 0 auto;
   margin: 0;
   color: rgb(241 237 238 / 88%);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(18px, 2vw, 31px);
+  font-family: var(--font-interface);
+  font-size: clamp(22px, 1.75vw, 34px);
   font-weight: 360;
   letter-spacing: -.018em;
   line-height: 1.4;

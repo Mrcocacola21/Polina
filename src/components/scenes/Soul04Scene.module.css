@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #010101;
+  background: var(--grade-black);
   isolation: isolate;
 }
 
@@ -32,7 +32,7 @@
   position: absolute;
   overflow: hidden;
   border: 1px solid rgb(241 222 226 / 8%);
-  border-radius: 4px;
+  border-radius: 2px;
   background: #030202;
   box-shadow: 0 28px 74px rgb(0 0 0 / 82%);
   filter: saturate(0.68) brightness(0.7);
@@ -42,15 +42,15 @@
 
 .memoryOne {
   top: 18%;
-  left: 9%;
-  width: clamp(230px, 28vw, 430px);
+  left: 15%;
+  width: clamp(250px, 25vw, 400px);
   aspect-ratio: 1.26;
   transform: translate3d(15px, 25px, -120px) rotateY(7deg) rotateZ(-1.5deg);
 }
 
 .memoryTwo {
   top: 15%;
-  left: 46%;
+  left: 48%;
   width: clamp(390px, 43vw, 690px);
   aspect-ratio: 1.78;
   transform: translate3d(130px, -12px, -460px) rotateY(-9deg) rotateZ(1deg);
@@ -58,8 +58,8 @@
 
 .memoryThree {
   top: 62%;
-  left: 28%;
-  width: clamp(430px, 47vw, 760px);
+  left: 10%;
+  width: clamp(410px, 40vw, 650px);
   aspect-ratio: 4.86;
   transform: translate3d(-80px, 20px, -250px) rotateY(5deg);
 }
@@ -76,8 +76,8 @@
 
 .thread path {
   fill: none;
-  stroke: rgb(137 25 45 / 78%);
-  stroke-width: 1.15;
+  stroke: rgb(122 13 25 / 62%);
+  stroke-width: 1;
   stroke-linecap: round;
   stroke-dasharray: 760;
   stroke-dashoffset: 760;
@@ -104,11 +104,11 @@
   top: 50%;
   left: 50%;
   z-index: 4;
-  width: min(760px, calc(100vw - 48px));
+  width: min(26ch, calc(100vw - 48px));
   margin: 0;
   color: rgb(243 228 231 / 91%);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(28px, 3.3vw, 50px);
+  font-family: var(--font-narrative);
+  font-size: clamp(30px, 2.4vw, 50px);
   line-height: 1.36;
   text-align: center;
   text-wrap: balance;

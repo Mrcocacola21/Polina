@@ -13,6 +13,7 @@ import {
   S04_COPY,
   S04_TIMING,
 } from "@/lib/cinematic/phase7";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
@@ -96,7 +97,11 @@ export function Soul04Scene() {
   useEffect(() => {
     if (phase !== "active") return;
     if (audio.getSnapshot().isUnlocked) {
-      void audio.setMusicState(PHASE7_MUSIC_STATE, { crossfadeSeconds: 2.2 });
+      void audio.setMusicState(PHASE7_MUSIC_STATE, {
+        crossfadeSeconds: 2.2,
+        gain: FILM_MIX.music.s04,
+        gainRampSeconds: 1.8,
+      });
       toneRef.current = sceneAudio.applyMusicTone({
         frequency: S04_TIMING.toneFrequency,
         presence: S04_TIMING.tonePresence,
@@ -191,6 +196,7 @@ export function Soul04Scene() {
       variant: S04_COLLECTION.variant,
       visualState: S04_COLLECTION.visualState,
       voice: S04_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S04,
     });
     setCollectionStatus(result.status);
     if (phase7CollectionAllowsContinue(result.status)) scheduleContinue();

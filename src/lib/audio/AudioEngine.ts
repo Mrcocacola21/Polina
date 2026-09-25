@@ -65,6 +65,7 @@ type MusicDeck = {
   readonly element: HTMLAudioElement;
   readonly source: MediaElementAudioSourceNode;
   readonly gain: GainNode;
+  targetGain: number;
   state: MusicState | null;
   asset: MediaAsset | null;
   requestToken: number;
@@ -156,6 +157,7 @@ export class AudioEngine {
         state: activeDeck?.state ?? null,
         assetId: activeDeck?.asset?.id ?? null,
         deck: activeDeck?.name ?? null,
+        gain: activeDeck?.targetGain ?? 0,
         playing: Boolean(activeDeck && !activeDeck.element.paused),
         paused: Boolean(activeDeck?.element.paused && activeDeck.state),
         currentTime: activeDeck?.element.currentTime ?? 0,
@@ -411,7 +413,20 @@ export class AudioEngine {
     const current =
       this.#activeMusicDeck === null ? null : decks[this.#activeMusicDeck];
 
-    if (current?.state === state && !options.restart) return true;
+    const requestedGain = clamp(options.gain ?? current?.targetGain ?? 1, 0, 1);
+    if (current?.state === state && !options.restart) {
+      if (options.gain !== undefined) {
+        current.targetGain = requestedGain;
+        rampGain(
+          current.gain,
+          requestedGain,
+          graph,
+          normalizedSeconds(options.gainRampSeconds, 0.8),
+        );
+        this.#notify();
+      }
+      return true;
+    }
 
     try {
       const catalog = await this.#getCatalog();
@@ -434,6 +449,7 @@ export class AudioEngine {
       incoming.state = state;
       incoming.asset = asset;
       incoming.requestToken = transition;
+      incoming.targetGain = requestedGain;
       rampGain(incoming.gain, 0, graph, 0);
 
       try {
@@ -458,7 +474,7 @@ export class AudioEngine {
       }
 
       const now = graph.currentTime;
-      rampGain(incoming.gain, 1, graph, duration);
+      rampGain(incoming.gain, incoming.targetGain, graph, duration);
       if (current && current !== incoming) {
         rampGain(current.gain, 0, graph, duration);
       }
@@ -469,7 +485,7 @@ export class AudioEngine {
       this.#musicTimer = window.setTimeout(() => {
         if (transition !== this.#musicTransition) return;
         if (current && current !== incoming) this.#resetDeck(current);
-        incoming.gain.gain.setValueAtTime(1, Math.max(now + duration, graph.currentTime));
+        incoming.gain.gain.setValueAtTime(incoming.targetGain, Math.max(now + duration, graph.currentTime));
         this.#musicTimer = null;
         this.#notify();
       }, duration * 1000 + 50);
@@ -1156,6 +1172,7 @@ export class AudioEngine {
         element,
         source,
         gain,
+        targetGain: 0,
         state: null,
         asset: null,
         requestToken: 0,
@@ -1293,6 +1310,7 @@ export class AudioEngine {
     deck.state = null;
     deck.asset = null;
     deck.requestToken = 0;
+    deck.targetGain = 0;
     if (this.#context) rampGain(deck.gain, 0, this.#context, 0);
   }
 

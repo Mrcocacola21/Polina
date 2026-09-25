@@ -22,6 +22,7 @@ type MediaVideoProps = Readonly<{
   autoPlay?: boolean;
   loop?: boolean;
   resetOnUnmount?: boolean;
+  preload?: "none" | "metadata" | "auto";
   developmentLabel?: boolean;
   onPlaybackResult?: (result: SafePlayResult) => void;
 }>;
@@ -37,6 +38,7 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
       autoPlay = false,
       loop = false,
       resetOnUnmount = true,
+      preload = "auto",
       developmentLabel = false,
       onPlaybackResult,
     },
@@ -68,6 +70,8 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             // Metadata may not have loaded; pausing the owned element is sufficient.
           }
         }
+        video.removeAttribute("src");
+        video.load();
       };
     }, [resetOnUnmount]);
 
@@ -89,7 +93,11 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             muted={muted}
             playsInline={playsInline}
             autoPlay={autoPlay}
-            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            controlsList="nodownload nofullscreen noremoteplayback"
+            draggable={false}
+            preload={preload}
             loop={loop}
             onCanPlay={() => void handleCanPlay()}
             onError={() => setRenderStatus("error")}

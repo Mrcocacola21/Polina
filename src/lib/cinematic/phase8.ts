@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_TIMING } from "./directing";
+
 export const S06_COPY = Object.freeze({
   full: "Каждый раз когда я выбиваю из тебя реакцию ❤️ или вижу его в сообщениях мне на душе становится так приятно",
   first: "Каждый раз когда я выбиваю из тебя реакцию ❤️",
@@ -39,29 +41,8 @@ export const S07_COLLECTION = Object.freeze({
   voice: "NONE" satisfies SoulVoice,
 });
 
-export const S06_TIMING = Object.freeze({
-  reveal: 1.25,
-  first: 1.05,
-  second: 3.35,
-  third: 5.65,
-  soulBeat: 7.75,
-  collection: 9.35,
-  continueDelay: 1.45,
-});
-
-export const S07_TIMING = Object.freeze({
-  stageReveal: 1.25,
-  stillReveal: 0.7,
-  videoReveal: 3.15,
-  sincere: 4.75,
-  ratingStart: 9.25,
-  ratingDuration: 6.5,
-  infinity: 15.75,
-  hero: 16.15,
-  aside: 18.75,
-  collection: 21.35,
-  continueDelay: 1.55,
-});
+export const S06_TIMING = FILM_TIMING.s06;
+export const S07_TIMING = FILM_TIMING.s07;
 
 export const S07_RATING_STEPS = Object.freeze([
   0, 34, 67, 91, 100, 112, 147, 238, 404,

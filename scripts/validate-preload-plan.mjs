@@ -19,10 +19,14 @@ const requiredGroups = [
   "AFTER_OPEN_SOUL",
   "DURING_S03",
   "DURING_S07",
+  "BEFORE_REQUIEM",
+  "BEFORE_FINAL",
 ];
 const supportedExtensions = new Set([".png", ".jpg", ".jpeg", ".mp4", ".wav", ".mp3"]);
 const intentionallyUnassignedPaths = new Set([
   "sfx/AUD-GLOBAL-04.wav",
+  "Global/GLOBAL-09A.png",
+  "Global/GLOBAL-09B.png",
 ]);
 
 function collectManifestEntries(value, prefix, entries) {

@@ -11,3 +11,8 @@
   opacity: 0;
   pointer-events: none;
 }
+
+.director[data-scene-phase="exiting"] section[data-scene-phase="exiting"],
+.director[data-scene-phase="exiting"] [data-testid="cinematic-continue"] {
+  pointer-events: none;
+}

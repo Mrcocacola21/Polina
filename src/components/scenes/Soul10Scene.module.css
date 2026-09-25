@@ -73,8 +73,8 @@
   z-index: 3;
   margin: 0;
   color: rgb(241 232 234 / 88%);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(21px, 2.35vw, 38px);
+  font-family: var(--font-interface);
+  font-size: clamp(24px, 2.2vw, 44px);
   font-weight: 390;
   letter-spacing: -.025em;
   line-height: 1.28;
@@ -91,7 +91,7 @@
   left: 50%;
   top: 50%;
   display: block;
-  width: min(78vw, 920px);
+  width: min(78vw, 30ch);
   opacity: 0;
   transform: translate(-50%, -50%);
   will-change: opacity, filter, transform;

@@ -22,7 +22,7 @@ import type {
   PreloadPriority,
 } from "./types";
 
-export const DEFAULT_PRELOAD_CONCURRENCY = 5;
+export const DEFAULT_PRELOAD_CONCURRENCY = 3;
 
 type PreloadOptions = Readonly<{
   priority?: PreloadPriority;

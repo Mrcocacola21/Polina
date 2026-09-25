@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase19-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/assets/manifests.ts",
+    "src/lib/assets/paths.ts",
+    "src/lib/assets/types.ts",
+    "src/lib/audio/buffers.ts",
+    "src/lib/media/catalog.ts",
+    "src/lib/media/types.ts",
+    "src/lib/performance/phase19.test.ts",
+    "src/lib/visuals/quality.ts"
+  ]
+}

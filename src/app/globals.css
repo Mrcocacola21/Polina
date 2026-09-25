@@ -1,12 +1,36 @@
 :root {
   --color-black: #000000;
-  --color-near-black: #070506;
-  --color-charcoal: #171315;
-  --color-crimson-dark: #4d0715;
-  --color-crimson: #94152d;
-  --color-crimson-bright: #e02d4d;
-  --color-text-primary: #f5edef;
-  --color-text-muted: #9a8e92;
+  --color-near-black: #050506;
+  --color-charcoal: #101014;
+  --color-crimson-dark: #7a0d19;
+  --color-crimson: #9e1022;
+  --color-crimson-accent: #bb1730;
+  --color-crimson-bright: #de2440;
+  --color-text-primary: #eeeef1;
+  --color-text-muted: #8f929b;
+  --color-text-secondary: #596171;
+
+  /* Phase 17 desktop visual-lock tokens. */
+  --grade-black: #050506;
+  --grade-charcoal: #09090b;
+  --grade-crimson: #7a0d19;
+  --grade-warmth: 0;
+  --grade-coolness: 0;
+  --grade-desaturation: 0;
+  --grade-contrast: 1;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-narrative: Georgia, "Times New Roman", serif;
+  --font-interface: Arial, Helvetica, sans-serif;
+  --font-system: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --desktop-edge-safe: clamp(32px, 4vw, 96px);
+  --desktop-text-safe: clamp(58px, 6vw, 144px);
+  --desktop-hud-safe: clamp(24px, 1.8vw, 38px);
+  --narrative-measure: 30ch;
+  --control-hit-size: 44px;
+  --space-xs: clamp(6px, 0.5vw, 10px);
+  --space-sm: clamp(10px, 0.8vw, 16px);
+  --space-md: clamp(18px, 1.4vw, 30px);
+  --space-lg: clamp(28px, 2.2vw, 48px);
 
   /* Stable cinematic layer contract; scene code should use these tokens. */
   --layer-stage: 0;
@@ -17,6 +41,7 @@
   --layer-scene-dom: 40;
   --layer-ui: 50;
   --layer-global-fx: 60;
+  --layer-transition-bridge: 70;
   --layer-transition: 70;
   --layer-cursor: 80;
   --layer-absolute-black: 85;
@@ -50,8 +75,11 @@ body {
 
 body {
   color: var(--color-text-primary);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-interface);
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
 }
 
 button,
@@ -59,4 +87,19 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+video {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+::selection {
+  background: rgb(158 16 34 / 38%);
+  color: var(--color-text-primary);
 }

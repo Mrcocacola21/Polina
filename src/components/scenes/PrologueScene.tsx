@@ -10,6 +10,7 @@ import {
   PROLOGUE_COPY,
   PROLOGUE_TIMING,
 } from "@/lib/cinematic/phase6";
+import { CROSSFADE_PRESETS, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaPreloadActions } from "@/lib/media/MediaPreloadContext";
 import { useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -141,10 +142,13 @@ export function PrologueScene() {
     });
     const unlockResult = await unlock;
     if (unlockResult.ok) {
-      void audio.setMusicState(PHASE6_MUSIC_STATE, { crossfadeSeconds: 2.6 });
+      void audio.setMusicState(PHASE6_MUSIC_STATE, {
+        crossfadeSeconds: CROSSFADE_PRESETS.noneToNight,
+        gain: FILM_MIX.music.prologue,
+      });
       void sceneAudio.playSfx("audio:prologue.soulAwakening", {
-        gain: 0.72,
-        duckMusic: { to: 0.7, attackSeconds: 0.08, holdSeconds: 0.7, releaseSeconds: 1.2 },
+        gain: FILM_MIX.sfx.prologueAwakening,
+        duckMusic: DUCK_PRESETS.prologueAwakening,
       });
     }
 

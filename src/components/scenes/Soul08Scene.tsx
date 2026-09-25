@@ -17,6 +17,7 @@ import {
   S08_TIMING,
   type S08AudioCue,
 } from "@/lib/cinematic/phase9";
+import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -79,12 +80,12 @@ export function Soul08Scene() {
   const playCue = useCallback((cue: S08AudioCue) => {
     if (!runGateRef.current.takeCue(cue) || !audio.getSnapshot().isUnlocked) return;
     const options = cue === S08_AUDIO_CUE_ORDER[0]
-      ? { gain: 0.74, duckMusic: { to: 0.68, attackSeconds: 0.1, holdSeconds: 0.5, releaseSeconds: 1.4 } }
+      ? { gain: FILM_MIX.sfx.s08Arrival, duckMusic: DUCK_PRESETS.queenArrival }
       : cue === S08_AUDIO_CUE_ORDER[1]
-        ? { gain: 0.48 }
+        ? { gain: FILM_MIX.sfx.s08Sigil }
         : cue === S08_AUDIO_CUE_ORDER[2]
-          ? { gain: 0.55, pan: 0.12 }
-          : { gain: 0.78, duckMusic: { to: 0.55, attackSeconds: 0.08, holdSeconds: 0.7, releaseSeconds: 1.8 } };
+          ? { gain: FILM_MIX.sfx.s08Fragments, pan: 0.12 }
+          : { gain: FILM_MIX.sfx.s08Declaration, duckMusic: DUCK_PRESETS.queenDeclaration };
     void sceneAudio.playSfx(cue, options);
   }, [audio, sceneAudio]);
 
@@ -143,6 +144,7 @@ export function Soul08Scene() {
       variant: S08_COLLECTION.variant,
       visualState: S08_COLLECTION.visualState,
       voice: S08_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S08,
     });
     setCollectionStatus(result.status);
     if (phase9CollectionAllowsContinue(result.status)) scheduleContinue();
@@ -190,6 +192,9 @@ export function Soul08Scene() {
 
   useEffect(() => {
     if (phase !== "entering") return;
+    if (audio.getSnapshot().isUnlocked) {
+      void audio.setMusicState(PHASE9_MUSIC_STATE, { gain: FILM_MIX.music.s08, gainRampSeconds: 1.1 });
+    }
     gsap.set(impactFrameRef.current, { ...S08_CAMERA.start });
     gsap.set(cameraRef.current, { ...S08_CAMERA.start });
     const timeline = gsap.timeline({ onComplete: completeEnter });
@@ -209,7 +214,7 @@ export function Soul08Scene() {
       ease: "power2.out",
     }, 0.18);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
-  }, [completeEnter, phase, playCue, scopeId, visual]);
+  }, [audio, completeEnter, phase, playCue, scopeId, visual]);
 
   useEffect(() => {
     if (phase !== "active") return;

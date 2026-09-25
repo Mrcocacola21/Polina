@@ -11,6 +11,7 @@ import {
   PRE_FINAL_TIMING,
   S10_AUDIO_LEVELS,
 } from "@/lib/cinematic/phase11";
+import { FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
 import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
@@ -63,7 +64,12 @@ export function PreFinalScene() {
   useEffect(() => {
     if (phase !== "entering") return;
     if (audio.getSnapshot().isUnlocked && audio.getSnapshot().music.state !== PHASE11_MUSIC_STATE) {
-      void audio.crossfadeMusic(PHASE11_MUSIC_STATE, { crossfadeSeconds: PRE_FINAL_TIMING.directMusicCrossfade });
+      void audio.crossfadeMusic(PHASE11_MUSIC_STATE, {
+        crossfadeSeconds: PRE_FINAL_TIMING.directMusicCrossfade,
+        gain: FILM_MIX.music.preFinal,
+      });
+    } else if (audio.getSnapshot().isUnlocked) {
+      void audio.setMusicState(PHASE11_MUSIC_STATE, { gain: FILM_MIX.music.preFinal, gainRampSeconds: 2.2 });
     }
     applyPreFinalTone();
     const timeline = gsap.timeline({ onComplete: completeEnter });

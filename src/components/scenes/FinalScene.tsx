@@ -29,6 +29,7 @@ import {
   YES_TIMING,
   YES_VISUAL_LEVELS,
 } from "@/lib/cinematic/phase14";
+import { CROSSFADE_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -147,25 +148,23 @@ export function FinalScene() {
     gsap.set([dormantRef.current, coreRef.current, energyRef.current], { opacity: result === "YES" ? 0.08 : 0.13 });
     gsap.set(fullRef.current, { opacity: result === "YES" ? 0.94 : 0.82, scale: 1 });
     gsap.set(haloRef.current, { opacity: result === "YES" ? 0.52 : 0.31, scale: result === "YES" ? 1.05 : 1 });
-    gsap.set([questionRef.current, tagRef.current], { opacity: 0 });
+    gsap.set(questionRef.current, { opacity: result === "THINK" ? 0.9 : 0 });
+    gsap.set(tagRef.current, { opacity: result === "THINK" ? 0.5 : 0 });
     gsap.set(cameraRef.current, { scale: result === "YES" ? YES_VISUAL_LEVELS.yesCameraScale : 1 });
-    toneRef.current?.release(result === "YES" ? 1.2 : 0.15);
-    toneRef.current = result === "THINK"
-      ? sceneAudio.applyMusicTone({
-          frequency: YES_VISUAL_LEVELS.lowMusicFrequency,
-          presence: YES_VISUAL_LEVELS.lowMusicPresence,
-          rampSeconds: 1.2,
-        })
-      : null;
+    toneRef.current?.release(1.2);
+    toneRef.current = null;
     if (startMusic && audio.getSnapshot().isUnlocked) {
       const currentMusic = audio.getSnapshot().music.state;
       void audio.crossfadeMusic(FINAL_AUDIO.musicState, {
-        crossfadeSeconds: 1.8,
+        crossfadeSeconds: result === "YES"
+          ? CROSSFADE_PRESETS.heartAndSoulYesExpansion
+          : CROSSFADE_PRESETS.heartAndSoulThinkSettle,
+        gain: result === "YES" ? FILM_MIX.music.yes : FILM_MIX.music.think,
         restart: currentMusic !== FINAL_AUDIO.musicState,
         loop: true,
       });
     }
-  }, [audio, disposeBranchVisuals, sceneAudio, visual]);
+  }, [audio, disposeBranchVisuals, visual]);
 
   const startYesBranch = useCallback((transaction: number) => {
     const reducedMotion = visual.motionIntensity < 0.5;
@@ -213,7 +212,11 @@ export function FinalScene() {
 
     timeline.call(() => {
       if (!isCurrent()) return;
-      playYesCue(YES_AUDIO.soulRelease, 0.82, transaction);
+      playYesCue(YES_AUDIO.soulRelease, FILM_MIX.sfx.yesRelease, transaction);
+      void audio.setMusicState(FINAL_AUDIO.musicState, {
+        gain: FILM_MIX.music.yes,
+        gainRampSeconds: CROSSFADE_PRESETS.heartAndSoulYesExpansion,
+      });
       releaseFieldRef.current = visual.spawnParticleField({
         mode: "BURST",
         count: reducedMotion ? 300 : YES_VISUAL_LEVELS.releaseParticleCount,
@@ -252,7 +255,7 @@ export function FinalScene() {
     timeline.to([questionRef.current, tagRef.current], { opacity: 0, duration: 1.8, ease: "sine.out" }, YES_TIMING.releaseSettle - 0.8);
     timeline.call(() => {
       if (!isCurrent()) return;
-      playYesCue(YES_AUDIO.finalResolve, 0.72, transaction);
+      playYesCue(YES_AUDIO.finalResolve, FILM_MIX.sfx.yesResolve, transaction);
       setBeat("yes-resolve");
     }, [], YES_TIMING.resolve);
     timeline.call(() => {
@@ -274,7 +277,7 @@ export function FinalScene() {
       setAnswer(controller.stabilize(transaction));
       branchTimelineRef.current = null;
     }, [], YES_TIMING.stable);
-  }, [controller, focusEnding, playYesCue, scopeId, visual]);
+  }, [audio, controller, focusEnding, playYesCue, scopeId, visual]);
 
   const startThinkBranch = useCallback((transaction: number) => {
     const isCurrent = () => mountedRef.current && controller.getSnapshot().transaction === transaction;
@@ -291,11 +294,16 @@ export function FinalScene() {
     }, [], THINK_TIMING.controlsGone);
     timeline.to(haloRef.current, { opacity: 0.31, scale: 1, duration: 1.25, ease: "sine.inOut" }, THINK_TIMING.stillness);
     timeline.to(fullRef.current, { opacity: 0.82, duration: 1.25, ease: "sine.inOut" }, THINK_TIMING.stillness);
-    timeline.to([questionRef.current, tagRef.current], { opacity: 0, duration: 1.4, ease: "sine.out" }, THINK_TIMING.calm);
+    timeline.to(questionRef.current, { opacity: 0.9, duration: 1.1, ease: "sine.inOut" }, THINK_TIMING.calm);
+    timeline.to(tagRef.current, { opacity: 0.5, duration: 1.1, ease: "sine.inOut" }, THINK_TIMING.calm);
     timeline.call(() => {
       if (!isCurrent()) return;
-      toneRef.current?.release(0.2);
-      toneRef.current = sceneAudio.applyMusicTone({ frequency: YES_VISUAL_LEVELS.lowMusicFrequency, presence: YES_VISUAL_LEVELS.lowMusicPresence, rampSeconds: 1.2 });
+      toneRef.current?.release(1.2);
+      toneRef.current = null;
+      void audio.setMusicState(FINAL_AUDIO.musicState, {
+        gain: FILM_MIX.music.think,
+        gainRampSeconds: CROSSFADE_PRESETS.heartAndSoulThinkSettle,
+      });
     }, [], THINK_TIMING.calm);
     timeline.call(() => {
       if (!isCurrent()) return;
@@ -305,7 +313,7 @@ export function FinalScene() {
       setAnswer(controller.stabilize(transaction));
       branchTimelineRef.current = null;
     }, [], THINK_TIMING.stable);
-  }, [controller, focusEnding, sceneAudio, visual.motionIntensity]);
+  }, [audio, controller, focusEnding, visual.motionIntensity]);
 
   const commitAnswer = useCallback((result: AnswerResult) => {
     const committed = controller.commit(result);
@@ -354,7 +362,7 @@ export function FinalScene() {
     gsap.set(questionRef.current, { opacity: 1, filter: "blur(0px)", y: 0 });
     gsap.set(tagRef.current, { opacity: 0.66, filter: "blur(0px)", y: 0 });
     gsap.set(cameraRef.current, { scale: 1 });
-    toneRef.current = sceneAudio.applyMusicTone({ frequency: YES_VISUAL_LEVELS.lowMusicFrequency, presence: YES_VISUAL_LEVELS.lowMusicPresence, rampSeconds: 0.8 });
+    toneRef.current = sceneAudio.applyMusicTone({ ...FILM_MIX.finalTone, rampSeconds: 0.8 });
   }, [audio, controller, disposeBranchVisuals, sceneAudio, visual]);
 
   const forceStable = useCallback((result: AnswerResult) => {
@@ -466,15 +474,20 @@ export function FinalScene() {
       visual.leaveAbsoluteBlack();
       audio.leaveCinematicSilence();
       visual.setCursorMode("DIMMED");
-      void sceneAudio.playSfx(FINAL_AUDIO.awakening, { gain: 0.72, duckMusic: false });
+      void sceneAudio.playSfx(FINAL_AUDIO.awakening, { gain: FILM_MIX.sfx.finalAwakening, duckMusic: false });
     }, [], FINAL_TIMING.awakening);
     timeline.fromTo(dormantRef.current, { opacity: 0, scale: reducedMotion ? 0.994 : 0.975 }, { opacity: 0.74, scale: 1, duration: 1.75, ease: "sine.out" }, FINAL_TIMING.awakening);
     timeline.call(() => setQuestionStep(1), [], FINAL_TIMING.firstWords);
     timeline.to(questionRef.current, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.9, ease: "sine.out" }, FINAL_TIMING.firstWords);
     timeline.call(() => {
       setBeat("core");
-      void audio.crossfadeMusic(FINAL_AUDIO.musicState, { crossfadeSeconds: FINAL_TIMING.musicFadeIn, restart: true, loop: true });
-      toneRef.current = sceneAudio.applyMusicTone({ frequency: YES_VISUAL_LEVELS.lowMusicFrequency, presence: YES_VISUAL_LEVELS.lowMusicPresence, rampSeconds: FINAL_TIMING.musicFadeIn });
+      void audio.crossfadeMusic(FINAL_AUDIO.musicState, {
+        crossfadeSeconds: FINAL_TIMING.musicFadeIn,
+        gain: FILM_MIX.music.finalPreAnswer,
+        restart: true,
+        loop: true,
+      });
+      toneRef.current = sceneAudio.applyMusicTone({ ...FILM_MIX.finalTone, rampSeconds: FINAL_TIMING.musicFadeIn });
     }, [], FINAL_TIMING.core);
     timeline.to(dormantRef.current, { opacity: 0.18, duration: 2.1, ease: "sine.inOut" }, FINAL_TIMING.core);
     timeline.fromTo(coreRef.current, { opacity: 0, scale: reducedMotion ? 0.997 : 0.988 }, { opacity: 0.82, scale: 1, duration: 2.05, ease: "sine.inOut" }, FINAL_TIMING.core);
@@ -482,7 +495,7 @@ export function FinalScene() {
     timeline.fromTo(questionRef.current, { opacity: 0.58, filter: "blur(1.5px)", y: 3 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.72, ease: "sine.out" }, FINAL_TIMING.secondWords);
     timeline.call(() => {
       setBeat("merge");
-      void sceneAudio.playSfx(FINAL_AUDIO.merge, { gain: 0.78, duckMusic: false });
+      void sceneAudio.playSfx(FINAL_AUDIO.merge, { gain: FILM_MIX.sfx.finalMerge, duckMusic: false });
     }, [], FINAL_TIMING.merge);
     timeline.fromTo(energyRef.current, { opacity: 0, scale: reducedMotion ? 0.998 : 0.992 }, { opacity: 0.62, scale: 1, duration: 1.55, ease: "sine.out" }, FINAL_TIMING.merge);
     timeline.fromTo(leftStreamRef.current, { opacity: 0, x: () => reducedMotion ? streamDistance() * 0.78 : 0, y: reducedMotion ? 0 : -8 }, { opacity: reducedMotion ? 0.54 : 0.86, x: streamDistance, y: reducedMotion ? 0 : 5, duration: FINAL_TIMING.mergeConvergenceOffset, ease: "power2.inOut" }, FINAL_TIMING.merge);
@@ -494,7 +507,7 @@ export function FinalScene() {
     timeline.call(() => {
       setBeat("full");
       setQuestionStep(4);
-      void sceneAudio.playSfx(FINAL_AUDIO.halo, { gain: 0.7, duckMusic: false });
+      void sceneAudio.playSfx(FINAL_AUDIO.halo, { gain: FILM_MIX.sfx.finalHalo, duckMusic: false });
     }, [], FINAL_TIMING.full);
     timeline.to([coreRef.current, energyRef.current], { opacity: 0.14, duration: 2.2, ease: "sine.inOut" }, FINAL_TIMING.full);
     timeline.fromTo(fullRef.current, { opacity: 0, scale: reducedMotion ? 0.998 : 0.992 }, { opacity: 0.88, scale: 1, duration: 2.15, ease: "sine.inOut" }, FINAL_TIMING.full);
@@ -587,7 +600,7 @@ export function FinalScene() {
           <span>Persistence: {persistenceStatus}</span><span>Persisted: {persistedResult ?? "none"}</span>
           <span>answeredAt: {answer.answeredAt ?? "—"}</span><span>Timeline: {activeBranchTimeline}</span>
           <span>Soul echoes: {soulEchoCount}</span><span>YES particles: {endingParticleCount}</span>
-          <span>Current ending: {ending}</span><span>MUS-04 branch gain: {audioSnapshot.musicTone.presence.toFixed(2)}</span>
+          <span>Current ending: {ending}</span><span>MUS-04 branch gain: {audioSnapshot.music.gain.toFixed(2)}</span>
           <span>Active YES SFX: {activeYesSfx}</span>
           {sandboxVisible ? <div className={styles.answerDebugControls}><button type="button" onClick={resetAnswer}>RESET ANSWER</button><button type="button" onClick={() => forceStable("YES")}>PREVIEW YES</button><button type="button" onClick={() => forceStable("THINK")}>PREVIEW THINK</button></div> : null}
         </aside>

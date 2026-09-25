@@ -4,8 +4,10 @@ import type { Camera } from "three";
 import { screenToWorld, worldToScreen } from "./coordinates";
 import {
   DEFAULT_VISUAL_QUALITY,
+  AdaptiveQualityController,
   VISUAL_QUALITY,
   type VisualQuality,
+  type VisualQualityMode,
 } from "./quality";
 import type {
   CursorMode,
@@ -60,6 +62,9 @@ export type ParticleFieldRecord = {
   scopeId?: string;
   mode: ParticleMode;
   count: number;
+  baseCount: number;
+  targetCount: number;
+  capacity: number;
   position: [number, number, number];
   spread: [number, number, number];
   size: [number, number];
@@ -453,6 +458,8 @@ export class VisualRuntime {
   };
   motionIntensity = 1;
   quality: VisualQuality = DEFAULT_VISUAL_QUALITY;
+  qualityMode: VisualQualityMode = "AUTO";
+  readonly #adaptiveQuality = new AdaptiveQualityController(DEFAULT_VISUAL_QUALITY);
   #listeners = new Set<() => void>();
   #revision = 0;
   #nextId = 1;
@@ -534,12 +541,44 @@ export class VisualRuntime {
       cursor: this.#fx.cursor,
       pointerType: this.#pointerType,
       quality: this.quality,
+      qualityMode: this.qualityMode,
+      fps: 1000 / Math.max(1, this.#adaptiveQuality.emaFrameMs),
+      frameTimeMs: this.#adaptiveQuality.emaFrameMs,
+      qualityReason: this.#adaptiveQuality.reason,
     };
   }
 
-  setQuality(quality: VisualQuality): void {
-    this.quality = quality;
+  setQuality(mode: VisualQualityMode): void {
+    this.qualityMode = mode;
+    this.quality = this.#adaptiveQuality.setMode(mode, typeof performance === "undefined" ? 0 : performance.now());
+    this.#updateParticleTargets();
     this.notify();
+  }
+
+  initializeAdaptiveQuality(quality: VisualQuality): void {
+    if (this.qualityMode !== "AUTO") return;
+    this.#adaptiveQuality.quality = quality;
+    this.quality = quality;
+    this.#updateParticleTargets();
+    this.notify();
+  }
+
+  sampleFrame(frameMs: number): void {
+    const changed = this.#adaptiveQuality.sample(
+      frameMs,
+      typeof performance === "undefined" ? 0 : performance.now(),
+      typeof document === "undefined" || document.visibilityState === "visible",
+    );
+    if (!changed) return;
+    this.quality = changed;
+    this.#updateParticleTargets();
+    this.notify();
+  }
+
+  #updateParticleTargets(): void {
+    for (const field of this.particleFields.values()) {
+      field.targetCount = Math.max(1, Math.round(field.baseCount * this.particleScale));
+    }
   }
 
   setMotionIntensity(intensity: number): void {
@@ -616,6 +655,9 @@ export class VisualRuntime {
       scopeId: options.scopeId,
       mode: options.mode ?? "AMBIENT_DRIFT",
       count,
+      baseCount: requestedCount,
+      targetCount: count,
+      capacity: requestedCount,
       position: [...(options.position ?? [0, 0, 0])],
       spread: [...(options.spread ?? [8, 5, 3])],
       size: [...(options.size ?? [0.06, 0.2])],

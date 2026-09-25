@@ -11,7 +11,9 @@ import {
   S01_COLLECTION,
   S01_COPY,
   S01_TIMING,
+  PHASE6_MUSIC_STATE,
 } from "@/lib/cinematic/phase6";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
@@ -23,8 +25,6 @@ import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { createSceneVisualScopeId } from "@/lib/visuals/VisualScope";
 
 import styles from "./Soul01Scene.module.css";
-
-let s01AmbientStartedOnce = false;
 
 export function Soul01Scene() {
   const rootRef = useRef<HTMLElement>(null);
@@ -106,10 +106,10 @@ export function Soul01Scene() {
   useEffect(() => {
     if (phase !== "active") return;
 
-    if (audio.getSnapshot().isUnlocked && !s01AmbientStartedOnce) {
-      s01AmbientStartedOnce = true;
+    if (audio.getSnapshot().isUnlocked) {
+      void audio.setMusicState(PHASE6_MUSIC_STATE, { gain: FILM_MIX.music.s01, gainRampSeconds: 0.8 });
       void sceneAudio.playAmbient("LATE_NIGHT_ROOM", {
-        gain: 0.16,
+        gain: FILM_MIX.ambient.s01Room,
         fadeInSeconds: 2,
         loop: true,
       }).then((handle) => {
@@ -195,6 +195,7 @@ export function Soul01Scene() {
       variant: S01_COLLECTION.variant,
       visualState: S01_COLLECTION.visualState,
       voice: S01_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S01,
     });
     setCollectionStatus(result.status);
     if (collectionAllowsContinue(result.status)) scheduleContinue();
@@ -218,15 +219,25 @@ export function Soul01Scene() {
     visual.setCursorMode("DEFAULT");
     visual.fadeFog(0.015, 0.85);
     visual.setLightLeak(0, { drift: false });
-    const cover = visual.cover("FADE", 0.9);
-    const timeline = gsap.to(rootRef.current, {
-      opacity: 0.15,
-      filter: "saturate(0.55) brightness(0.48)",
-      scale: 0.996,
+    const timeline = gsap.timeline({ onComplete: completeExit });
+    timeline.to(screenshotRef.current, {
+      opacity: 0.08,
+      filter: "saturate(0.4) brightness(0.42) blur(2px)",
+      scale: 0.88,
+      duration: 0.72,
+      ease: "power2.inOut",
+    }, 0);
+    timeline.to(roomPushRef.current, {
+      scale: 1.045,
+      filter: "brightness(.32) saturate(.45)",
       duration: 0.9,
+      ease: "sine.inOut",
+    }, 0);
+    timeline.to(rootRef.current, {
+      opacity: 0.12,
+      duration: 0.48,
       ease: "power2.in",
-    });
-    void cover.then(() => completeExit());
+    }, 0.42);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
   }, [completeExit, phase, scopeId, visual]);
 

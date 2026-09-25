@@ -6,8 +6,6 @@
     "visual:global.asset02",
     "visual:global.asset03",
     "visual:global.asset04VariantA",
-    "visual:global.asset09VariantA",
-    "visual:global.asset09VariantB",
     "visual:global.asset09VariantC",
     "visual:sections.section01Asset01",
     "visual:screens.discord",
@@ -84,7 +82,9 @@
     "visual:sections.section10Asset02VariantA",
     "visual:sections.section10Asset02VariantB",
     "visual:sections.section10Asset02VariantC",
-    "audio:music.vulnerability",
+    "audio:music.vulnerability"
+  ],
+  "BEFORE_REQUIEM": [
     "visual:requirements.asset02",
     "visual:requirements.asset03",
     "visual:requirements.asset04",
@@ -95,7 +95,9 @@
     "audio:requiem.ring2",
     "audio:requiem.ring3",
     "audio:requiem.energyArcs",
-    "audio:requiem.fullRequiem",
+    "audio:requiem.fullRequiem"
+  ],
+  "BEFORE_FINAL": [
     "visual:finale.asset01",
     "visual:finale.asset01VariantA",
     "visual:finale.asset01VariantB",

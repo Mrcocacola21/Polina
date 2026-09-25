@@ -1,3 +1,5 @@
+import { FILM_TIMING } from "./directing";
+
 export const ANSWER_LABELS = Object.freeze({
   YES: "Да ❤️",
   THINK: "Подумать, но нежно",
@@ -32,28 +34,9 @@ export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export const ANSWER_PERSISTENCE_KEY = "soulbound.answer.v1";
 
-export const ANSWER_TIMING = Object.freeze({
-  revealDelayAfterFinalStable: 2.5,
-});
-
-export const YES_TIMING = Object.freeze({
-  stillness: 0.3,
-  heartPulse: 0.3,
-  soulEchoes: 0.7,
-  release: 1.2,
-  musicOpenDuration: 2.3,
-  releaseSettle: 4.5,
-  resolve: 4.55,
-  dateReveal: 6.35,
-  stable: 11.9,
-});
-
-export const THINK_TIMING = Object.freeze({
-  stillness: 0.28,
-  controlsGone: 0.82,
-  calm: 1.45,
-  stable: 2.4,
-});
+export const ANSWER_TIMING = FILM_TIMING.answer;
+export const YES_TIMING = FILM_TIMING.yes;
+export const THINK_TIMING = FILM_TIMING.think;
 
 export const YES_VISUAL_LEVELS = Object.freeze({
   soulEchoCount: 10,

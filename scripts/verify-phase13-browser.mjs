@@ -118,6 +118,7 @@ await send("Page.enable");
 await send("Runtime.enable");
 await send("Log.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+await send("Storage.clearDataForOrigin", { origin: new URL(appUrl).origin, storageTypes: "local_storage" });
 await send("Page.navigate", { url: appUrl });
 await waitFor("Soul sandbox", `Boolean(document.querySelector('[data-testid="soul-collection-sandbox"]'))`, 25_000);
 await sleep(1800);
@@ -282,7 +283,7 @@ assert.equal(state.terminal, "true");
 assert.equal(state.music, idleMusic);
 assert.equal(state.activeAudio, "A 0 · S 0 · P 0");
 assert.equal(state.continueCount, 0);
-assert.equal(state.finalButtons, 0);
+assert.equal(state.finalButtons, 2);
 assert.equal(state.canvases, 1);
 
 const seriousErrors = browserErrors.filter((message) =>

@@ -28,6 +28,7 @@ import {
   S09_VISUAL_LEVELS,
   type PainAbsorptionState,
 } from "@/lib/cinematic/phase10";
+import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -122,7 +123,7 @@ export function Soul09Scene() {
       fragmentIdentityRef.current.style.transform = `translate3d(0, ${progress * -5}px, 0) scale(${1 - progress * 0.08})`;
     }
     if (painRef.current) {
-      painRef.current.style.filter = `brightness(${0.55 + progress * 0.09}) saturate(${0.5 + progress * 0.08}) contrast(${1.06 - progress * 0.03})`;
+      painRef.current.style.filter = `brightness(${0.63 + progress * 0.07}) saturate(${0.52 + progress * 0.08}) contrast(${1.06 - progress * 0.03})`;
     }
 
     if (now - lastAudioUpdateRef.current >= 45 || progress === 1) {
@@ -165,6 +166,7 @@ export function Soul09Scene() {
       variant: S09_COLLECTION.variant,
       visualState: S09_COLLECTION.visualState,
       voice: S09_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S09,
     });
     setCollectionStatus(result.status);
     if (phase10CollectionAllowsContinue(result.status)) scheduleContinue();
@@ -184,7 +186,7 @@ export function Soul09Scene() {
     if (audio.getSnapshot().isUnlocked) {
       void sceneAudio.playSfx(S09_AUDIO.completion, {
         gain: S09_MIX.completion,
-        duckMusic: { to: 0.78, attackSeconds: 0.12, holdSeconds: 0.55, releaseSeconds: 1.5 },
+        duckMusic: DUCK_PRESETS.painCompletion,
       });
     }
     gsap.fromTo(finalRef.current, { opacity: 0, filter: "blur(5px)", y: 7 }, {
@@ -246,7 +248,7 @@ export function Soul09Scene() {
     visual.setLightLeak(0.014, { position: [58, 43], scale: 0.9, rotation: -4, drift: false });
     const particles = visual.spawnParticleField({
       mode: "AMBIENT_DRIFT",
-      count: visual.motionIntensity < 0.5 ? 28 : visual.quality === "HIGH" ? 78 : visual.quality === "LOW" ? 34 : 54,
+      count: visual.motionIntensity < 0.5 ? 28 : 78,
       position: [0.8, -0.05, 0],
       spread: [4.6, 3.4, 2.1],
       size: [0.014, 0.064],
@@ -285,7 +287,10 @@ export function Soul09Scene() {
   useEffect(() => {
     if (phase !== "entering") return;
     if (audio.getSnapshot().isUnlocked) {
-      void audio.crossfadeMusic(PHASE10_MUSIC_STATE, { crossfadeSeconds: S09_TIMING.musicCrossfade });
+      void audio.crossfadeMusic(PHASE10_MUSIC_STATE, {
+        crossfadeSeconds: S09_TIMING.musicCrossfade,
+        gain: FILM_MIX.music.s09,
+      });
       void sceneAudio.playAmbient(S09_AUDIO.drone, {
         loop: true,
         gain: S09_MIX.drone,
@@ -328,8 +333,8 @@ export function Soul09Scene() {
       }
     }, [], S09_TIMING.painReveal);
     timeline.fromTo(painRef.current, { opacity: 0, filter: "blur(18px) brightness(.42)", scale: 0.98 }, {
-      opacity: 0.66,
-      filter: "blur(0px) brightness(.55) saturate(.5) contrast(1.06)",
+      opacity: 0.72,
+      filter: "blur(0px) brightness(.63) saturate(.52) contrast(1.06)",
       scale: 1,
       duration: 2.2,
       ease: "sine.out",

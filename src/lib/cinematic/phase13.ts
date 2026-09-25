@@ -1,3 +1,5 @@
+import { FILM_TIMING } from "./directing";
+
 export const SILENCE_LINES = Object.freeze([
   "если убрать доту",
   "если убрать рофлы",
@@ -5,19 +7,7 @@ export const SILENCE_LINES = Object.freeze([
   "останется одна вещь",
 ] as const);
 
-export const SILENCE_TIMING = Object.freeze({
-  initialBlack: 2.2,
-  lineFadeIn: 0.65,
-  lineFadeOut: 0.58,
-  cues: Object.freeze([
-    Object.freeze({ revealAt: 2.2, hideAt: 4.42 }),
-    Object.freeze({ revealAt: 5.02, hideAt: 7.24 }),
-    Object.freeze({ revealAt: 7.84, hideAt: 10.42 }),
-    Object.freeze({ revealAt: 11.92, hideAt: 14.88 }),
-  ]),
-  handoffAt: 16.72,
-  exit: 0,
-});
+export const SILENCE_TIMING = FILM_TIMING.silence;
 
 export const FINAL_QUESTION_STEPS = Object.freeze([
   "Можна я",
@@ -57,23 +47,9 @@ export const FINAL_LAYER_ORDER = Object.freeze([
   "FULL",
 ] as const);
 
-export const FINAL_TIMING = Object.freeze({
-  awakening: 0.92,
-  firstWords: 1.16,
-  core: 4.12,
-  secondWords: 4.42,
-  merge: 7.18,
-  mergeWord: 8.54,
-  mergeConvergenceOffset: 2.76,
-  full: 11.56,
-  fullQuestionHold: 2.82,
-  tag: 14.38,
-  stable: 15.35,
-  musicFadeIn: 5.2,
-});
+export const FINAL_TIMING = FILM_TIMING.final;
 
 export function buildFinalQuestion(stepCount: number): string {
   const safeCount = Math.max(0, Math.min(FINAL_QUESTION_STEPS.length, Math.trunc(stepCount)));
   return FINAL_QUESTION_STEPS.slice(0, safeCount).join(" ");
 }
-

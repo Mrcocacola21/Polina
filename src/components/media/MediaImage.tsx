@@ -42,6 +42,7 @@ export function MediaImage({
           fill
           sizes={sizes}
           unoptimized
+          draggable={false}
           decoding="async"
           loading={eager ? "eager" : "lazy"}
           onLoad={() => setRenderStatus("ready")}

@@ -40,6 +40,8 @@ function createFixture(loaders: MediaLoaders, concurrency = 2) {
     AFTER_OPEN_SOUL: [first, second],
     DURING_S03: [third],
     DURING_S07: [second, third],
+    BEFORE_REQUIEM: [],
+    BEFORE_FINAL: [],
   };
 
   return {

@@ -14,6 +14,8 @@ import styles from "./MediaDebugPanel.module.css";
 const MANUAL_GROUPS: readonly PreloadGroupId[] = [
   "DURING_S03",
   "DURING_S07",
+  "BEFORE_REQUIEM",
+  "BEFORE_FINAL",
 ];
 
 export function MediaDebugPanel() {

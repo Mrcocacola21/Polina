@@ -3,7 +3,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--color-near-black);
+  background: var(--media-matte, var(--color-near-black));
+  isolation: isolate;
 }
 
 .visible,
@@ -11,6 +12,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .visible {

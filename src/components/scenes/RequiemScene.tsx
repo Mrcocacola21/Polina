@@ -16,6 +16,7 @@ import {
   sampleRequiemEnvelope,
   type RequiemCueName,
 } from "@/lib/cinematic/phase12";
+import { FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { safePlayVideo } from "@/lib/media/preloaders";
@@ -268,18 +269,18 @@ export function RequiemScene() {
         if (!audio.getSnapshot().isUnlocked) return;
         void sceneAudio.playSfx(ref, { when: at, gain, duckMusic: false });
       };
-      schedule(REQUIEM_AUDIO.ring1, buildupStart + REQUIEM_BUILDUP_TIMING.ring1, 0.72);
-      schedule(REQUIEM_AUDIO.ring2, buildupStart + REQUIEM_BUILDUP_TIMING.ring2, 0.74);
-      schedule(REQUIEM_AUDIO.ring3, buildupStart + REQUIEM_BUILDUP_TIMING.ring3, 0.78);
-      schedule(REQUIEM_AUDIO.arcs, buildupStart + REQUIEM_BUILDUP_TIMING.arcs, 0.67);
+      schedule(REQUIEM_AUDIO.ring1, buildupStart + REQUIEM_BUILDUP_TIMING.ring1, FILM_MIX.sfx.requiemRing1);
+      schedule(REQUIEM_AUDIO.ring2, buildupStart + REQUIEM_BUILDUP_TIMING.ring2, FILM_MIX.sfx.requiemRing2);
+      schedule(REQUIEM_AUDIO.ring3, buildupStart + REQUIEM_BUILDUP_TIMING.ring3, FILM_MIX.sfx.requiemRing3);
+      schedule(REQUIEM_AUDIO.arcs, buildupStart + REQUIEM_BUILDUP_TIMING.arcs, FILM_MIX.sfx.requiemArcs);
       if (audio.getSnapshot().isUnlocked) {
-        void audio.playRequiem({ when: heroStart, gain: 0.92, scopeId: sceneAudio.scopeId, duckMusic: false });
+        void audio.playRequiem({ when: heroStart, gain: FILM_MIX.sfx.requiemHero, scopeId: sceneAudio.scopeId, duckMusic: false });
         audio.enterCinematicSilence({ atAudioTime: hardCutAt });
       }
 
       orbitParticlesRef.current = visual.spawnParticleField({
         mode: "ORBIT",
-        count: visual.quality === "HIGH" ? 440 : visual.quality === "MEDIUM" ? 300 : 176,
+        count: 440,
         position: [0, 0, 0],
         spread: [7.4, 7.4, 2.2],
         size: [0.012, 0.065],
@@ -314,7 +315,7 @@ export function RequiemScene() {
           releaseSoulsRadially(released);
           impactParticlesRef.current = visual.spawnParticleField({
             mode: "BURST",
-            count: visual.quality === "HIGH" ? 520 : visual.quality === "MEDIUM" ? 340 : 190,
+            count: 520,
             position: [0, 0, 0],
             spread: [0.7, 0.7, 0.8],
             size: [0.018, 0.085],

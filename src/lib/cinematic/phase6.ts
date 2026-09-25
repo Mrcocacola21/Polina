@@ -2,6 +2,8 @@ import type { MusicState } from "@/lib/audio/types";
 import type { CollectionResultStatus, SoulVoice } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
+import { FILM_TIMING } from "./directing";
+
 export const PROLOGUE_COPY = Object.freeze({
   lineOne: "я долго думал, как это сказать",
   lineTwo: "поэтому, конечно же, сделал целый сайт",
@@ -38,38 +40,9 @@ export const S02_COLLECTION = Object.freeze({
   voice: "NONE" satisfies SoulVoice,
 });
 
-export const PROLOGUE_TIMING = Object.freeze({
-  firstLine: 2,
-  firstLineOut: 5.5,
-  secondLine: 6.5,
-  aside: 10,
-  copyOut: 12,
-  action: 13.35,
-  awaken: 1.15,
-  transition: 1.15,
-});
-
-export const S01_TIMING = Object.freeze({
-  screenshot: 0.5,
-  firstLine: 3.2,
-  secondLine: 7.4,
-  settle: 9.6,
-  collection: 11.55,
-  continueDelay: 1.45,
-  cameraPush: 21,
-});
-
-export const S02_TIMING = Object.freeze({
-  ordinaryOne: 0.8,
-  ordinaryOneOut: 3.25,
-  ordinaryTwo: 4.25,
-  ordinaryTwoOut: 6.7,
-  special: 7.75,
-  firstLineAfterOpen: 1.2,
-  secondLineAfterOpen: 3.05,
-  collectionAfterOpen: 6.25,
-  continueDelay: 1.45,
-});
+export const PROLOGUE_TIMING = FILM_TIMING.prologue;
+export const S01_TIMING = FILM_TIMING.s01;
+export const S02_TIMING = FILM_TIMING.s02;
 
 export function createSingleExecutionLock(): () => boolean {
   let locked = false;

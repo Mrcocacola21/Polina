@@ -16,9 +16,9 @@
 
 .heartComposition {
   position: absolute;
-  top: 43%;
+  top: 40%;
   left: 50%;
-  width: min(58vmin, 610px);
+  width: clamp(540px, 48vmin, 760px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   transform-origin: center;
@@ -28,14 +28,19 @@
 .heartLayer {
   position: absolute !important;
   inset: 0;
-  overflow: hidden !important;
-  background: #000 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  --media-matte: transparent;
+  mask-image: radial-gradient(ellipse at center, #000 0 58%, rgb(0 0 0 / 90%) 70%, rgb(0 0 0 / 55%) 82%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 58%, rgb(0 0 0 / 90%) 70%, rgb(0 0 0 / 55%) 82%, transparent 100%);
   opacity: 0;
   will-change: opacity, transform;
 }
 
 .heartLayer img {
   object-position: center;
+  filter: contrast(1.3);
+  mix-blend-mode: screen;
 }
 
 .haloLayer,
@@ -44,7 +49,7 @@
 }
 
 .haloLayer {
-  inset: -11%;
+  inset: -14%;
 }
 
 .dormantLayer {
@@ -132,7 +137,7 @@
 .copy {
   position: absolute;
   right: 5vw;
-  bottom: max(7vh, 46px);
+  bottom: max(7vh, 48px);
   left: 5vw;
   z-index: 2;
   display: grid;
@@ -143,14 +148,14 @@
 
 .question {
   min-height: 1.5em;
-  width: min(90vw, 980px);
+  width: min(86vw, 30ch);
   margin: 0;
   color: rgb(247 240 241 / 94%);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(24px, 3vw, 46px);
-  font-weight: 370;
+  font-family: var(--font-interface);
+  font-size: clamp(32px, 2.25vw, 50px);
+  font-weight: 400;
   letter-spacing: -.032em;
-  line-height: 1.22;
+  line-height: 1.18;
   opacity: 0;
   text-wrap: balance;
   text-shadow: 0 3px 25px rgb(78 3 18 / 34%);
@@ -204,12 +209,12 @@
 .answerControls {
   position: absolute;
   right: 5vw;
-  bottom: max(5.5vh, 34px);
+  bottom: max(5vh, 44px);
   left: 5vw;
   z-index: 5;
   display: flex;
   justify-content: center;
-  gap: clamp(12px, 2vw, 26px);
+  gap: clamp(16px, 2vw, 28px);
   margin: 0;
   padding: 0;
   border: 0;
@@ -222,12 +227,12 @@
 }
 
 .answerButton {
-  min-width: min(40vw, 238px);
-  min-height: 50px;
+  min-width: min(40vw, 220px);
+  min-height: 52px;
   padding: 13px 24px;
   border: 1px solid;
   border-radius: 2px;
-  background: rgb(4 3 4 / 78%);
+  background: linear-gradient(180deg, rgb(16 14 16 / 72%), rgb(4 3 4 / 84%));
   font: inherit;
   font-size: clamp(14px, 1.15vw, 17px);
   font-weight: 420;
@@ -265,8 +270,12 @@
 }
 
 .answerButton:focus-visible {
-  outline: 2px solid rgb(255 240 242 / 88%);
+  outline: 1px solid rgb(255 240 242 / 88%);
   outline-offset: 4px;
+}
+
+.answerButton:active {
+  transform: translateY(1px);
 }
 
 .answerButton:disabled {
@@ -292,7 +301,7 @@
 
 .finalDate {
   color: rgb(239 224 226 / 82%);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-interface);
   font-size: clamp(13px, 1.15vw, 17px);
   font-variant-numeric: tabular-nums;
   font-weight: 380;

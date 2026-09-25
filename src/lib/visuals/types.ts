@@ -1,4 +1,4 @@
-import type { VisualQuality } from "./quality";
+import type { VisualQuality, VisualQualityMode } from "./quality";
 
 export type Vec3 = readonly [number, number, number];
 export type SoulState = "DORMANT" | "ACTIVE" | "CHARGED";
@@ -61,6 +61,10 @@ export type VisualMetrics = Readonly<{
   cursor: CursorMode;
   pointerType: "fine" | "coarse" | "unknown";
   quality: VisualQuality;
+  qualityMode: VisualQualityMode;
+  fps: number;
+  frameTimeMs: number;
+  qualityReason: string;
 }>;
 
 export type VisualFxState = Readonly<{

@@ -144,6 +144,7 @@ export function AudioDebugPanel({ sceneId, runId }: AudioDebugPanelProps) {
         <div><dt>contexts</dt><dd>{snapshot.contextCreationCount}</dd></div>
         <div><dt>cinematic gate</dt><dd data-testid="audio-cinematic-silence">{snapshot.cinematicSilence.active ? "active" : "open"}</dd></div>
         <div><dt>music</dt><dd data-testid="audio-music-state">{snapshot.music.state ?? "none"} / {snapshot.music.deck ?? "—"} / decks {snapshot.activeMusicDeckCount}</dd></div>
+        <div><dt>music gain</dt><dd data-testid="audio-music-gain">{snapshot.music.gain.toFixed(2)}</dd></div>
         <div><dt>time</dt><dd data-testid="audio-music-time">{snapshot.music.currentTime.toFixed(1)} / {snapshot.music.duration?.toFixed(1) ?? "?"}</dd></div>
         <div><dt>music tone</dt><dd data-testid="audio-music-tone">{Math.round(snapshot.musicTone.frequency)} Hz / {snapshot.musicTone.presence.toFixed(2)} / {snapshot.musicTone.active ? "active" : "neutral"}</dd></div>
         <div><dt>active</dt><dd data-testid="audio-active-counts">A {snapshot.activeAmbientCount} · S {snapshot.activeSfxCount} · P {snapshot.activeProceduralCount}</dd></div>

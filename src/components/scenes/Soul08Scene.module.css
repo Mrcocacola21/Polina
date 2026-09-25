@@ -43,7 +43,7 @@
   position: absolute;
   right: clamp(28px, 7vw, 118px);
   top: 19%;
-  width: clamp(210px, 24vw, 390px);
+  width: clamp(230px, 24vw, 470px);
   aspect-ratio: 932 / 703;
   overflow: hidden;
   border: 1px solid rgb(244 206 211 / 10%);
@@ -157,7 +157,7 @@
   display: block;
   opacity: 0;
   mix-blend-mode: screen;
-  filter: brightness(.68) saturate(.78) drop-shadow(0 0 9px rgb(180 20 43 / 25%));
+  filter: brightness(.58) saturate(.7) drop-shadow(0 0 7px rgb(180 20 43 / 18%));
   will-change: opacity, filter, transform;
 }
 
@@ -185,10 +185,10 @@
   z-index: 6;
   margin: 0;
   color: rgb(250 242 242 / 97%);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-display);
   font-weight: 650;
-  letter-spacing: -.055em;
-  line-height: .88;
+  letter-spacing: -.045em;
+  line-height: .94;
   pointer-events: none;
   text-align: center;
   text-shadow:
@@ -200,7 +200,7 @@
 .second {
   position: absolute;
   left: 50%;
-  width: min(94vw, 1500px);
+  width: min(86vw, 1400px);
   opacity: 0;
   transform: translateX(-50%);
   text-wrap: balance;
@@ -209,12 +209,12 @@
 
 .first {
   top: 40%;
-  font-size: clamp(58px, 9.2vw, 154px);
+  font-size: clamp(64px, 7.4vw, 140px);
 }
 
 .second {
   top: 38%;
-  font-size: clamp(60px, 9.7vw, 164px);
+  font-size: clamp(66px, 8vw, 148px);
 }
 
 .phraseJoin {
@@ -231,7 +231,7 @@
   position: absolute;
   inset: 0;
   z-index: 7;
-  background: radial-gradient(circle at 50% 46%, rgb(210 35 58 / 38%), rgb(86 5 19 / 24%) 34%, transparent 72%);
+  background: radial-gradient(circle at 50% 46%, rgb(210 35 58 / 30%), rgb(86 5 19 / 19%) 34%, transparent 72%);
   opacity: 0;
   pointer-events: none;
 }

@@ -20,7 +20,30 @@ function CameraBridge() {
     runtime.setWebGLState("ready", gl.getPixelRatio(), [size.width, size.height]);
   }, [camera, gl, runtime, size.height, size.width]);
 
-  useFrame(() => runtime.setCameraBridge(camera, size.width, size.height));
+  useFrame((_state, delta) => {
+    runtime.setCameraBridge(camera, size.width, size.height);
+    runtime.sampleFrame(delta * 1000);
+  });
+  return null;
+}
+
+function WebGLLifecycle() {
+  const runtime = useVisualRuntime();
+  const { gl, size } = useThree();
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const onLost = (event: Event) => {
+      event.preventDefault();
+      runtime.setWebGLState("lost", gl.getPixelRatio(), [size.width, size.height]);
+    };
+    const onRestored = () => runtime.setWebGLState("ready", gl.getPixelRatio(), [size.width, size.height]);
+    canvas.addEventListener("webglcontextlost", onLost);
+    canvas.addEventListener("webglcontextrestored", onRestored);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+    };
+  }, [gl, runtime, size.height, size.width]);
   return null;
 }
 
@@ -63,24 +86,11 @@ export function GlobalWebGLCanvas() {
         resize={{ scroll: false, debounce: { scroll: 0, resize: 80 } }}
         onCreated={({ gl, size }) => {
           gl.setClearColor(0x000000, 0);
-          const canvas = gl.domElement;
-          const onLost = (event: Event) => {
-            event.preventDefault();
-            runtime.setWebGLState("lost", gl.getPixelRatio(), [size.width, size.height]);
-            if (process.env.NODE_ENV === "development") {
-              console.warn("SOULBOUND WebGL context was lost; DOM visuals remain active.");
-            }
-          };
-          const onRestored = () => runtime.setWebGLState(
-            "ready",
-            gl.getPixelRatio(),
-            [size.width, size.height],
-          );
-          canvas.addEventListener("webglcontextlost", onLost);
-          canvas.addEventListener("webglcontextrestored", onRestored);
+          runtime.setWebGLState("ready", gl.getPixelRatio(), [size.width, size.height]);
         }}
       >
         <CameraBridge />
+        <WebGLLifecycle />
         <VisualObjects />
       </Canvas>
     </div>

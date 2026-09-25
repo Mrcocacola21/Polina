@@ -14,6 +14,7 @@ import {
   S05_COPY,
   S05_TIMING,
 } from "@/lib/cinematic/phase7";
+import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
@@ -95,7 +96,11 @@ export function Soul05Scene() {
     if (phase !== "entering") return;
     audio.resetMusicTone(1.45);
     if (audio.getSnapshot().isUnlocked) {
-      void audio.setMusicState(PHASE7_MUSIC_STATE, { crossfadeSeconds: 2.2 });
+      void audio.setMusicState(PHASE7_MUSIC_STATE, {
+        crossfadeSeconds: 2.2,
+        gain: FILM_MIX.music.s05,
+        gainRampSeconds: 1.9,
+      });
     }
     const reveal = visual.reveal("VERTICAL_SLIT", 1.25);
     const timeline = gsap.fromTo(
@@ -113,7 +118,7 @@ export function Soul05Scene() {
   useEffect(() => {
     if (phase !== "active" || !audio.getSnapshot().isUnlocked) return;
     void sceneAudio.playAmbient("MORNING_ROOM", {
-      gain: 0.115,
+      gain: FILM_MIX.ambient.s05Morning,
       fadeInSeconds: 2.2,
       loop: true,
     }).then((handle) => {
@@ -147,13 +152,8 @@ export function Soul05Scene() {
     visual.setLightLeak(0.026, { drift: true });
     if (audio.getSnapshot().isUnlocked) {
       void sceneAudio.playSfx("audio:scenes.s05.cue02", {
-        gain: 0.5,
-        duckMusic: {
-          to: 0.84,
-          attackSeconds: 0.12,
-          holdSeconds: 0.35,
-          releaseSeconds: 1.1,
-        },
+        gain: FILM_MIX.sfx.s05Reveal,
+        duckMusic: DUCK_PRESETS.morningReveal,
       });
     }
 
@@ -174,7 +174,7 @@ export function Soul05Scene() {
       ease: "power2.out",
     }, 0);
     timeline.call(
-      () => playPiano("audio:scenes.s05.cue03.a", 0.44),
+      () => playPiano("audio:scenes.s05.cue03.a", FILM_MIX.sfx.s05PianoA),
       [],
       0.65,
     );
@@ -190,7 +190,7 @@ export function Soul05Scene() {
       ease: "power2.out",
     }, 1.15);
     timeline.call(
-      () => playPiano("audio:scenes.s05.cue03.b", 0.42),
+      () => playPiano("audio:scenes.s05.cue03.b", FILM_MIX.sfx.s05PianoB),
       [],
       S05_TIMING.screenshotReadable,
     );
@@ -217,7 +217,7 @@ export function Soul05Scene() {
       ease: "power2.out",
     }, S05_TIMING.phraseTwo);
     timeline.call(() => {
-      playPiano("audio:scenes.s05.cue03.c", 0.45);
+      playPiano("audio:scenes.s05.cue03.c", FILM_MIX.sfx.s05PianoC);
       visual.setFogOpacity(0.065, 1.4);
       particlesRef.current?.update({ opacity: 0.2, drift: 0.045 });
     }, [], S05_TIMING.finalBeat);
@@ -250,6 +250,7 @@ export function Soul05Scene() {
       variant: S05_COLLECTION.variant,
       visualState: S05_COLLECTION.visualState,
       voice: S05_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S05,
     });
     setCollectionStatus(result.status);
     if (phase7CollectionAllowsContinue(result.status)) scheduleContinue();

@@ -11,16 +11,18 @@ type HomeProps = {
     visualSandbox?: string | string[];
     soulSandbox?: string | string[];
     requiemSandbox?: string | string[];
+    transitionLab?: string | string[];
   }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { debug, visualSandbox, soulSandbox, requiemSandbox } = await searchParams;
+  const { debug, visualSandbox, soulSandbox, requiemSandbox, transitionLab } = await searchParams;
   const debugEnabled =
     process.env.NODE_ENV === "development" && debug === "1";
   const visualSandboxEnabled = debugEnabled && visualSandbox === "1";
   const soulSandboxEnabled = debugEnabled && soulSandbox === "1";
   const requiemSandboxEnabled = debugEnabled && requiemSandbox === "1";
+  const transitionLabEnabled = debugEnabled && transitionLab === "1";
   const anySandboxEnabled = visualSandboxEnabled || soulSandboxEnabled;
 
   return (
@@ -35,11 +37,12 @@ export default async function Home({ searchParams }: HomeProps) {
               debugEnabled={debugEnabled && !anySandboxEnabled}
               sandboxEnabled={anySandboxEnabled}
               requiemSandboxEnabled={requiemSandboxEnabled}
+              transitionLabEnabled={transitionLabEnabled}
             />
           </GlobalVisualRoot>
         </AudioEngineProvider>
       </MediaPreloadProvider>
-      {debugEnabled && !anySandboxEnabled ? <AssetDiagnostics /> : null}
+      {debugEnabled && !anySandboxEnabled && !transitionLabEnabled ? <AssetDiagnostics /> : null}
     </FullscreenStage>
   );
 }

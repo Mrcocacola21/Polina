@@ -17,6 +17,7 @@ import {
   S10_TIMING,
   S10_VISUAL_LEVELS,
 } from "@/lib/cinematic/phase11";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -128,6 +129,7 @@ export function Soul10Scene() {
       variant: S10_COLLECTION.variant,
       visualState: S10_COLLECTION.visualState,
       voice: S10_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S10,
     });
     if (!activeRunRef.current) return;
     setCollectionStatus(result.status);
@@ -143,11 +145,7 @@ export function Soul10Scene() {
     visual.setGrain(0.022);
     visual.setVignette(S10_VISUAL_LEVELS.vignette.entry, 0.82);
     visual.setVignetteCenter(50, 49);
-    const particleCount = visual.quality === "HIGH"
-      ? S10_VISUAL_LEVELS.particleCount.high
-      : visual.quality === "LOW"
-        ? S10_VISUAL_LEVELS.particleCount.low
-        : S10_VISUAL_LEVELS.particleCount.medium;
+    const particleCount = S10_VISUAL_LEVELS.particleCount.high;
     const particles = visual.spawnParticleField({
       mode: "AMBIENT_DRIFT",
       count: particleCount,
@@ -184,7 +182,12 @@ export function Soul10Scene() {
     if (phase !== "entering") return;
     if (audio.getSnapshot().isUnlocked) {
       if (audio.getSnapshot().music.state !== PHASE11_MUSIC_STATE) {
-        void audio.crossfadeMusic(PHASE11_MUSIC_STATE, { crossfadeSeconds: S10_TIMING.directMusicCrossfade });
+        void audio.crossfadeMusic(PHASE11_MUSIC_STATE, {
+          crossfadeSeconds: S10_TIMING.directMusicCrossfade,
+          gain: FILM_MIX.music.s10,
+        });
+      } else {
+        void audio.setMusicState(PHASE11_MUSIC_STATE, { gain: FILM_MIX.music.s10, gainRampSeconds: 1.8 });
       }
       rumbleRef.current = sceneAudio.createLowRumble({ frequency: 43, intensity: 1, gain: S10_AUDIO_LEVELS.rumble.entry });
       applyTone(S10_AUDIO_LEVELS.tone.entry, 2.6);

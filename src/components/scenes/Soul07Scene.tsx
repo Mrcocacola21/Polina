@@ -9,12 +9,14 @@ import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import type { ProceduralHandle } from "@/lib/audio/types";
 import {
   formatRating,
+  PHASE8_MUSIC_STATE,
   phase8CollectionAllowsContinue,
   S07_COLLECTION,
   S07_COPY,
   S07_RATING_STEPS,
   S07_TIMING,
 } from "@/lib/cinematic/phase8";
+import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
@@ -120,6 +122,7 @@ export function Soul07Scene() {
       variant: S07_COLLECTION.variant,
       visualState: S07_COLLECTION.visualState,
       voice: S07_COLLECTION.voice,
+      timingScale: COLLECTION_SCENE_SCALE.S07,
     });
     setCollectionStatus(result.status);
     if (phase8CollectionAllowsContinue(result.status)) {
@@ -134,7 +137,10 @@ export function Soul07Scene() {
   useEffect(() => {
     if (phase !== "active" || timelineStartedRef.current) return;
     timelineStartedRef.current = true;
-    if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue01", { gain: 0.52 });
+    if (audio.getSnapshot().isUnlocked) {
+      void audio.setMusicState(PHASE8_MUSIC_STATE, { gain: FILM_MIX.music.s07, gainRampSeconds: 1.2 });
+      void sceneAudio.playSfx("audio:scenes.s07.cue01", { gain: FILM_MIX.sfx.s07Arrival });
+    }
 
     const rating = { value: 0 };
     const updateRating = () => {
@@ -148,7 +154,7 @@ export function Soul07Scene() {
     timeline.fromTo(sincereRef.current, { opacity: 0, filter: "blur(8px)", y: 10 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.25, ease: "power2.out" }, S07_TIMING.sincere);
     timeline.call(() => {
       if (audio.getSnapshot().isUnlocked) {
-        ratingAudioRef.current = sceneAudio.startRatingRise({ startFrequency: 145, endFrequency: 1040, durationSeconds: S07_TIMING.ratingDuration, gain: 0.032 });
+        ratingAudioRef.current = sceneAudio.startRatingRise({ startFrequency: 145, endFrequency: 980, durationSeconds: S07_TIMING.ratingDuration, gain: FILM_MIX.sfx.s07RatingRise });
       }
     }, [], S07_TIMING.ratingStart);
     timeline.fromTo(ratingPanelRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" }, S07_TIMING.ratingStart);
@@ -162,7 +168,7 @@ export function Soul07Scene() {
       ratingAudioRef.current = null;
       setRatingResolved(true);
       if (ratingValueRef.current) ratingValueRef.current.textContent = formatRating(0, true);
-      if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue02", { gain: 0.58 });
+      if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue02", { gain: FILM_MIX.sfx.s07Resolve });
       particlesRef.current?.burst();
     }, [], S07_TIMING.infinity);
     timeline.to([orbitOneRef.current, orbitTwoRef.current], { rotation: "+=24", duration: 0.7, ease: "power2.inOut" }, S07_TIMING.infinity);
@@ -170,7 +176,7 @@ export function Soul07Scene() {
     timeline.to(prosRef.current, { opacity: 0, x: 18, duration: 0.28, ease: "power2.in" }, S07_TIMING.infinity + 1.08);
     timeline.fromTo(heroRef.current, { opacity: 0, filter: "blur(7px)", scale: 0.92 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.75, ease: "power3.out" }, S07_TIMING.hero);
     timeline.call(() => {
-      if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue03", { gain: 0.38 });
+      if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue03", { gain: FILM_MIX.sfx.s07Pop });
     }, [], S07_TIMING.aside);
     timeline.fromTo(asideRef.current, { opacity: 0, filter: "blur(5px)", y: 5 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.8, ease: "sine.out" }, S07_TIMING.aside);
     timeline.to([ratingPanelRef.current, heroRef.current], { opacity: 0.18, duration: 0.9, ease: "sine.inOut" }, S07_TIMING.collection - 0.7);
