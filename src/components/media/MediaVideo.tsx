@@ -10,6 +10,8 @@ import {
 
 import { safePlayVideo, type SafePlayResult } from "@/lib/media/preloaders";
 import type { MediaAsset } from "@/lib/media/types";
+import { fallbackForSemanticRefs } from "@/lib/media/fallbacks";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
 
 import styles from "./MediaPresentation.module.css";
 
@@ -45,10 +47,13 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
     forwardedRef,
   ) {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const capabilities = useCapabilities();
     const [renderStatus, setRenderStatus] = useState<
       "loading" | "ready" | "error"
     >(asset.kind === "video" ? "loading" : "error");
-    const failed = renderStatus === "error" || asset.kind !== "video";
+    const simulatedFailure = capabilities.failedMediaKind === "video";
+    const failed = renderStatus === "error" || asset.kind !== "video" || simulatedFailure;
+    const fallbackPolicy = fallbackForSemanticRefs(asset.semanticRefs);
     const classes = [styles.frame, className].filter(Boolean).join(" ");
 
     useImperativeHandle(forwardedRef, () => {
@@ -99,12 +104,18 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             draggable={false}
             preload={preload}
             loop={loop}
+            data-soulbound-video
             onCanPlay={() => void handleCanPlay()}
             onError={() => setRenderStatus("error")}
           />
         ) : null}
         {renderStatus !== "ready" ? (
-          <div className={styles.fallback} aria-hidden="true">
+          <div
+            className={styles.fallback}
+            aria-hidden="true"
+            data-fallback-kind={fallbackPolicy?.kind ?? "atmosphere"}
+            style={poster?.kind === "image" ? { backgroundImage: `url("${poster.url}")` } : undefined}
+          >
             {developmentLabel && process.env.NODE_ENV === "development" ? (
               <span>{asset.id}</span>
             ) : null}

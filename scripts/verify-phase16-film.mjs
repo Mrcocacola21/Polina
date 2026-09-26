@@ -93,6 +93,10 @@ async function waitForScene(sceneId, timeout = 60_000) {
 }
 
 async function continueOnce(sceneId, timeout = 60_000) {
+  if (/^S(?:0[1-9]|10)$/.test(sceneId)) {
+    await waitFor(`${sceneId} explicit Soul claim`, `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === '${sceneId}' && Boolean(document.querySelector('[data-testid="soul-claim-target"]'))`, timeout);
+    await evaluate(`(() => { const target = document.querySelector('[data-testid="soul-claim-target"]'); target?.focus(); target?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true })); })()`, true);
+  }
   await waitFor(`${sceneId} continue`, `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === '${sceneId}' && Boolean(document.querySelector('[data-testid="cinematic-continue"]'))`, timeout);
   await clickUnique('[data-testid="cinematic-continue"]');
 }
@@ -140,7 +144,7 @@ function summarizeDurations(monitor) {
 async function startFresh(branch) {
   await send("Page.navigate", { url: `${origin}/?phase16Film=${branch.toLowerCase()}` });
   await waitFor("application shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
-  await evaluate(`localStorage.removeItem('soulbound.answer.v1')`);
+  await evaluate(`localStorage.removeItem('soulbound.answer.v1'); sessionStorage.clear()`);
   await send("Page.reload", { ignoreCache: false });
   await waitFor("fresh film shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
   await installMonitor(branch);

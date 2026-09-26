@@ -39,8 +39,8 @@ test("S06 activation is strictly single-fire", () => {
 
 test("Phase 8 collection and music configuration is canonical", () => {
   assert.equal(PHASE8_MUSIC_STATE, "MEMORIES");
-  assert.deepEqual(S06_COLLECTION, { soulId: "SOUL_06", source: "POINT", variant: "NORMAL", visualState: "ACTIVE", voice: "C" });
-  assert.deepEqual(S07_COLLECTION, { soulId: "SOUL_07", source: "POINT", variant: "NORMAL", visualState: "ACTIVE", voice: "NONE" });
+  assert.deepEqual(S06_COLLECTION, { soulId: "SOUL_06", source: "POINT", variant: "NORMAL", visualState: "ACTIVE" });
+  assert.deepEqual(S07_COLLECTION, { soulId: "SOUL_07", source: "POINT", variant: "NORMAL", visualState: "ACTIVE" });
 });
 
 test("rating progression is deterministic, exceeds 100, and resolves to infinity", () => {

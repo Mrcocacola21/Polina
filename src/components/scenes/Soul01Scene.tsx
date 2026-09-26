@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 
 import { MediaImage } from "@/components/media/MediaImage";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
 import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import type { AmbientHandle } from "@/lib/audio/types";
 import {
@@ -47,6 +48,7 @@ export function Soul01Scene() {
   const { collect } = useSceneSoulCollection();
   const collectionRuntime = useSoulCollectionRuntime();
   const visual = useVisualRuntime();
+  const capabilities = useCapabilities();
   const scopeId = createSceneVisualScopeId("S01", runId);
 
   useEffect(() => {
@@ -78,10 +80,9 @@ export function Soul01Scene() {
     const element = roomMotionRef.current;
     if (!element) return;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
     const update = () => {
-      if (finePointer.matches && !reducedMotion.matches) {
+      if (finePointer.matches && capabilities.motionMode === "FULL" && capabilities.visibility === "visible") {
         const { x, y } = visual.pointer.smoothed;
         element.style.transform = `translate3d(${(x * 6).toFixed(2)}px, ${(-y * 4).toFixed(2)}px, 0)`;
       } else {
@@ -91,7 +92,7 @@ export function Soul01Scene() {
     };
     frame = window.requestAnimationFrame(update);
     return () => window.cancelAnimationFrame(frame);
-  }, [visual]);
+  }, [capabilities.motionMode, capabilities.visibility, visual]);
 
   useEffect(() => {
     if (phase !== "entering") return;
@@ -194,7 +195,6 @@ export function Soul01Scene() {
       source: { type: "TEXT", element: source },
       variant: S01_COLLECTION.variant,
       visualState: S01_COLLECTION.visualState,
-      voice: S01_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S01,
     });
     setCollectionStatus(result.status);

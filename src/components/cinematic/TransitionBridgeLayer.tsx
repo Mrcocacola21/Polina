@@ -4,6 +4,7 @@ import { useEffect, type CSSProperties } from "react";
 
 import { useTransitionRuntime, useTransitionSnapshot } from "@/lib/cinematic/TransitionRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
 
 import styles from "./TransitionBridgeLayer.module.css";
 
@@ -12,6 +13,7 @@ const PARTICLES = Array.from({ length: 14 }, (_, index) => index);
 export function TransitionBridgeLayer() {
   const runtime = useTransitionRuntime();
   const snapshot = useTransitionSnapshot();
+  const capabilities = useCapabilities();
   const definition = snapshot.definition;
   const memoryOne = useMediaAsset("visual:screens.together");
   const memoryTwo = useMediaAsset("visual:screens.minecraftTogether");
@@ -19,11 +21,11 @@ export function TransitionBridgeLayer() {
 
   useEffect(() => {
     if (snapshot.status !== "revealing" || !definition) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = capabilities.motionMode === "REDUCED";
     const delay = reduced ? 180 : Math.max(80, definition.revealDuration * 1000 + 80);
     const timer = window.setTimeout(() => runtime.finish(snapshot.sequence), delay);
     return () => window.clearTimeout(timer);
-  }, [definition, runtime, snapshot.sequence, snapshot.status]);
+  }, [capabilities.motionMode, definition, runtime, snapshot.sequence, snapshot.status]);
 
   const hidden = snapshot.status === "idle" || definition?.hardCut || definition?.invisibleBoundary;
   const showMemories = definition?.bridge === "MEMORY_TO_THREAD";

@@ -128,7 +128,6 @@ export function Soul10Scene() {
       source: { type: "POINT", point },
       variant: S10_COLLECTION.variant,
       visualState: S10_COLLECTION.visualState,
-      voice: S10_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S10,
     });
     if (!activeRunRef.current) return;

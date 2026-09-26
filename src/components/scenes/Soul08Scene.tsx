@@ -143,7 +143,6 @@ export function Soul08Scene() {
       source: { type: "POINT", point },
       variant: S08_COLLECTION.variant,
       visualState: S08_COLLECTION.visualState,
-      voice: S08_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S08,
     });
     setCollectionStatus(result.status);

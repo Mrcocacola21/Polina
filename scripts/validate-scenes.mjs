@@ -31,6 +31,7 @@ const silence = read("src/components/scenes/SilenceBoundaryScene.tsx");
 const final = read("src/components/scenes/FinalScene.tsx");
 const audioEngine = read("src/lib/audio/AudioEngine.ts");
 const soulTypes = read("src/lib/souls/types.ts");
+const soulClaims = read("src/lib/souls/claim-config.ts");
 const visualManifest = JSON.parse(read("public/assets/manifest.json"));
 const audioManifest = JSON.parse(read("public/assets/audio-manifest.json"));
 
@@ -67,7 +68,7 @@ for (const [source, value, label] of [
   [phase7, "Когда я просыпаюсь и вижу доброе утро от тебя, мое утро становится по-истинну добрым", "S05 mandatory phrase"],
   [phase7, 'soulId: "SOUL_03"', "S03 Soul mapping"],
   [phase7, 'source: "POINTS"', "S03 POINTS source"],
-  [phase7, 'voice: "B"', "S03 voice B"],
+  [soulClaims, 'SOUL_03: define("B")', "S03 voice B"],
   [phase7, 'soulId: "SOUL_04"', "S04 Soul mapping"],
   [phase7, 'variant: "SILENT"', "S04 silent variant"],
   [phase7, 'soulId: "SOUL_05"', "S05 Soul mapping"],
@@ -78,9 +79,9 @@ for (const [source, value, label] of [
   [phase8, "Каждый раз когда я выбиваю из тебя реакцию ❤️ или вижу его в сообщениях мне на душе становится так приятно", "S06 mandatory phrase"],
   [phase8, "Ты мне нравишься с головы до ног полностью и тебя я буду рейтить выше всех ВСЕГДА!!! (люблю твою попку, хехе❤️)", "S07 mandatory phrase"],
   [phase8, 'soulId: "SOUL_06"', "S06 Soul mapping"],
-  [phase8, 'voice: "C"', "S06 voice C"],
+  [soulClaims, 'SOUL_06: define("C")', "S06 voice C"],
   [phase8, 'soulId: "SOUL_07"', "S07 Soul mapping"],
-  [phase8, 'voice: "NONE"', "S07 no voice"],
+  [soulClaims, 'SOUL_07: define("NONE")', "S07 no voice"],
   [phase8, 'PHASE8_MUSIC_STATE = "MEMORIES"', "Phase 8 music continuity"],
   [phase9, "Королеву не убить, Я умру за королеву", "S08 mandatory phrase"],
   [phase9, 'soulId: "SOUL_08"', "S08 Soul mapping"],
@@ -94,7 +95,7 @@ for (const [source, value, label] of [
   [phase10, 'source: "POINT"', "S09 POINT source"],
   [phase10, 'variant: "DEEP"', "S09 deep variant"],
   [phase10, 'visualState: "ACTIVE"', "S09 active visual state"],
-  [phase10, 'voice: "NONE"', "S09 no voice"],
+  [soulClaims, 'SOUL_09: define("NONE", 58)', "S09 no voice"],
   [phase10, 'PHASE10_MUSIC_STATE = "VULNERABILITY"', "Phase 10 music transition"],
   [phase11, "Я тревожусь по маленьким поводам и могу надумать себе всякого, потому что люблю тебя и боюсь, что снова сделал что-то не так и потеряю тебя, твой интерес к себе или ты уйдешь к другому мальчику", "S10 mandatory phrase"],
   [phase11, "Я не самый красивый, умный или что-то в этом роде, но можна я..", "PRE_FINAL mandatory phrase"],
@@ -102,7 +103,7 @@ for (const [source, value, label] of [
   [phase11, 'source: "POINT"', "S10 POINT source"],
   [phase11, 'variant: "DEEP"', "S10 deep variant"],
   [phase11, 'visualState: "ACTIVE"', "S10 active visual state"],
-  [phase11, 'voice: "NONE"', "S10 no voice"],
+  [soulClaims, 'SOUL_10: define("NONE", 58)', "S10 no voice"],
   [phase11, 'PHASE11_MUSIC_STATE = "VULNERABILITY"', "Phase 11 music continuity"],
 ]) requireText(source, value, label);
 

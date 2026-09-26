@@ -13,6 +13,15 @@ import type { Vec3 } from "@/lib/visuals/types";
 import { createSceneAudioScopeId } from "@/lib/audio/scopes";
 
 import {
+  advanceSoulClaim,
+  cancelSoulClaim,
+  claimSoul,
+  createSoulClaimState,
+  enterSoulWaiting,
+  type SoulClaimState,
+} from "./claim-state";
+import { getSoulClaimConfig, type SoulClaimConfig } from "./claim-config";
+import {
   abortSoulRelease,
   beginSoulCollection,
   beginSoulRelease,
@@ -24,7 +33,7 @@ import {
   seedSoulCollection,
   setSoulHudMode,
 } from "./collection-state";
-import type { SoulId } from "./registry";
+import { SOUL_IDS, type SoulId } from "./registry";
 import { createTextFragmentOverlay, type TextFragmentOverlay } from "./text-source";
 import { createPointSourceOverlay, type PointSourceOverlay } from "./points-source";
 import type {
@@ -33,6 +42,8 @@ import type {
   CollectionTiming,
   CollectionVariant,
   ReleaseResult,
+  SoulClaimTarget,
+  SoulClaimTrigger,
   SoulCollectionState,
   SoulHudMode,
   SoulSlot,
@@ -56,6 +67,16 @@ type ActiveTransaction = {
   particle?: ParticleFieldController;
   soul?: SoulController;
   audio: Set<AudioHandle>;
+  waitingAudio?: AudioHandle;
+  waitingAudioPending: boolean;
+  claimConfig: SoulClaimConfig;
+  claimState: SoulClaimState;
+  claimTarget?: SoulClaimTarget;
+  claimPromise: Promise<void>;
+  resolveClaim: () => void;
+  cursorBeforeWaiting: ReturnType<VisualRuntime["getSnapshot"]>["cursor"];
+  variant: CollectionVariant;
+  voice: SoulVoice;
   committed: boolean;
 };
 
@@ -72,6 +93,11 @@ export type SoulCollectionSnapshot = Readonly<{
   hudMode: SoulHudMode;
   releaseState: SoulCollectionState["releaseState"];
   releasedCount: number;
+  claimStage: SoulClaimState["stage"];
+  claimLocked: boolean;
+  claimTarget: SoulClaimTarget | null;
+  waitingAudioActive: boolean;
+  assignedVoice: SoulVoice | null;
 }>;
 
 class CancelledCollectionError extends Error {}
@@ -127,6 +153,13 @@ export class SoulCollectionRuntime {
       hudMode: this.#state.hudMode,
       releaseState: this.#state.releaseState,
       releasedCount: this.#released.length,
+      claimStage: this.#active?.claimState.stage ?? "IDLE",
+      claimLocked: this.#active?.claimState.locked ?? false,
+      claimTarget: this.#active?.claimTarget ?? null,
+      waitingAudioActive: Boolean(
+        this.#active?.waitingAudioPending || this.#active?.waitingAudio?.isActive(),
+      ),
+      assignedVoice: this.#active?.voice ?? null,
     };
   }
 
@@ -190,6 +223,11 @@ export class SoulCollectionRuntime {
     }
 
     this.#state = started.state;
+    const claimConfig = getSoulClaimConfig(options.soulId);
+    let resolveClaim: () => void = () => undefined;
+    const claimPromise = new Promise<void>((resolve) => {
+      resolveClaim = resolve;
+    });
     const transaction: ActiveTransaction = {
       id: ++this.#sequence,
       soulId: options.soulId,
@@ -197,6 +235,16 @@ export class SoulCollectionRuntime {
       controller: new AbortController(),
       promise: Promise.resolve(this.#result("failed", options.soulId)),
       audio: new Set(),
+      waitingAudioPending: false,
+      claimConfig,
+      claimState: createSoulClaimState(),
+      claimPromise,
+      resolveClaim,
+      cursorBeforeWaiting: this.#visual.getSnapshot().cursor,
+      variant: options.variant ?? "NORMAL",
+      voice: process.env.NODE_ENV === "development" && !options.owner && options.debugVoice
+        ? options.debugVoice
+        : claimConfig.voice,
       committed: false,
     };
     this.#active = transaction;
@@ -209,18 +257,43 @@ export class SoulCollectionRuntime {
     const transaction = this.#active;
     if (!transaction) return;
     transaction.controller.abort(reason);
+    transaction.claimState = cancelSoulClaim(transaction.claimState);
+    transaction.resolveClaim();
     this.#state = cancelSoulCollection(this.#state, transaction.soulId);
     this.#cleanupTransaction(transaction, true);
     if (this.#active?.id === transaction.id) this.#active = undefined;
     this.#notify();
   }
 
+  claimActiveSoul(trigger: SoulClaimTrigger): boolean {
+    if (trigger === "FORCE" && process.env.NODE_ENV !== "development") return false;
+    const transaction = this.#active;
+    if (!transaction) return false;
+    const claimed = claimSoul(transaction.claimState, trigger);
+    if (!claimed.accepted) return false;
+    transaction.claimState = claimed.state;
+    transaction.claimTarget = undefined;
+    transaction.soul?.stopBreathing();
+    this.#stopWaitingAudio(transaction);
+    this.#restoreClaimCursor(transaction);
+    this.#playClaimAudio(transaction);
+    this.#playVoiceAudio(transaction, transaction.variant, transaction.voice);
+    transaction.resolveClaim();
+    this.#notify();
+    return true;
+  }
+
+  setClaimProximity(near: boolean): void {
+    const transaction = this.#active;
+    if (!transaction || transaction.claimState.stage !== "WAITING") return;
+    this.#visual.setCursorMode(near ? "INTERACTIVE" : transaction.cursorBeforeWaiting);
+  }
+
   async #runTransaction(
     transaction: ActiveTransaction,
     options: CollectSoulOptions,
   ): Promise<CollectionResult> {
-    const variant = options.variant ?? "NORMAL";
-    const voice = options.voice ?? "NONE";
+    const variant = transaction.variant;
     const visualState = options.visualState ?? "ACTIVE";
     const scale = Math.max(0.05, options.timingScale ?? 1) * this.#visual.motionIntensity;
     const base = TIMINGS[variant];
@@ -282,7 +355,6 @@ export class SoulCollectionRuntime {
         state: visualState,
         scopeId: visualScopeId,
       });
-      this.#playSpawnAudio(transaction, variant);
       if (!await transaction.soul.spawn({
         position: world,
         duration: timing.spawn,
@@ -293,12 +365,22 @@ export class SoulCollectionRuntime {
       transaction.particle = undefined;
       transaction.soul.startBreathing(variant === "DEEP" ? 0.018 : 0.032);
       if (!await wait(timing.stabilize, signal)) throw new CancelledCollectionError();
-      transaction.soul.stopBreathing();
-      this.#playVoiceAudio(transaction, variant, voice);
-      this.#playFlyAudio(transaction, variant);
+      transaction.claimState = enterSoulWaiting(transaction.claimState);
+      transaction.claimTarget = {
+        soulId: options.soulId,
+        center: convergence,
+        radius: transaction.claimConfig.hitRadius,
+      };
+      transaction.cursorBeforeWaiting = this.#visual.getSnapshot().cursor;
+      this.#playWaitingAudio(transaction);
+      this.#notify();
+      if (!await this.#waitForClaim(transaction)) throw new CancelledCollectionError();
+      this.#assertActive(transaction);
 
       const destination = this.getSlotCenter(options.soulId);
       if (!destination) throw new Error(`HUD slot is unavailable for ${options.soulId}.`);
+      transaction.claimState = advanceSoulClaim(transaction.claimState, "FLYING");
+      this.#notify();
       if (!await transaction.soul.flyTo(
         { screen: destination },
         {
@@ -309,6 +391,8 @@ export class SoulCollectionRuntime {
         },
       )) throw new CancelledCollectionError();
       this.#assertActive(transaction);
+      transaction.claimState = advanceSoulClaim(transaction.claimState, "ABSORBING");
+      this.#notify();
       if (!await this.#absorbSlot(options.soulId, timing.absorb, signal)) {
         throw new CancelledCollectionError();
       }
@@ -320,6 +404,7 @@ export class SoulCollectionRuntime {
         collectedAt: performance.now(),
       });
       transaction.committed = true;
+      transaction.claimState = advanceSoulClaim(transaction.claimState, "COMMITTED");
       if (variant !== "SILENT") {
         const tone = this.#audio.playUiTone({
           frequency: variant === "DEEP" ? 196 : 294,
@@ -341,6 +426,7 @@ export class SoulCollectionRuntime {
         console.warn(`Soul collection failed for ${options.soulId}.`, error);
       }
       if (!transaction.committed) {
+        transaction.claimState = cancelSoulClaim(transaction.claimState);
         this.#state = cancelSoulCollection(this.#state, options.soulId);
       }
       restoreOnSuccess = true;
@@ -356,7 +442,10 @@ export class SoulCollectionRuntime {
         transaction.committed ? restoreOnSuccess : true,
         !transaction.committed,
       );
-      if (this.#active?.id === transaction.id) this.#active = undefined;
+      if (this.#active?.id === transaction.id) {
+        this.#active = undefined;
+        this.#notify();
+      }
     }
   }
 
@@ -427,21 +516,54 @@ export class SoulCollectionRuntime {
     }).catch(() => undefined);
   }
 
-  #playSpawnAudio(transaction: ActiveTransaction, variant: CollectionVariant): void {
-    if (variant === "SILENT") return;
-    this.#trackAudio(transaction, this.#audio.playSfx("audio:global.soulSpawn", {
+  #playWaitingAudio(transaction: ActiveTransaction): void {
+    transaction.waitingAudioPending = true;
+    void this.#audio.playSfx(transaction.claimConfig.idleAudio, {
       scopeId: this.#scopeId(transaction),
-      gain: variant === "DEEP" ? FILM_MIX.collection.deepSpawn : FILM_MIX.collection.normalSpawn,
-      playbackRate: variant === "DEEP" ? 0.88 : 1,
-    }));
+      gain: transaction.variant === "DEEP"
+        ? FILM_MIX.collection.deepSpawn
+        : FILM_MIX.collection.normalSpawn,
+      playbackRate: transaction.variant === "DEEP" ? 0.88 : 1,
+      // The 6.071 s asset has loud, dissimilar boundaries. A one-shot arrival
+      // preserves its tail without creating a click/gap during an indefinite wait.
+      loop: false,
+    }).then((handle) => {
+      transaction.waitingAudioPending = false;
+      if (!handle) {
+        this.#notify();
+        return;
+      }
+      if (
+        transaction.controller.signal.aborted ||
+        this.#active?.id !== transaction.id ||
+        transaction.claimState.stage !== "WAITING"
+      ) {
+        handle.stop({ fadeSeconds: 0.04 });
+      } else {
+        transaction.waitingAudio = handle;
+      }
+      this.#notify();
+    }).catch(() => {
+      transaction.waitingAudioPending = false;
+      this.#notify();
+    });
   }
 
-  #playFlyAudio(transaction: ActiveTransaction, variant: CollectionVariant): void {
-    if (variant === "SILENT") return;
-    this.#trackAudio(transaction, this.#audio.playSfx("audio:global.soulFly", {
+  #stopWaitingAudio(transaction: ActiveTransaction): void {
+    transaction.waitingAudioPending = false;
+    if (transaction.waitingAudio?.isActive()) {
+      transaction.waitingAudio.stop({ fadeSeconds: 0.04 });
+    }
+    transaction.waitingAudio = undefined;
+  }
+
+  #playClaimAudio(transaction: ActiveTransaction): void {
+    this.#trackAudio(transaction, this.#audio.playSfx(transaction.claimConfig.collectAudio, {
       scopeId: this.#scopeId(transaction),
-      gain: variant === "DEEP" ? FILM_MIX.collection.deepFly : FILM_MIX.collection.normalFly,
-      playbackRate: variant === "DEEP" ? 0.9 : 1,
+      gain: transaction.variant === "DEEP"
+        ? FILM_MIX.collection.deepFly
+        : FILM_MIX.collection.normalFly,
+      playbackRate: transaction.variant === "DEEP" ? 0.9 : 1,
     }));
   }
 
@@ -450,7 +572,7 @@ export class SoulCollectionRuntime {
     variant: CollectionVariant,
     voice: SoulVoice,
   ): void {
-    if (variant === "SILENT" || voice === "NONE") return;
+    if (voice === "NONE") return;
     this.#trackAudio(transaction, this.#audio.playVoiceLine(voice, {
       scopeId: this.#scopeId(transaction),
       gain: FILM_MIX.voice[voice],
@@ -499,12 +621,38 @@ export class SoulCollectionRuntime {
     transaction.overlay?.cleanup(restoreSource);
     transaction.particle?.dispose();
     transaction.soul?.dispose();
+    transaction.claimTarget = undefined;
+    this.#stopWaitingAudio(transaction);
+    this.#restoreClaimCursor(transaction);
     if (stopAudio) {
       for (const handle of transaction.audio) {
         if (handle.isActive()) handle.stop({ fadeSeconds: 0.08 });
       }
     }
     transaction.audio.clear();
+  }
+
+  #restoreClaimCursor(transaction: ActiveTransaction): void {
+    if (this.#visual.getSnapshot().cursor === "INTERACTIVE") {
+      this.#visual.setCursorMode(transaction.cursorBeforeWaiting);
+    }
+  }
+
+  #waitForClaim(transaction: ActiveTransaction): Promise<boolean> {
+    const signal = transaction.controller.signal;
+    if (signal.aborted) return Promise.resolve(false);
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (claimed: boolean) => {
+        if (settled) return;
+        settled = true;
+        signal.removeEventListener("abort", abort);
+        resolve(claimed);
+      };
+      const abort = () => finish(false);
+      signal.addEventListener("abort", abort, { once: true });
+      void transaction.claimPromise.then(() => finish(!signal.aborted));
+    });
   }
 
   #result(
@@ -617,6 +765,19 @@ export class SoulCollectionRuntime {
     this.disposeReleasedSouls();
     this.#state = seedSoulCollection(count);
     this.#notify();
+  }
+
+  /** Restores only a stable committed prefix; no media, animation, or audio side effects. */
+  restoreCollectedSouls(soulIds: readonly SoulId[]): boolean {
+    if (
+      soulIds.length > SOUL_IDS.length ||
+      soulIds.some((soulId, index) => soulId !== SOUL_IDS[index])
+    ) return false;
+    this.cancelActiveCollection("recovery restore");
+    this.disposeReleasedSouls();
+    this.#state = seedSoulCollection(soulIds.length);
+    this.#notify();
+    return true;
   }
 
   resetSoulCollection(): void {

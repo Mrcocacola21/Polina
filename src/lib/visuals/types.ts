@@ -1,4 +1,5 @@
 import type { VisualQuality, VisualQualityMode } from "./quality";
+import type { MotionMode } from "../accessibility/capabilities";
 
 export type Vec3 = readonly [number, number, number];
 export type SoulState = "DORMANT" | "ACTIVE" | "CHARGED";
@@ -65,6 +66,7 @@ export type VisualMetrics = Readonly<{
   fps: number;
   frameTimeMs: number;
   qualityReason: string;
+  motionMode: MotionMode;
 }>;
 
 export type VisualFxState = Readonly<{

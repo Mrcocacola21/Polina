@@ -1,0 +1,37 @@
+.control {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: var(--layer-ui);
+  display: inline-flex;
+  min-width: var(--control-hit-size);
+  min-height: var(--control-hit-size);
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid rgb(238 238 241 / 16%);
+  border-radius: 999px;
+  background: rgb(5 5 6 / 58%);
+  color: rgb(238 238 241 / 68%);
+  font: 9px/1 var(--font-system);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.control:hover,
+.control:focus-visible {
+  border-color: rgb(222 36 64 / 52%);
+  color: var(--color-text-primary);
+}
+
+.control:disabled {
+  cursor: default;
+  opacity: .42;
+}
+
+@media (max-width: 620px) {
+  .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}

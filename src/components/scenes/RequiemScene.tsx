@@ -253,8 +253,12 @@ export function RequiemScene() {
       playbackStartedRef.current = true;
 
       const audioNow = audio.getCurrentTime();
-      const usingAudioClock = audioNow !== null;
+      let usingAudioClock = audioNow !== null;
       const clockNow = audioNow ?? performance.now() / 1000;
+      let fallbackStartedAt = performance.now() / 1000;
+      let fallbackTimelineAt = clockNow;
+      let lastAudioClock = audioNow;
+      let lastAudioAdvanceAt = fallbackStartedAt;
       const buildupStart = clockNow + REQUIEM_BUILDUP_TIMING.scheduleLead;
       const heroStart = buildupStart + REQUIEM_BUILDUP_TIMING.heroStart;
       const hardCutAt = heroStart + REQUIEM_AUDIO_CUES.cues.hardCut;
@@ -346,10 +350,27 @@ export function RequiemScene() {
 
       const frame = () => {
         if (cancelled || hardCutCommittedRef.current) return;
-        const now = usingAudioClock ? audio.getCurrentTime() : performance.now() / 1000;
+        const wallNow = performance.now() / 1000;
+        let now = usingAudioClock
+          ? audio.getCurrentTime()
+          : fallbackTimelineAt + (wallNow - fallbackStartedAt);
+        if (usingAudioClock && now !== null) {
+          if (lastAudioClock === null || now > lastAudioClock + 0.001) {
+            lastAudioClock = now;
+            lastAudioAdvanceAt = wallNow;
+          } else if (!document.hidden && wallNow - lastAudioAdvanceAt > 1.5) {
+            usingAudioClock = false;
+            fallbackTimelineAt = now;
+            fallbackStartedAt = wallNow;
+            rootRef.current?.setAttribute("data-clock-mode", "fallback-interruption");
+          }
+        }
         if (now === null) {
-          rafRef.current = window.requestAnimationFrame(frame);
-          return;
+          usingAudioClock = false;
+          fallbackTimelineAt = lastAudioClock ?? clockNow;
+          fallbackStartedAt = wallNow;
+          now = fallbackTimelineAt;
+          rootRef.current?.setAttribute("data-clock-mode", "fallback-unavailable");
         }
         const buildupElapsed = now - buildupStart;
         const root = rootRef.current;

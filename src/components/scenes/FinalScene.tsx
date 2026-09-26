@@ -30,12 +30,14 @@ import {
   YES_VISUAL_LEVELS,
 } from "@/lib/cinematic/phase14";
 import { CROSSFADE_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
+import { clearRecovery, createRecoveryRecord, persistRecovery, readRecovery } from "@/lib/cinematic/recovery";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import { useSoulCollectionRuntime } from "@/lib/souls/SoulCollectionContext";
 import type { ParticleFieldController, SoulController } from "@/lib/visuals/VisualRuntime";
 import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { createSceneVisualScopeId } from "@/lib/visuals/VisualScope";
+import { SOUL_IDS } from "@/lib/souls/registry";
 
 import styles from "./FinalScene.module.css";
 
@@ -329,6 +331,7 @@ export function FinalScene() {
       const stored = persistAnswer(window.localStorage, committed.record);
       setPersistenceStatus(stored ? "available" : "unavailable");
       setPersistedResult(stored ? result : null);
+      if (stored) clearRecovery(window.sessionStorage);
     } catch {
       setPersistenceStatus("unavailable");
     }
@@ -454,10 +457,28 @@ export function FinalScene() {
     timelineStartedRef.current = true;
     const restored = controller.getSnapshot();
     if (restored.state === "YES" || restored.state === "THINK") {
+      clearRecovery(window.sessionStorage);
       const deferred = gsap.delayedCall(0, () => applyStableComposition(restored.state as AnswerResult, true));
       return () => {
         deferred.kill();
       };
+    }
+    const recovery = readRecovery(window.sessionStorage);
+    if (recovery?.sceneId === "FINAL" && recovery.checkpoint === "FINAL_QUESTION") {
+      const deferred = gsap.delayedCall(0, () => {
+        visual.leaveAbsoluteBlack();
+        audio.leaveCinematicSilence();
+        visual.setCursorMode("DEFAULT");
+        setQuestionStep(4);
+        setBeat("stable");
+        setAnswerVisible(true);
+        gsap.set([dormantRef.current, coreRef.current, energyRef.current], { opacity: 0.14 });
+        gsap.set(fullRef.current, { opacity: 0.88, scale: 1 });
+        gsap.set(haloRef.current, { opacity: 0.48, scale: 1.035 });
+        gsap.set(questionRef.current, { opacity: 1, filter: "blur(0px)", y: 0 });
+        gsap.set(tagRef.current, { opacity: 0.66, filter: "blur(0px)", y: 0 });
+      });
+      return () => deferred.kill();
     }
     const reducedMotion = visual.motionIntensity < 0.5;
     const streamDistance = () => (rootRef.current?.clientWidth ?? window.innerWidth) * 0.35;
@@ -519,6 +540,10 @@ export function FinalScene() {
     timeline.call(() => {
       setAnswerVisible(true);
       visual.setCursorMode("DEFAULT");
+      persistRecovery(
+        window.sessionStorage,
+        createRecoveryRecord("FINAL", SOUL_IDS, new Date(), "FINAL_QUESTION"),
+      );
     }, [], FINAL_TIMING.stable + ANSWER_TIMING.revealDelayAfterFinalStable);
     return () => {
       timeline.kill();

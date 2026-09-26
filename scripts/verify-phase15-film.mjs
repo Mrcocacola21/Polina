@@ -95,6 +95,10 @@ async function waitForScene(sceneId, timeout = 60_000) {
 }
 
 async function continueOnce(sceneId, timeout = 60_000) {
+  if (/^S(?:0[1-9]|10)$/.test(sceneId)) {
+    await waitFor(`${sceneId} explicit Soul claim`, `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === '${sceneId}' && Boolean(document.querySelector('[data-testid="soul-claim-target"]'))`, timeout);
+    await evaluate(`(() => { const target = document.querySelector('[data-testid="soul-claim-target"]'); target?.focus(); target?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true })); })()`);
+  }
   await waitFor(`${sceneId} continue`, `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === '${sceneId}' && Boolean(document.querySelector('[data-testid="cinematic-continue"]'))`, timeout);
   await evaluate(`(() => { const button = document.querySelector('[data-testid="cinematic-continue"]'); button?.click(); button?.click(); })()`);
 }
@@ -125,7 +129,7 @@ async function installMonitor() {
 async function startFresh(label) {
   await send("Page.navigate", { url: `${origin}/?filmPass=${label}` });
   await waitFor("application shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
-  await evaluate(`localStorage.removeItem('soulbound.answer.v1')`);
+  await evaluate(`localStorage.removeItem('soulbound.answer.v1'); sessionStorage.clear()`);
   await send("Page.reload", { ignoreCache: false });
   await waitFor("fresh film shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
   await installMonitor();

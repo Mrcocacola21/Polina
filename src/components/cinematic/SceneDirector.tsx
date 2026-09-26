@@ -20,6 +20,11 @@ import { requestMediaForScene } from "@/lib/media/media-preloader";
 import { useProgressiveMediaPrefetch } from "@/lib/media/MediaPreloadContext";
 import { useSceneVisualScopeLifecycle, useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { useSoulCollectionRuntime, useSoulCollectionSceneLifecycle } from "@/lib/souls/SoulCollectionContext";
+import { useSoulCollectionSnapshot } from "@/lib/souls/SoulCollectionContext";
+import { parsePersistedAnswer, ANSWER_PERSISTENCE_KEY } from "@/lib/cinematic/phase14";
+import { clearRecovery, createRecoveryRecord, persistRecovery, readRecovery } from "@/lib/cinematic/recovery";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
+import { MuteControl } from "@/components/accessibility/MuteControl";
 import { SceneRenderer } from "@/components/scenes/SceneRenderer";
 import { useTransitionRuntime } from "@/lib/cinematic/TransitionRuntimeContext";
 import {
@@ -35,12 +40,14 @@ const AudioDebugPanel = dynamic(() => import("@/components/audio/AudioDebugPanel
 const PerformanceDebugPanel = dynamic(() => import("@/components/visuals/PerformanceDebugPanel").then((module) => module.PerformanceDebugPanel), { ssr: false });
 const SceneDebugOverlay = dynamic(() => import("./SceneDebugOverlay").then((module) => module.SceneDebugOverlay), { ssr: false });
 const TransitionLab = dynamic(() => import("./TransitionLab").then((module) => module.TransitionLab), { ssr: false });
+const FailureLab = dynamic(() => import("@/components/accessibility/FailureLab").then((module) => module.FailureLab), { ssr: false });
 
 type SceneDirectorProps = Readonly<{
   debugEnabled?: boolean;
   sandboxEnabled?: boolean;
   requiemSandboxEnabled?: boolean;
   transitionLabEnabled?: boolean;
+  failureLabEnabled?: boolean;
 }>;
 
 export function SceneDirector({
@@ -48,9 +55,14 @@ export function SceneDirector({
   sandboxEnabled = false,
   requiemSandboxEnabled = false,
   transitionLabEnabled = false,
+  failureLabEnabled = false,
 }: SceneDirectorProps) {
   const sandboxPreparedRef = useRef(false);
   const [labRun, setLabRun] = useState<TransitionDefinition | null>(null);
+  const [recoveryResolved, setRecoveryResolved] = useState(
+    sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled,
+  );
+  const recoveryInitializedRef = useRef(false);
   const labStartedRef = useRef(false);
   const [state, dispatch] = useReducer(
     cinematicReducer,
@@ -61,7 +73,9 @@ export function SceneDirector({
   const audio = useAudioEngine();
   const visual = useVisualRuntime();
   const collection = useSoulCollectionRuntime();
+  const collectionSnapshot = useSoulCollectionSnapshot();
   const transition = useTransitionRuntime();
+  const capabilities = useCapabilities();
   useProgressiveMediaPrefetch(state.currentSceneId, state.phase);
   useSceneAudioScopeLifecycle(
     state.currentSceneId,
@@ -108,6 +122,64 @@ export function SceneDirector({
     });
     dispatch({ type: "JUMP_TO_SCENE", sceneId });
   }, [audio, transition, visual]);
+
+  useEffect(() => {
+    if (recoveryInitializedRef.current) return;
+    recoveryInitializedRef.current = true;
+    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled) {
+      return;
+    }
+    try {
+      const answer = parsePersistedAnswer(window.localStorage.getItem(ANSWER_PERSISTENCE_KEY));
+      if (answer) {
+        collection.restoreCollectedSouls([
+          "SOUL_01", "SOUL_02", "SOUL_03", "SOUL_04", "SOUL_05",
+          "SOUL_06", "SOUL_07", "SOUL_08", "SOUL_09", "SOUL_10",
+        ]);
+        clearRecovery(window.sessionStorage);
+        jumpToScene("FINAL");
+      } else {
+        const recovery = readRecovery(window.sessionStorage);
+        if (recovery && collection.restoreCollectedSouls(recovery.collectedSoulIds)) {
+          jumpToScene(recovery.sceneId);
+        }
+      }
+    } finally {
+      setRecoveryResolved(true);
+    }
+  }, [collection, jumpToScene, requiemSandboxEnabled, sandboxEnabled, transitionLabEnabled]);
+
+  useEffect(() => {
+    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled) return;
+    if (!recoveryResolved || state.phase !== "active" || state.currentSceneId === "PRELOADER") return;
+    if (parsePersistedAnswer(window.localStorage.getItem(ANSWER_PERSISTENCE_KEY))) {
+      clearRecovery(window.sessionStorage);
+      return;
+    }
+    const collectedSoulIds = collectionSnapshot.slots
+      .filter((slot) => slot.status === "COLLECTED" || slot.status === "RELEASED")
+      .map((slot) => slot.soulId);
+    persistRecovery(window.sessionStorage, createRecoveryRecord(state.currentSceneId, collectedSoulIds));
+  }, [
+    collectionSnapshot.slots,
+    recoveryResolved,
+    requiemSandboxEnabled,
+    sandboxEnabled,
+    state.currentSceneId,
+    state.phase,
+    transitionLabEnabled,
+  ]);
+
+  useEffect(() => {
+    if (!recoveryResolved || capabilities.visibility === "hidden") return;
+    if (state.phase !== "entering" && state.phase !== "exiting") return;
+    const runId = state.runId;
+    const timer = window.setTimeout(() => {
+      if (state.phase === "entering") dispatch({ type: "ENTER_COMPLETE", runId });
+      else dispatch({ type: "EXIT_COMPLETE", runId });
+    }, state.phase === "entering" ? 30_000 : 15_000);
+    return () => window.clearTimeout(timer);
+  }, [capabilities.visibility, recoveryResolved, state.phase, state.runId]);
 
   useEffect(() => {
     if (state.phase === "exiting" && nextScene) {
@@ -215,7 +287,7 @@ export function SceneDirector({
         state={state}
         dispatch={dispatch}
       >
-        <SceneRenderer scene={currentScene} />
+        {recoveryResolved ? <SceneRenderer scene={currentScene} /> : null}
       </SceneRuntimeProvider>
 
       <CinematicContinue
@@ -223,6 +295,8 @@ export function SceneDirector({
         nextSceneTitle={nextScene?.title}
         onContinue={requestAdvance}
       />
+
+      {recoveryResolved && state.currentSceneId !== "PRELOADER" ? <MuteControl /> : null}
 
       {debugEnabled ? (
         <>
@@ -250,6 +324,7 @@ export function SceneDirector({
               onReset={resetTransitionLab}
             />
           ) : null}
+          {failureLabEnabled ? <FailureLab /> : null}
         </>
       ) : null}
     </div>

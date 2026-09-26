@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import type { Camera } from "three";
+import { fallbackScreenToWorld, type MotionMode } from "../accessibility/capabilities";
 
 import { screenToWorld, worldToScreen } from "./coordinates";
 import {
@@ -457,6 +458,7 @@ export class VisualRuntime {
     smoothed: { x: 0, y: 0 },
   };
   motionIntensity = 1;
+  motionMode: MotionMode = "FULL";
   quality: VisualQuality = DEFAULT_VISUAL_QUALITY;
   qualityMode: VisualQualityMode = "AUTO";
   readonly #adaptiveQuality = new AdaptiveQualityController(DEFAULT_VISUAL_QUALITY);
@@ -517,7 +519,7 @@ export class VisualRuntime {
   }
 
   get particleScale(): number {
-    return VISUAL_QUALITY[this.quality].particleScale;
+    return VISUAL_QUALITY[this.quality].particleScale * (this.motionMode === "REDUCED" ? 0.55 : 1);
   }
 
   getSnapshot(): VisualMetrics {
@@ -545,6 +547,7 @@ export class VisualRuntime {
       fps: 1000 / Math.max(1, this.#adaptiveQuality.emaFrameMs),
       frameTimeMs: this.#adaptiveQuality.emaFrameMs,
       qualityReason: this.#adaptiveQuality.reason,
+      motionMode: this.motionMode,
     };
   }
 
@@ -583,6 +586,13 @@ export class VisualRuntime {
 
   setMotionIntensity(intensity: number): void {
     this.motionIntensity = clamp01(intensity);
+    this.notify();
+  }
+
+  setMotionMode(mode: MotionMode, intensity: number): void {
+    this.motionMode = mode;
+    this.motionIntensity = clamp01(intensity);
+    this.#updateParticleTargets();
     this.notify();
   }
 
@@ -893,12 +903,20 @@ export class VisualRuntime {
   }
 
   screenToWorld(x: number, y: number, z = 0): Vec3 | undefined {
-    if (!this.#camera) return undefined;
+    if (!this.#camera) {
+      const width = this.#viewport[0] || (typeof window !== "undefined" ? window.innerWidth : 1);
+      const height = this.#viewport[1] || (typeof window !== "undefined" ? window.innerHeight : 1);
+      return fallbackScreenToWorld(x, y, width, height, z);
+    }
     return screenToWorld(x, y, this.#camera.camera, this.#camera.width, this.#camera.height, z);
   }
 
   worldToScreen(position: Vec3): readonly [number, number] | undefined {
-    if (!this.#camera) return undefined;
+    if (!this.#camera) {
+      const width = this.#viewport[0] || (typeof window !== "undefined" ? window.innerWidth : 1);
+      const height = this.#viewport[1] || (typeof window !== "undefined" ? window.innerHeight : 1);
+      return [(position[0] / 10 + 0.5) * width, (0.5 - position[1] / 6) * height];
+    }
     return worldToScreen(position, this.#camera.camera, this.#camera.width, this.#camera.height);
   }
 

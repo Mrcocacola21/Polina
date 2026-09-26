@@ -5,6 +5,16 @@ import type { SoulId, SoulNumber } from "./registry";
 
 export type CollectionVariant = "NORMAL" | "SILENT" | "DEEP";
 export type SoulVoice = "NONE" | "A" | "B" | "C";
+export type SoulClaimTrigger = "POINTER" | "TOUCH" | "KEYBOARD" | "FORCE";
+export type SoulClaimStage =
+  | "IDLE"
+  | "FORMING"
+  | "WAITING"
+  | "CLAIMED"
+  | "FLYING"
+  | "ABSORBING"
+  | "COMMITTED"
+  | "CANCELLED";
 export type SoulSlotStatus = "EMPTY" | "COLLECTING" | "COLLECTED" | "RELEASED";
 export type SoulHudMode = "VISIBLE" | "DIMMED" | "HIDDEN";
 export type SoulReleaseState = "IDLE" | "RELEASING" | "RELEASED";
@@ -56,13 +66,20 @@ export type CollectSoulOptions = Readonly<{
   soulId: SoulId;
   source: CollectionSource;
   variant?: CollectionVariant;
-  voice?: SoulVoice;
+  /** Development sandbox override. Production scene ownership always uses the registry mapping. */
+  debugVoice?: SoulVoice;
   visualState?: SoulState;
   restoreSourceAfterCollection?: boolean;
   convergence?: readonly [number, number];
   timing?: Partial<CollectionTiming>;
   timingScale?: number;
   owner?: Readonly<{ sceneId: SceneId; runId: number }>;
+}>;
+
+export type SoulClaimTarget = Readonly<{
+  soulId: SoulId;
+  center: readonly [number, number];
+  radius: number;
 }>;
 
 export type CollectionResultStatus =

@@ -150,6 +150,10 @@ async function waitForContinue(sceneId, timeout = 60_000) {
 }
 
 async function continueScene(sceneId, frameName, timeout = 60_000) {
+  if (/^S(?:0[1-9]|10)$/.test(sceneId)) {
+    await waitFor(`${sceneId} explicit Soul claim`, `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === '${sceneId}' && Boolean(document.querySelector('[data-testid="soul-claim-target"]'))`, timeout);
+    await evaluate(`(() => { const target = document.querySelector('[data-testid="soul-claim-target"]'); target?.focus(); target?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true })); })()`, true);
+  }
   await waitForContinue(sceneId, timeout);
   if (frameName) await auditFrame(frameName);
   await clickUnique('[data-testid="cinematic-continue"]');
@@ -158,7 +162,7 @@ async function continueScene(sceneId, frameName, timeout = 60_000) {
 async function startFresh() {
   await send("Page.navigate", { url: `${origin}/?phase17Film=${branch.toLowerCase()}` });
   await waitFor("application shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
-  await evaluate(`localStorage.removeItem('soulbound.answer.v1')`);
+  await evaluate(`localStorage.removeItem('soulbound.answer.v1'); sessionStorage.clear()`);
   await send("Page.reload", { ignoreCache: false });
   await waitFor("fresh film shell", `Boolean(document.querySelector('[data-testid="scene-director"]'))`, 30_000);
   if (requestedQuality) {

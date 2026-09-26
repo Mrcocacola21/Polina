@@ -1,5 +1,5 @@
 import type { MusicState } from "@/lib/audio/types";
-import type { CollectionResultStatus, SoulSlotStatus, SoulVoice } from "@/lib/souls/types";
+import type { CollectionResultStatus, SoulSlotStatus } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
 import { FILM_TIMING } from "./directing";
@@ -11,14 +11,14 @@ export const S08_COPY = Object.freeze({
 });
 
 export const PHASE9_MUSIC_STATE = "MEMORIES" satisfies MusicState;
-export const QUEEN_SOUL_VOICE = "A" satisfies SoulVoice;
+/** Legacy production note; the runtime assignment lives in SOUL_CLAIM_CONFIG. */
+export const QUEEN_SOUL_VOICE = "A" as const;
 
 export const S08_COLLECTION = Object.freeze({
   soulId: "SOUL_08",
   source: "POINT",
   variant: "NORMAL",
   visualState: "ACTIVE" satisfies SoulState,
-  voice: QUEEN_SOUL_VOICE,
 });
 
 export const S08_AUDIO_CUE_ORDER = Object.freeze([

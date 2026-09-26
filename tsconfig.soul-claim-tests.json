@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/soul-claim-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/souls/soul-registry.json",
+    "src/lib/souls/registry.ts",
+    "src/lib/souls/types.ts",
+    "src/lib/souls/claim-config.ts",
+    "src/lib/souls/claim-state.ts",
+    "src/lib/souls/claim-state.test.ts",
+    "src/lib/cinematic/scenes.ts",
+    "src/lib/visuals/types.ts",
+    "src/lib/visuals/quality.ts"
+  ]
+}

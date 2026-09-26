@@ -121,7 +121,6 @@ export function Soul07Scene() {
       source: { type: "POINT", point },
       variant: S07_COLLECTION.variant,
       visualState: S07_COLLECTION.visualState,
-      voice: S07_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S07,
     });
     setCollectionStatus(result.status);
@@ -228,7 +227,8 @@ export function Soul07Scene() {
       </p>
       <div ref={ratingPanelRef} className={`${styles.ratingPanel} ${ratingResolved ? styles.ratingResolved : ""}`} aria-label="Admiration rating">
         <span className={styles.ratingLabel}>admiration</span>
-        <output ref={ratingValueRef} className={styles.ratingValue}>0%</output>
+        <output ref={ratingValueRef} className={styles.ratingValue} aria-hidden="true">0%</output>
+        <span className={styles.srOnly}>{ratingResolved ? "Admiration beyond a finite percentage." : "Admiration is being expressed."}</span>
         <span ref={ratingLineRef} className={styles.ratingLine} aria-hidden="true" />
       </div>
       <div ref={prosRef} className={styles.prosCard} aria-hidden="true">{pros ? <MediaImage asset={pros} alt="" objectFit="contain" eager /> : null}</div>

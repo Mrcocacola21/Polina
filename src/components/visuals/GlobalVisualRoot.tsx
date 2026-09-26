@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { VisualRuntimeProvider } from "@/lib/visuals/VisualRuntimeContext";
 import { SoulCollectionProvider } from "@/lib/souls/SoulCollectionContext";
 import { SoulHud } from "@/components/souls/SoulHud";
+import { SoulClaimTarget } from "@/components/souls/SoulClaimTarget";
 import { TransitionBridgeLayer } from "@/components/cinematic/TransitionBridgeLayer";
 import { TransitionRuntimeProvider } from "@/lib/cinematic/TransitionRuntimeContext";
 
@@ -13,6 +14,7 @@ import { CustomCursor } from "./CustomCursor";
 import { GlobalFxLayers } from "./GlobalFxLayers";
 import { GlobalWebGLCanvas } from "./GlobalWebGLCanvas";
 import { MotionPreference } from "./MotionPreference";
+import { CinematicLifecycle } from "@/components/accessibility/CinematicLifecycle";
 
 const VisualSandbox = dynamic(() => import("./VisualSandbox").then((module) => module.VisualSandbox), { ssr: false });
 const SoulCollectionSandbox = dynamic(() => import("@/components/souls/SoulCollectionSandbox").then((module) => module.SoulCollectionSandbox), { ssr: false });
@@ -29,10 +31,12 @@ export function GlobalVisualRoot({
   return (
     <VisualRuntimeProvider>
       <MotionPreference />
+      <CinematicLifecycle />
       <SoulCollectionProvider>
         <TransitionRuntimeProvider>
           <GlobalFxLayers />
           <GlobalWebGLCanvas />
+          <SoulClaimTarget />
           {children}
           {!visualSandboxEnabled ? <SoulHud /> : null}
           <TransitionBridgeLayer />

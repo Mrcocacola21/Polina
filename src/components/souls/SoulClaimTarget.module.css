@@ -1,0 +1,51 @@
+.target {
+  position: fixed;
+  left: var(--soul-claim-x);
+  top: var(--soul-claim-y);
+  z-index: var(--layer-ui);
+  width: var(--soul-claim-size);
+  height: var(--soul-claim-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  touch-action: manipulation;
+}
+
+.target::before {
+  position: absolute;
+  inset: 18%;
+  border: 1px solid rgb(222 36 64 / 16%);
+  border-radius: inherit;
+  box-shadow: 0 0 18px rgb(222 36 64 / 10%);
+  content: "";
+  opacity: 0.4;
+  transform: scale(0.96);
+  transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.target[data-near="true"]::before,
+.target:focus-visible::before {
+  box-shadow: 0 0 24px rgb(222 36 64 / 24%);
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+@media (pointer: coarse) {
+  .target {
+    min-width: 112px;
+    min-height: 112px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .target::before {
+    transition: none;
+  }
+}
+
+:global([data-soul-hit-debug="true"]) .target {
+  outline: 1px dashed rgb(255 200 208 / 72%);
+  background: rgb(222 36 64 / 8%);
+}

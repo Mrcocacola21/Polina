@@ -164,7 +164,6 @@
   background: transparent;
   cursor: none;
   opacity: 0;
-  outline: none;
   place-items: center;
   touch-action: none;
   user-select: none;
@@ -178,6 +177,11 @@
 
 .holdControl:focus-visible .holdField {
   box-shadow: 0 0 0 1px rgb(222 178 185 / 48%), 0 0 34px rgb(125 22 39 / 20%);
+}
+
+.holdControl:focus-visible {
+  outline: 2px solid rgb(255 240 242 / 82%);
+  outline-offset: 4px;
 }
 
 .holdField,

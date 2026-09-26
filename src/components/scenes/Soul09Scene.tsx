@@ -165,7 +165,6 @@ export function Soul09Scene() {
       source: { type: "POINT", point },
       variant: S09_COLLECTION.variant,
       visualState: S09_COLLECTION.visualState,
-      voice: S09_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S09,
     });
     setCollectionStatus(result.status);

@@ -25,7 +25,6 @@ test("S09 has the canonical deep, active, voiceless collection and music", () =>
     source: "POINT",
     variant: "DEEP",
     visualState: "ACTIVE",
-    voice: "NONE",
   });
 });
 

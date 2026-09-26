@@ -29,6 +29,7 @@
 .ratingLine::after { position: absolute; inset: -1px auto auto 0; width: var(--rating-fill); height: 3px; background: linear-gradient(90deg, rgb(114 13 31 / 72%), rgb(231 70 87 / 90%)); box-shadow: 0 0 12px rgb(222 36 64 / 34%); content: ""; transition: width 80ms linear; }
 .ratingResolved .ratingValue { color: rgb(255 221 224 / 96%); text-shadow: 0 0 26px rgb(222 36 64 / 34%); }
 .ratingResolved .ratingLine { transform: skewX(-7deg); }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .prosCard { position: absolute; left: var(--desktop-text-safe); top: 42%; z-index: 9; width: clamp(150px, 14vw, 210px); aspect-ratio: 1; overflow: hidden; border: 1px solid rgb(255 255 255 / 11%); border-radius: 2px; box-shadow: 0 20px 55px rgb(0 0 0 / 78%); opacity: 0; pointer-events: none; }
 .displacementPulse { position: absolute; inset: -4%; z-index: 12; opacity: 0; mix-blend-mode: screen; filter: brightness(.38) saturate(.8) contrast(1.65); pointer-events: none; will-change: opacity, transform; }
 .displacementPulse > div { width: 100%; height: 100%; background: transparent; }

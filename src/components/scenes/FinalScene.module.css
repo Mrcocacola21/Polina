@@ -295,8 +295,9 @@
   text-align: center;
 }
 
-.ending:focus {
-  outline: none;
+.ending:focus-visible {
+  outline: 1px solid rgb(255 240 242 / 72%);
+  outline-offset: 6px;
 }
 
 .finalDate {

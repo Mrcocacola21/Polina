@@ -32,7 +32,6 @@ test("S10 has canonical final Soul collection semantics", () => {
     source: "POINT",
     variant: "DEEP",
     visualState: "ACTIVE",
-    voice: "NONE",
   });
   assert.equal(phase11CollectionAllowsContinue("collected"), true);
   assert.equal(phase11CollectionAllowsContinue("already-collected"), true);

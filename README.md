@@ -15,7 +15,9 @@ Current roadmap status:
 - Phase 15 — complete: typed transition choreography, persistent semantic bridges, incoming-media preparation, Transition Lab, cancellation invariants, and transition QA.
 - Phase 16 — complete: full-film directing pass, centralized timing and cinematic mix, reading holds, collection-rhythm variation, semantic music gain automation, voice ducking, and uninterrupted YES/THINK production playback QA.
 - Phase 17 — complete: desktop art direction, responsive cinematic typography, media/black-level integration, restrained depth and glow hierarchy, polished HUD/cursor/controls, and a visual lock for 1920×1080 and 2560×1440 at 100% zoom.
+- Phase 18 — complete: mobile/touch composition and interaction adaptation.
 - Phase 19 — complete: content-addressed lossless image and streamed-audio delivery, staged preloading, media lifecycle cleanup, adaptive quality, leak-cycle QA, and production performance reporting.
+- Phase 20 — complete: live reduced-motion, keyboard/focus semantics, persistent global mute, WebGL/audio/media fallbacks, visibility lifecycle, safe refresh recovery, fatal recovery UI, and development Failure Lab.
 
 ## Commands
 
@@ -43,7 +45,11 @@ npm run test:phase17:responsive
 npm run optimize:assets
 npm run validate:optimized-assets
 npm run validate:performance
+npm run validate:accessibility
+npm run validate:failures
 npm run test:phase19
+npm run test:phase20
+npm run test:phase20:browser
 npm run lint
 npm run typecheck
 npm run build
@@ -67,6 +73,8 @@ Open `http://localhost:3000` to traverse the placeholder cinematic timeline. In 
 Open `http://localhost:3000/?debug=1&soulSandbox=1` for the Phase 5 Soul Collection Sandbox.
 
 Open `http://localhost:3000/?debug=1&transitionLab=1` for the development-only Phase 15 Transition Lab. It can seed the required Soul count, run every canonical boundary repeatedly, and reports run IDs, bridge/mask state, fog, music, ambience, videos, particles, cursor, HUD, and camera baseline.
+
+Open `http://localhost:3000/?debug=1&failureLab=1` for the development-only Phase 20 Failure Lab. Accessibility behavior and practical browser assumptions are documented in `docs/accessibility.md`; media, WebGL, audio, visibility, and refresh recovery policies are documented in `docs/failure-modes.md`.
 
 ## Transition continuity
 

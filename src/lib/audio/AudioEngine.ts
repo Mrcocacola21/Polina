@@ -54,6 +54,7 @@ export const DEFAULT_AUDIO_LEVELS: AudioLevels = Object.freeze({
 const DEFAULT_CROSSFADE_SECONDS = 2;
 const DEFAULT_STOP_FADE_SECONDS = 0.15;
 const MUTE_RAMP_SECONDS = 0.03;
+export const AUDIO_PREFERENCE_KEY = "soulbound.audio.v1";
 
 type BusGraph = Readonly<{
   level: GainNode;
@@ -122,6 +123,11 @@ export class AudioEngine {
   #revision = 0;
   #lastError: string | null = null;
   #audioUnavailable = false;
+  #debugUnavailable = false;
+  #mutePreferenceLoaded = false;
+  #visibilitySuspended = false;
+  #visibilityMusicWasPlaying = false;
+  readonly #visibilityAmbientIds = new Set<string>();
 
   subscribe = (listener: () => void): (() => void) => {
     this.#listeners.add(listener);
@@ -184,6 +190,9 @@ export class AudioEngine {
   }
 
   async unlockAudio(): Promise<UnlockAudioResult> {
+    if (this.#debugUnavailable) {
+      return { ok: false, state: "unavailable", error: "Audio is unavailable." };
+    }
     if (this.#context?.state === "running") {
       return { ok: true, state: "running" };
     }
@@ -205,7 +214,10 @@ export class AudioEngine {
   async #performUnlock(): Promise<UnlockAudioResult> {
     try {
       if (!this.#context) {
-        if (typeof window === "undefined" || !window.AudioContext) {
+        const AudioContextConstructor = typeof window === "undefined"
+          ? undefined
+          : window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextConstructor) {
           this.#audioUnavailable = true;
           this.#notify();
           return {
@@ -214,7 +226,7 @@ export class AudioEngine {
             error: "Web Audio API is unavailable.",
           };
         }
-        this.#context = new window.AudioContext();
+        this.#context = new AudioContextConstructor();
         this.#contextCreationCount += 1;
         this.#initializeGraph(this.#context);
         this.#context.addEventListener("statechange", this.#handleContextState);
@@ -282,6 +294,7 @@ export class AudioEngine {
       rampGain(this.#muteGain, 0, this.#context, MUTE_RAMP_SECONDS);
     }
     this.#notify();
+    this.#persistMutePreference();
   }
 
   unmute(): void {
@@ -291,11 +304,98 @@ export class AudioEngine {
       rampGain(this.#muteGain, 1, this.#context, MUTE_RAMP_SECONDS);
     }
     this.#notify();
+    this.#persistMutePreference();
   }
 
   toggleMute(): void {
     if (this.#isMuted) this.unmute();
     else this.mute();
+  }
+
+  loadMutePreference(storage?: Pick<Storage, "getItem">): void {
+    if (this.#mutePreferenceLoaded) return;
+    this.#mutePreferenceLoaded = true;
+    try {
+      const source = storage ?? (typeof window !== "undefined" ? window.localStorage : undefined);
+      if (!source) return;
+      const value = source.getItem(AUDIO_PREFERENCE_KEY);
+      if (!value) return;
+      const parsed: unknown = JSON.parse(value);
+      if (parsed && typeof parsed === "object" && (parsed as { version?: unknown }).version === 1) {
+        this.#isMuted = (parsed as { muted?: unknown }).muted === true;
+      }
+    } catch {
+      // Storage is optional; the in-memory preference remains authoritative.
+    }
+    this.#notify();
+  }
+
+  clearMutePreference(storage?: Pick<Storage, "removeItem">): void {
+    try {
+      (storage ?? (typeof window !== "undefined" ? window.localStorage : undefined))?.removeItem(AUDIO_PREFERENCE_KEY);
+    } catch {
+      // Storage denial must never affect playback logic.
+    }
+  }
+
+  async suspendForVisibility(): Promise<boolean> {
+    if (this.#visibilitySuspended) return true;
+    this.#visibilitySuspended = true;
+    const activeDeck = this.#activeMusicDeck === null ? null : this.#musicDecks?.[this.#activeMusicDeck];
+    this.#visibilityMusicWasPlaying = Boolean(activeDeck && !activeDeck.element.paused);
+    activeDeck?.element.pause();
+    this.#visibilityAmbientIds.clear();
+    for (const [id, entry] of this.#ambient) {
+      if (!entry.element.paused) this.#visibilityAmbientIds.add(id);
+      entry.element.pause();
+    }
+    this.#stopMusicTicker();
+    try {
+      if (this.#context?.state === "running") await this.#context.suspend();
+      this.#notify();
+      return true;
+    } catch (error) {
+      this.#reportError("Audio visibility suspension failed", error);
+      return false;
+    }
+  }
+
+  async resumeAfterVisibility(): Promise<boolean> {
+    if (!this.#visibilitySuspended) return true;
+    this.#visibilitySuspended = false;
+    try {
+      if (this.#context && this.#context.state !== "running" && this.#context.state !== "closed") {
+        await this.#context.resume();
+      }
+      const tasks: Promise<unknown>[] = [];
+      const activeDeck = this.#activeMusicDeck === null ? null : this.#musicDecks?.[this.#activeMusicDeck];
+      if (this.#visibilityMusicWasPlaying && activeDeck) tasks.push(activeDeck.element.play());
+      for (const id of this.#visibilityAmbientIds) {
+        const entry = this.#ambient.get(id);
+        if (entry) tasks.push(entry.element.play());
+      }
+      this.#visibilityAmbientIds.clear();
+      this.#visibilityMusicWasPlaying = false;
+      const results = await Promise.allSettled(tasks);
+      if (activeDeck && !activeDeck.element.paused) this.#startMusicTicker();
+      this.#notify();
+      return results.every((result) => result.status === "fulfilled");
+    } catch (error) {
+      this.#reportError("Audio visibility resume failed", error);
+      return false;
+    }
+  }
+
+  setDevelopmentUnavailable(unavailable: boolean): void {
+    if (process.env.NODE_ENV !== "development" || this.#debugUnavailable === unavailable) return;
+    this.#debugUnavailable = unavailable;
+    if (unavailable) {
+      this.pauseMusic();
+      for (const entry of this.#ambient.values()) entry.element.pause();
+      this.stopAllSfx();
+      this.stopAllProcedural();
+    }
+    this.#notify();
   }
 
   /** Current time of the one shared AudioContext, or null before unlock. */
@@ -1182,6 +1282,7 @@ export class AudioEngine {
   }
 
   #requireGraph(operation: string): AudioContext | null {
+    if (this.#debugUnavailable) return null;
     if (!this.#context || this.#context.state !== "running" || !this.#buses) {
       this.#setError(`Audio must be unlocked before ${operation}.`);
       return null;
@@ -1190,6 +1291,7 @@ export class AudioEngine {
   }
 
   #getContextState(): EngineContextState {
+    if (this.#debugUnavailable) return "unavailable";
     if (!this.#context) {
       return this.#audioUnavailable ? "unavailable" : "locked";
     }
@@ -1332,6 +1434,15 @@ export class AudioEngine {
   #setError(message: string): void {
     this.#lastError = message;
     this.#notify();
+  }
+
+  #persistMutePreference(): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(AUDIO_PREFERENCE_KEY, JSON.stringify({ version: 1, muted: this.#isMuted }));
+    } catch {
+      // Local preference persistence is best-effort.
+    }
   }
 
   #reportError(label: string, error: unknown): string {

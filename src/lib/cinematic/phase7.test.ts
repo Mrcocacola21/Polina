@@ -38,21 +38,18 @@ test("Phase 7 collection sources, variants, states, and voices are canonical", (
     source: "POINTS",
     variant: "NORMAL",
     visualState: "ACTIVE",
-    voice: "B",
   });
   assert.deepEqual(S04_COLLECTION, {
     soulId: "SOUL_04",
     source: "POINT",
     variant: "SILENT",
     visualState: "ACTIVE",
-    voice: "NONE",
   });
   assert.deepEqual(S05_COLLECTION, {
     soulId: "SOUL_05",
     source: "POINT",
     variant: "NORMAL",
     visualState: "ACTIVE",
-    voice: "NONE",
   });
 });
 

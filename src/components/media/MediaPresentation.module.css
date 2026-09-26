@@ -35,4 +35,13 @@
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 10px;
   overflow-wrap: anywhere;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.fallback[data-fallback-kind="atmosphere"] {
+  background:
+    radial-gradient(circle at 50% 48%, rgb(126 18 40 / 18%), transparent 38%),
+    linear-gradient(145deg, #070709, #010102 72%);
 }

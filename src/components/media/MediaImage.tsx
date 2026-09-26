@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, type CSSProperties } from "react";
 
 import type { MediaAsset } from "@/lib/media/types";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
 
 import styles from "./MediaPresentation.module.css";
 
@@ -26,10 +27,11 @@ export function MediaImage({
   eager = false,
   developmentLabel = false,
 }: MediaImageProps) {
+  const capabilities = useCapabilities();
   const [renderStatus, setRenderStatus] = useState<"loading" | "ready" | "error">(
     asset.kind === "image" ? "loading" : "error",
   );
-  const failed = renderStatus === "error" || asset.kind !== "image";
+  const failed = renderStatus === "error" || asset.kind !== "image" || capabilities.failedMediaKind === "image";
   const classes = [styles.frame, className].filter(Boolean).join(" ");
 
   return (

@@ -93,6 +93,11 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+:where(button, [role="button"]):focus-visible {
+  outline: 2px solid rgb(255 240 242 / 92%);
+  outline-offset: 4px;
+}
+
 img,
 video {
   -webkit-user-drag: none;
@@ -103,3 +108,49 @@ video {
   background: rgb(158 16 34 / 38%);
   color: var(--color-text-primary);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  button {
+    border: 1px solid ButtonText;
+  }
+}
+
+.sound-resume-affordance {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: var(--layer-ui);
+  min-height: var(--control-hit-size);
+  padding: 9px 14px;
+  border: 1px solid rgb(238 238 241 / 32%);
+  background: rgb(5 5 6 / 88%);
+  color: var(--color-text-primary);
+}
+
+.fatal-recovery {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 18px;
+  padding: 28px;
+  background: #000;
+  color: #eeeef1;
+  text-align: center;
+}
+
+.fatal-recovery h1 { margin: 0; font: 400 clamp(24px, 4vw, 42px)/1.2 var(--font-narrative); }
+.fatal-recovery p { max-width: 48ch; margin: 0; color: #b8b8bf; }
+.fatal-recovery div { display: flex; justify-content: center; gap: 10px; }
+.fatal-recovery button { min-height: 44px; padding: 10px 18px; border: 1px solid #7a5d62; background: #10090b; color: #fff; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { VISUAL_ASSETS } from "@/lib/visuals/assets";
 import {
@@ -17,6 +17,7 @@ function FogLayer() {
   const fx = useVisualFx();
   const videoRef = useRef<HTMLVideoElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     runtime.registerFogElement(layerRef.current ?? undefined);
@@ -28,6 +29,7 @@ function FogLayer() {
     if (!video) return;
     if (fx.fog && fx.fogOpacity > 0) {
       void video.play().catch(() => {
+        setVideoFailed(true);
         if (process.env.NODE_ENV === "development") {
           console.warn("Fog video autoplay was blocked; the layer remains safely hidden until playable.");
         }
@@ -54,6 +56,8 @@ function FogLayer() {
       className={styles.fogLayer}
       style={{ opacity: fx.fogOpacity, transitionDuration: `${fx.fogDuration}s` }}
       data-fog-variant={fx.fog}
+      data-video-failed={videoFailed ? "true" : "false"}
+      aria-hidden="true"
     >
       <video
         key={fx.fog}
@@ -64,6 +68,9 @@ function FogLayer() {
         autoPlay
         loop
         preload="auto"
+        data-soulbound-video
+        onCanPlay={() => setVideoFailed(false)}
+        onError={() => setVideoFailed(true)}
       />
     </div>
   );

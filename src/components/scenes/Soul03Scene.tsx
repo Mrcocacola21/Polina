@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 
 import { MediaImage } from "@/components/media/MediaImage";
+import { useCapabilities } from "@/lib/accessibility/CapabilityContext";
 import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import type { AmbientHandle } from "@/lib/audio/types";
 import {
@@ -60,6 +61,7 @@ export function Soul03Scene() {
   const { collect } = useSceneSoulCollection();
   const collectionRuntime = useSoulCollectionRuntime();
   const visual = useVisualRuntime();
+  const capabilities = useCapabilities();
   const scopeId = createSceneVisualScopeId("S03", runId);
 
   useEffect(() => {
@@ -97,14 +99,13 @@ export function Soul03Scene() {
     const camera = cameraRef.current;
     if (!camera) return;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
     const update = () => {
       const path = cameraFrameRef.current;
-      const pointerX = finePointer.matches && !reducedMotion.matches
+      const pointerX = finePointer.matches && capabilities.motionMode === "FULL" && capabilities.visibility === "visible"
         ? visual.pointer.smoothed.x * 8
         : 0;
-      const pointerY = finePointer.matches && !reducedMotion.matches
+      const pointerY = finePointer.matches && capabilities.motionMode === "FULL" && capabilities.visibility === "visible"
         ? visual.pointer.smoothed.y * 6
         : 0;
       camera.style.transform = `translate3d(${(-path.x + pointerX).toFixed(2)}px, ${(-path.y - pointerY).toFixed(2)}px, ${path.z.toFixed(2)}px) rotateY(${path.yaw.toFixed(2)}deg) rotateZ(${path.roll.toFixed(2)}deg)`;
@@ -112,7 +113,7 @@ export function Soul03Scene() {
     };
     frame = window.requestAnimationFrame(update);
     return () => window.cancelAnimationFrame(frame);
-  }, [visual]);
+  }, [capabilities.motionMode, capabilities.visibility, visual]);
 
   useEffect(() => {
     if (phase !== "entering") return;
@@ -253,7 +254,6 @@ export function Soul03Scene() {
       source: { type: "POINTS", points, convergence },
       variant: S03_COLLECTION.variant,
       visualState: S03_COLLECTION.visualState,
-      voice: S03_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S03,
     });
     setCollectionStatus(result.status);

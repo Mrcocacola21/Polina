@@ -218,7 +218,6 @@ export function Soul02Scene() {
       source: { type: "TEXT", element: source },
       variant: S02_COLLECTION.variant,
       visualState: S02_COLLECTION.visualState,
-      voice: S02_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S02,
     });
     setCollectionStatus(result.status);

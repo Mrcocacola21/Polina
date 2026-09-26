@@ -249,7 +249,6 @@ export function Soul05Scene() {
       source: { type: "POINT", point },
       variant: S05_COLLECTION.variant,
       visualState: S05_COLLECTION.visualState,
-      voice: S05_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S05,
     });
     setCollectionStatus(result.status);

@@ -51,7 +51,7 @@ export function SoulCollectionSandbox() {
       soulId,
       source: { type: "TEXT", element },
       variant,
-      voice,
+      debugVoice: voice,
       visualState,
       restoreSourceAfterCollection: true,
       timingScale: 0.45,
@@ -68,7 +68,7 @@ export function SoulCollectionSandbox() {
         point: [window.innerWidth * 0.42, window.innerHeight * 0.56],
       },
       variant,
-      voice,
+      debugVoice: voice,
       visualState,
       timingScale: 0.45,
       owner: boundOwner,
@@ -126,6 +126,11 @@ export function SoulCollectionSandbox() {
             <dl className={styles.metrics}>
               <div><dt>count</dt><dd data-testid="collection-count">{snapshot.count} / 10</dd></div>
               <div><dt>transaction</dt><dd>{snapshot.activeSoulId ?? "none"}</dd></div>
+              <div><dt>claim stage</dt><dd data-testid="claim-stage">{snapshot.claimStage}</dd></div>
+              <div><dt>claim locked</dt><dd>{snapshot.claimLocked ? "yes" : "no"}</dd></div>
+              <div><dt>waiting audio</dt><dd>{snapshot.waitingAudioActive ? "active" : "off"}</dd></div>
+              <div><dt>assigned voice</dt><dd>{snapshot.assignedVoice ?? "none"}</dd></div>
+              <div><dt>hit radius</dt><dd>{snapshot.claimTarget ? `${snapshot.claimTarget.radius}px` : "none"}</dd></div>
               <div><dt>HUD</dt><dd>{snapshot.hudMode}</dd></div>
               <div><dt>release</dt><dd>{snapshot.releaseState}</dd></div>
               <div><dt>released</dt><dd>{snapshot.releasedCount}</dd></div>
@@ -180,7 +185,11 @@ export function SoulCollectionSandbox() {
             </label>
             <div className={styles.row}>
               <button type="button" data-testid="collect-text" onClick={() => void collectFromText()}>COLLECT FROM TEXT</button>
-              <button type="button" data-testid="collect-point" onClick={() => void collectFromPoint()}>COLLECT FROM POINT</button>
+              <button type="button" data-testid="collect-point" onClick={() => void collectFromPoint()}>SPAWN WAITING SOUL</button>
+              <button type="button" onClick={() => runtime.claimActiveSoul("POINTER")}>SIMULATE HOVER</button>
+              <button type="button" onClick={() => runtime.claimActiveSoul("FORCE")}>FORCE CLAIM</button>
+              <button type="button" onClick={() => runtime.claimActiveSoul("TOUCH")}>TOUCH CLAIM</button>
+              <button type="button" onClick={() => runtime.claimActiveSoul("KEYBOARD")}>KEYBOARD CLAIM</button>
               <button type="button" data-testid="cancel-collection" onClick={() => runtime.cancelActiveCollection()}>CANCEL</button>
             </div>
           </section>

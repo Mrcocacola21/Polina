@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": ".next/phase20-tests",
+    "rootDir": "src/lib",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/accessibility/capabilities.ts",
+    "src/lib/accessibility/phase20.test.ts",
+    "src/lib/cinematic/directing.ts",
+    "src/lib/cinematic/phase10.ts",
+    "src/lib/cinematic/recovery.ts",
+    "src/lib/cinematic/scene-machine.ts",
+    "src/lib/cinematic/scenes.ts",
+    "src/lib/cinematic/types.ts",
+    "src/lib/media/cache.ts",
+    "src/lib/media/fallbacks.ts",
+    "src/lib/media/types.ts",
+    "src/lib/souls/registry.ts",
+    "src/lib/souls/types.ts",
+    "src/lib/visuals/types.ts"
+  ]
+}

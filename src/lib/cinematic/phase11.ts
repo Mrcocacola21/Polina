@@ -1,5 +1,5 @@
 import type { MusicState } from "@/lib/audio/types";
-import type { CollectionResultStatus, SoulSlotStatus, SoulVoice } from "@/lib/souls/types";
+import type { CollectionResultStatus, SoulSlotStatus } from "@/lib/souls/types";
 import type { SoulState } from "@/lib/visuals/types";
 
 import { FILM_TIMING } from "./directing";
@@ -35,7 +35,6 @@ export const S10_COLLECTION = Object.freeze({
   source: "POINT",
   variant: "DEEP",
   visualState: "ACTIVE" satisfies SoulState,
-  voice: "NONE" satisfies SoulVoice,
 });
 
 export const S10_TIMING = FILM_TIMING.s10;

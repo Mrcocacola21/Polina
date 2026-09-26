@@ -10,6 +10,7 @@ const directing = read("src/lib/cinematic/directing.ts");
 const audio = read("src/lib/audio/AudioEngine.ts");
 const final = read("src/components/scenes/FinalScene.tsx");
 const silence = read("src/components/scenes/SilenceBoundaryScene.tsx");
+const soulClaims = read("src/lib/souls/claim-config.ts");
 const scenes = fs.readdirSync(path.join(root, "src/components/scenes"))
   .filter((name) => name.endsWith(".tsx"))
   .map((name) => read(path.join("src/components/scenes", name)))
@@ -25,10 +26,8 @@ if (!audio.includes("targetGain")) failures.push("AudioEngine cinematic music ga
 if (!silence.includes("audio.enterCinematicSilence()")) failures.push("SILENCE must close the cinematic audio gate.");
 if (!final.includes("audio.leaveCinematicSilence()") || !final.includes("FINAL_AUDIO.awakening")) failures.push("Final must reopen the gate and retain AUD-FIN-01 awakening.");
 if (/set(?:Master|Music|Ambient|Sfx|Procedural)Volume\(/.test(scenes)) failures.push("Production scenes must not modify user volume preferences.");
-for (const mapping of ['voice: "A"', 'voice: "B"', 'voice: "C"']) {
-  if (!fs.readdirSync(path.join(root, "src/lib/cinematic")).some((name) => name.endsWith(".ts") && read(path.join("src/lib/cinematic", name)).includes(mapping))) {
-    failures.push(`Required Soul voice mapping is missing: ${mapping}.`);
-  }
+for (const mapping of ['define("A")', 'define("B")', 'define("C")']) {
+  if (!soulClaims.includes(mapping)) failures.push(`Required Soul voice mapping is missing: ${mapping}.`);
 }
 
 try {

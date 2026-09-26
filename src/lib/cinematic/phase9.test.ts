@@ -27,7 +27,6 @@ test("Phase 9 keeps MEMORIES and has canonical Soul 8 configuration", () => {
     source: "POINT",
     variant: "NORMAL",
     visualState: "ACTIVE",
-    voice: "A",
   });
 });
 

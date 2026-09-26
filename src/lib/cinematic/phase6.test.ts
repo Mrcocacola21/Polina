@@ -43,13 +43,11 @@ test("Phase 6 uses NIGHT continuously and the required collection mapping", () =
     soulId: "SOUL_01",
     variant: "NORMAL",
     visualState: "ACTIVE",
-    voice: "A",
   });
   assert.deepEqual(S02_COLLECTION, {
     soulId: "SOUL_02",
     variant: "NORMAL",
     visualState: "ACTIVE",
-    voice: "NONE",
   });
 });
 

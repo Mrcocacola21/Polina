@@ -32,6 +32,7 @@ const getServerRevision = () => 0;
 
 export function AudioEngineProvider({ children }: Readonly<{ children: ReactNode }>) {
   const engine = useMemo(() => getAudioEngine(), []);
+  useEffect(() => engine.loadMutePreference(), [engine]);
   return (
     <AudioEngineContext.Provider value={engine}>
       {children}

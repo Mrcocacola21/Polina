@@ -195,7 +195,6 @@ export function Soul04Scene() {
       source: { type: "POINT", point },
       variant: S04_COLLECTION.variant,
       visualState: S04_COLLECTION.visualState,
-      voice: S04_COLLECTION.voice,
       timingScale: COLLECTION_SCENE_SCALE.S04,
     });
     setCollectionStatus(result.status);
