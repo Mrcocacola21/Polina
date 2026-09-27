@@ -310,6 +310,35 @@
   text-shadow: 0 0 20px rgb(187 26 50 / 25%);
 }
 
+.restartButton {
+  margin-top: 18px;
+  padding: 7px 12px;
+  border: 0;
+  border-bottom: 1px solid rgb(239 224 226 / 28%);
+  background: transparent;
+  color: rgb(239 224 226 / 58%);
+  cursor: pointer;
+  font-family: var(--font-interface);
+  font-size: 11px;
+  font-weight: 420;
+  letter-spacing: .14em;
+  pointer-events: auto;
+  text-transform: uppercase;
+  transition: border-color 180ms ease, color 180ms ease, text-shadow 180ms ease;
+}
+
+.restartButton:hover,
+.restartButton:focus-visible {
+  border-color: rgb(239 224 226 / 62%);
+  color: rgb(255 244 246 / 88%);
+  text-shadow: 0 0 16px rgb(187 26 50 / 28%);
+}
+
+.restartButton:focus-visible {
+  outline: 1px solid rgb(255 240 242 / 72%);
+  outline-offset: 4px;
+}
+
 .answerDebug {
   position: fixed;
   right: 12px;

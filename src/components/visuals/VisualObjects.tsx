@@ -225,7 +225,7 @@ function SoulTrail({ record, texture }: Readonly<{ record: SoulRecord; texture: 
   });
 
   return (
-    <points frustumCulled={false}>
+    <points frustumCulled={false} renderOrder={record.renderOrder}>
       <bufferGeometry ref={geometryRef}>
         <bufferAttribute attach="attributes-position" args={[buffer, 3]} />
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
@@ -236,6 +236,7 @@ function SoulTrail({ record, texture }: Readonly<{ record: SoulRecord; texture: 
         color="#ffffff"
         size={record.trailWidth}
         transparent
+        depthTest={false}
         depthWrite={false}
         blending={AdditiveBlending}
         opacity={0}
@@ -287,33 +288,45 @@ function SoulObject({ record, textures }: Readonly<{
     group.current.position.set(...record.position);
     group.current.scale.setScalar(record.scale * breathing);
     if (dormant.current) dormant.current.opacity = record.opacity * record.stateWeights.DORMANT;
-    if (active.current) active.current.opacity = record.opacity * record.stateWeights.ACTIVE;
+    if (active.current) {
+      active.current.opacity = Math.min(
+        1,
+        record.opacity * record.stateWeights.ACTIVE * Math.max(0.9, record.glow),
+      );
+    }
     if (charged.current) charged.current.opacity = record.opacity * record.stateWeights.CHARGED;
-    if (aura.current) aura.current.opacity = record.opacity * record.aura * (0.15 + Math.sin(now * 1.2) * 0.025);
+    if (aura.current) {
+      aura.current.opacity = record.opacity * record.aura * (
+        0.28 + Math.sin(now * 1.2) * 0.035
+      );
+    }
   });
 
   return (
     <>
       <SoulTrail record={record} texture={textures.trail} />
-      <group ref={group}>
+      <group ref={group} renderOrder={record.renderOrder}>
         <sprite scale={[1.85, 1.85, 1]}>
-          <spriteMaterial ref={aura} map={textures.active} color="#de2440" transparent depthWrite={false} blending={AdditiveBlending} />
+          <spriteMaterial ref={aura} map={textures.active} color="#de2440" transparent depthTest={false} depthWrite={false} blending={AdditiveBlending} />
         </sprite>
         <sprite scale={[1.35, 1.35, 1]}>
-          <spriteMaterial ref={dormant} map={textures.dormant} transparent depthWrite={false} />
+          <spriteMaterial ref={dormant} map={textures.dormant} transparent depthTest={false} depthWrite={false} />
         </sprite>
         <sprite scale={[1.35, 1.35, 1]}>
-          <spriteMaterial ref={active} map={textures.active} transparent depthWrite={false} blending={AdditiveBlending} />
+          <spriteMaterial ref={active} map={textures.active} transparent depthTest={false} depthWrite={false} blending={AdditiveBlending} />
         </sprite>
         <sprite scale={[1.48, 1.48, 1]}>
-          <spriteMaterial ref={charged} map={textures.charged} transparent depthWrite={false} blending={AdditiveBlending} />
+          <spriteMaterial ref={charged} map={textures.charged} transparent depthTest={false} depthWrite={false} blending={AdditiveBlending} />
         </sprite>
       </group>
     </>
   );
 }
 
-export function VisualObjects() {
+export function VisualObjects({
+  particles = true,
+  souls = true,
+}: Readonly<{ particles?: boolean; souls?: boolean }> = {}) {
   const runtime = useVisualRuntime();
   useVisualRevision();
   const loaded = useLoader(TextureLoader, [...SOUL_TEXTURE_URLS]);
@@ -336,12 +349,12 @@ export function VisualObjects() {
 
   return (
     <>
-      {[...runtime.particleFields.values()].map((record) => (
+      {particles ? [...runtime.particleFields.values()].map((record) => (
         <ParticleField key={record.id} record={record} texture={textures.particles} />
-      ))}
-      {[...runtime.souls.values()].map((record) => (
+      )) : null}
+      {souls ? [...runtime.souls.values()].map((record) => (
         <SoulObject key={record.id} record={record} textures={textures} />
-      ))}
+      )) : null}
     </>
   );
 }

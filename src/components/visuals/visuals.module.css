@@ -1,5 +1,6 @@
 .webglLayer,
 .webglFallback,
+.soulForegroundLayer,
 .fogLayer,
 .grainLayer,
 .vignetteLayer,
@@ -15,7 +16,16 @@
   z-index: var(--layer-webgl);
 }
 
-.webglLayer canvas {
+.soulForegroundLayer {
+  z-index: var(--layer-soul-foreground);
+  overflow: hidden;
+  /* Soul atlases are authored on black. Screen compositing makes black texels
+     neutral while preserving the crimson/pale emission over DOM scenes. */
+  mix-blend-mode: screen;
+}
+
+.webglLayer canvas,
+.soulForegroundLayer canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
@@ -29,12 +39,12 @@
 
 .fallbackSoul {
   position: absolute;
-  width: clamp(10px, 1.2vw, 18px);
+  width: clamp(64px, 5.2vw, 92px);
   aspect-ratio: 1;
   border: 1px solid rgb(255 161 177 / 70%);
   border-radius: 50%;
   background: radial-gradient(circle, rgb(255 229 232 / 92%) 0 8%, rgb(222 36 64 / 62%) 24%, rgb(122 13 25 / 22%) 58%, transparent 72%);
-  box-shadow: 0 0 12px rgb(222 36 64 / 50%), 0 0 30px rgb(158 16 34 / 22%);
+  box-shadow: 0 0 18px rgb(222 36 64 / 62%), 0 0 42px rgb(158 16 34 / 34%);
   opacity: var(--fallback-opacity);
   transform: translate(-50%, -50%) scale(var(--fallback-scale));
   transition: left 280ms ease, top 280ms ease, opacity 240ms ease, transform 280ms ease;

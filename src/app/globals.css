@@ -39,6 +39,7 @@
   --layer-webgl: 30;
   --layer-scene: 40;
   --layer-scene-dom: 40;
+  --layer-soul-foreground: 45;
   --layer-ui: 50;
   --layer-global-fx: 60;
   --layer-transition-bridge: 70;

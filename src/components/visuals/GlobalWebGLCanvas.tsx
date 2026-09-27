@@ -63,7 +63,7 @@ function DomVisualFallback() {
   const width = runtime.getSnapshot().viewport[0] || (typeof window !== "undefined" ? window.innerWidth : 1);
   const height = runtime.getSnapshot().viewport[1] || (typeof window !== "undefined" ? window.innerHeight : 1);
   return (
-    <div className={styles.webglFallback} aria-hidden="true" data-testid="webgl-dom-fallback">
+    <div className={styles.soulForegroundLayer} aria-hidden="true" data-testid="webgl-dom-fallback">
       {[...runtime.souls.values()].filter((soul) => soul.visible).map((soul) => {
         const point = runtime.worldToScreen(soul.position) ?? [width / 2, height / 2];
         const style: FallbackSoulStyle = {
@@ -124,28 +124,51 @@ export function GlobalWebGLCanvas() {
   }, [available, capabilities, runtime, snapshot.webgl]);
 
   if (!available || !effectiveWebGL(capabilities) || snapshot.webgl === "lost") {
-    return <DomVisualFallback />;
+    return (
+      <>
+        <div className={styles.webglFallback} aria-hidden="true" />
+        <DomVisualFallback />
+      </>
+    );
   }
 
   return (
-    <div className={styles.webglLayer} data-testid="global-webgl-canvas">
-      <Canvas
-        aria-hidden="true"
-        orthographic
-        camera={{ position: [0, 0, 10], zoom: 100, near: 0.1, far: 100 }}
-        dpr={[1, runtime.dprCap]}
-        gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
-        frameloop={capabilities.visibility === "hidden" ? "never" : "always"}
-        resize={{ scroll: false, debounce: { scroll: 0, resize: 80 } }}
-        onCreated={({ gl, size }) => {
-          gl.setClearColor(0x000000, 0);
-          runtime.setWebGLState("ready", gl.getPixelRatio(), [size.width, size.height]);
-        }}
-      >
-        <CameraBridge />
-        <WebGLLifecycle />
-        <VisualObjects />
-      </Canvas>
-    </div>
+    <>
+      <div className={styles.webglLayer} data-testid="global-webgl-canvas">
+        <Canvas
+          aria-hidden="true"
+          orthographic
+          camera={{ position: [0, 0, 10], zoom: 100, near: 0.1, far: 100 }}
+          dpr={[1, runtime.dprCap]}
+          gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+          frameloop={capabilities.visibility === "hidden" ? "never" : "always"}
+          resize={{ scroll: false, debounce: { scroll: 0, resize: 80 } }}
+          onCreated={({ gl, size }) => {
+            gl.setClearColor(0x000000, 0);
+            runtime.setWebGLState("ready", gl.getPixelRatio(), [size.width, size.height]);
+          }}
+        >
+          <CameraBridge />
+          <WebGLLifecycle />
+          <VisualObjects souls={false} />
+        </Canvas>
+      </div>
+      {snapshot.souls > 0 ? (
+        <div className={styles.soulForegroundLayer} data-testid="soul-foreground-canvas">
+          <Canvas
+            aria-hidden="true"
+            orthographic
+            camera={{ position: [0, 0, 10], zoom: 100, near: 0.1, far: 100 }}
+            dpr={1}
+            gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+            frameloop={capabilities.visibility === "hidden" ? "never" : "always"}
+            resize={{ scroll: false, debounce: { scroll: 0, resize: 80 } }}
+            onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+          >
+            <VisualObjects particles={false} />
+          </Canvas>
+        </div>
+      ) : null}
+    </>
   );
 }

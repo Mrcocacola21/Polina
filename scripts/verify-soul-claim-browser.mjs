@@ -64,12 +64,16 @@ await clickTestId("collect-point");
 await waitFor("stationary-over-spawn waiting target", `document.querySelector('[data-testid="claim-stage"]')?.textContent === 'WAITING'`);
 await new Promise((resolve) => setTimeout(resolve, waitDurationMs));
 assert.equal(await evaluate(`document.querySelector('[data-testid="collection-count"]')?.textContent?.trim()`), "0 / 10", "waiting Soul must never auto-commit");
-const targetGeometry = await evaluate(`(() => { const target = document.querySelector('[data-testid="soul-claim-target"]'); const rect = target?.getBoundingClientRect(); return rect && { width: rect.width, height: rect.height, label: target.getAttribute('aria-label') }; })()`);
+const targetGeometry = await evaluate(`(() => { const target = document.querySelector('[data-testid="soul-claim-target"]'); const rect = target?.getBoundingClientRect(); return rect && { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, width: rect.width, height: rect.height, label: target.getAttribute('aria-label'), viewportSafe: target.dataset.viewportSafe, issues: target.dataset.visibilityIssues, screenPosition: target.dataset.screenPosition }; })()`);
 assert.ok(targetGeometry.width >= 108 && targetGeometry.height >= 108, "desktop hit target must be forgiving");
 assert.match(targetGeometry.label, /Soul 01/);
+assert.equal(targetGeometry.viewportSafe, "true", "waiting Soul must remain viewport-safe");
+assert.equal(targetGeometry.issues, "", "waiting Soul must satisfy the visibility contract");
+const visualCenter = targetGeometry.screenPosition.split(",").map(Number);
+assert.ok(Math.hypot(visualCenter[0] - targetGeometry.x, visualCenter[1] - targetGeometry.y) <= 2, "hit target must follow the visible Soul");
 
 await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 40, y: 40 });
-await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: center.x, y: center.y });
+await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: targetGeometry.x, y: targetGeometry.y });
 await waitFor("hover collection commit", `document.querySelector('[data-testid="collection-count"]')?.textContent?.trim() === '1 / 10'`);
 for (let index = 0; index < 6; index += 1) {
   await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: index % 2 ? center.x : 40, y: index % 2 ? center.y : 40 });
@@ -88,7 +92,8 @@ await clickTestId("reset-souls");
 await clickTestId("collect-point");
 await waitFor("touch waiting target", `document.querySelector('[data-testid="claim-stage"]')?.textContent === 'WAITING'`);
 await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
-await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: center.x, y: center.y, radiusX: 4, radiusY: 4, force: 1, id: 1 }] });
+const touchTarget = await evaluate(`(() => { const rect = document.querySelector('[data-testid="soul-claim-target"]')?.getBoundingClientRect(); return rect && { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; })()`);
+await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: touchTarget.x, y: touchTarget.y, radiusX: 4, radiusY: 4, force: 1, id: 1 }] });
 await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 await waitFor("touch collection commit", `document.querySelector('[data-testid="collection-count"]')?.textContent?.trim() === '1 / 10'`);
 

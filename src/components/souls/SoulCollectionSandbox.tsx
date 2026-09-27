@@ -131,6 +131,9 @@ export function SoulCollectionSandbox() {
               <div><dt>waiting audio</dt><dd>{snapshot.waitingAudioActive ? "active" : "off"}</dd></div>
               <div><dt>assigned voice</dt><dd>{snapshot.assignedVoice ?? "none"}</dd></div>
               <div><dt>hit radius</dt><dd>{snapshot.claimTarget ? `${snapshot.claimTarget.radius}px` : "none"}</dd></div>
+              <div><dt>waiting size</dt><dd data-testid="waiting-screen-size">{snapshot.waitingVisual ? `${snapshot.waitingVisual.screenSize.toFixed(1)}px` : "none"}</dd></div>
+              <div><dt>waiting safe</dt><dd data-testid="waiting-viewport-safe">{snapshot.waitingVisual ? (snapshot.waitingVisual.viewportSafe ? "yes" : "no") : "none"}</dd></div>
+              <div><dt>waiting issues</dt><dd data-testid="waiting-visibility-issues">{snapshot.waitingVisual?.issues.join(", ") || "none"}</dd></div>
               <div><dt>HUD</dt><dd>{snapshot.hudMode}</dd></div>
               <div><dt>release</dt><dd>{snapshot.releaseState}</dd></div>
               <div><dt>released</dt><dd>{snapshot.releasedCount}</dd></div>

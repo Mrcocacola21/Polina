@@ -49,6 +49,12 @@ import type {
   SoulSlot,
   SoulVoice,
 } from "./types";
+import {
+  resolveWaitingSoulPosition,
+  validateWaitingSoulVisual,
+  WAITING_SOUL_VISUAL,
+  waitingSoulScale,
+} from "./waiting-visual";
 
 const RELEASE_SCOPE_ID = "soul-collection:released";
 
@@ -72,6 +78,7 @@ type ActiveTransaction = {
   claimConfig: SoulClaimConfig;
   claimState: SoulClaimState;
   claimTarget?: SoulClaimTarget;
+  claimSourceAnchor?: readonly [number, number];
   claimPromise: Promise<void>;
   resolveClaim: () => void;
   cursorBeforeWaiting: ReturnType<VisualRuntime["getSnapshot"]>["cursor"];
@@ -79,6 +86,23 @@ type ActiveTransaction = {
   voice: SoulVoice;
   committed: boolean;
 };
+
+export type WaitingSoulVisualSnapshot = Readonly<{
+  soulId: SoulId;
+  worldPosition: Vec3;
+  screenPosition: readonly [number, number];
+  screenSize: number;
+  scale: number;
+  opacity: number;
+  glow: number;
+  aura: number;
+  visible: boolean;
+  renderOrder: number;
+  hitRadius: number;
+  hitCenter: readonly [number, number];
+  viewportSafe: boolean;
+  issues: readonly string[];
+}>;
 
 export type ReleasedSoul = Readonly<{
   soulId: SoulId;
@@ -98,6 +122,7 @@ export type SoulCollectionSnapshot = Readonly<{
   claimTarget: SoulClaimTarget | null;
   waitingAudioActive: boolean;
   assignedVoice: SoulVoice | null;
+  waitingVisual: WaitingSoulVisualSnapshot | null;
 }>;
 
 class CancelledCollectionError extends Error {}
@@ -160,6 +185,7 @@ export class SoulCollectionRuntime {
         this.#active?.waitingAudioPending || this.#active?.waitingAudio?.isActive(),
       ),
       assignedVoice: this.#active?.voice ?? null,
+      waitingVisual: this.#waitingVisualSnapshot(),
     };
   }
 
@@ -286,6 +312,7 @@ export class SoulCollectionRuntime {
   setClaimProximity(near: boolean): void {
     const transaction = this.#active;
     if (!transaction || transaction.claimState.stage !== "WAITING") return;
+    transaction.soul?.setProximity(near);
     this.#visual.setCursorMode(near ? "INTERACTIVE" : transaction.cursorBeforeWaiting);
   }
 
@@ -365,15 +392,38 @@ export class SoulCollectionRuntime {
       transaction.particle = undefined;
       transaction.soul.startBreathing(variant === "DEEP" ? 0.018 : 0.032);
       if (!await wait(timing.stabilize, signal)) throw new CancelledCollectionError();
+      const viewport = this.#viewport();
+      transaction.claimSourceAnchor = [
+        convergence[0] / viewport[0],
+        convergence[1] / viewport[1],
+      ];
+      const waitingPosition = resolveWaitingSoulPosition(
+        options.soulId,
+        convergence,
+        viewport,
+      );
+      if (!await transaction.soul.settleTo(
+        { screen: waitingPosition, z: WAITING_SOUL_VISUAL.waitingZ },
+        {
+          duration: WAITING_SOUL_VISUAL.settleSeconds,
+          scale: waitingSoulScale(variant),
+          opacity: WAITING_SOUL_VISUAL.opacity,
+          glow: WAITING_SOUL_VISUAL.glow,
+          aura: WAITING_SOUL_VISUAL.aura,
+          renderOrder: WAITING_SOUL_VISUAL.renderOrder,
+        },
+      )) throw new CancelledCollectionError();
+      transaction.soul.startBreathing(variant === "DEEP" ? 0.018 : 0.032);
       transaction.claimState = enterSoulWaiting(transaction.claimState);
       transaction.claimTarget = {
         soulId: options.soulId,
-        center: convergence,
+        center: waitingPosition,
         radius: transaction.claimConfig.hitRadius,
       };
       transaction.cursorBeforeWaiting = this.#visual.getSnapshot().cursor;
       this.#playWaitingAudio(transaction);
       this.#notify();
+      this.#warnIfWaitingVisualInvalid(transaction);
       if (!await this.#waitForClaim(transaction)) throw new CancelledCollectionError();
       this.#assertActive(transaction);
 
@@ -643,16 +693,100 @@ export class SoulCollectionRuntime {
     if (signal.aborted) return Promise.resolve(false);
     return new Promise((resolve) => {
       let settled = false;
+      let resizeTimer = 0;
       const finish = (claimed: boolean) => {
         if (settled) return;
         settled = true;
         signal.removeEventListener("abort", abort);
+        window.removeEventListener("resize", resize);
+        window.visualViewport?.removeEventListener("resize", resize);
+        window.clearTimeout(resizeTimer);
         resolve(claimed);
       };
       const abort = () => finish(false);
+      const resize = () => {
+        window.clearTimeout(resizeTimer);
+        // R3F applies its debounced canvas/camera resize first. Reprojecting
+        // afterward keeps the visible Soul and fixed DOM hit target aligned.
+        resizeTimer = window.setTimeout(() => this.#repositionWaitingSoul(transaction), 120);
+      };
       signal.addEventListener("abort", abort, { once: true });
+      window.addEventListener("resize", resize, { passive: true });
+      window.visualViewport?.addEventListener("resize", resize, { passive: true });
       void transaction.claimPromise.then(() => finish(!signal.aborted));
     });
+  }
+
+  #viewport(): readonly [number, number] {
+    return [Math.max(1, window.innerWidth), Math.max(1, window.innerHeight)];
+  }
+
+  #repositionWaitingSoul(transaction: ActiveTransaction): void {
+    if (
+      transaction.claimState.stage !== "WAITING" ||
+      !transaction.claimSourceAnchor ||
+      !transaction.soul
+    ) return;
+    const viewport = this.#viewport();
+    const source: readonly [number, number] = [
+      transaction.claimSourceAnchor[0] * viewport[0],
+      transaction.claimSourceAnchor[1] * viewport[1],
+    ];
+    const position = resolveWaitingSoulPosition(transaction.soulId, source, viewport);
+    if (!transaction.soul.setScreenPosition(position, WAITING_SOUL_VISUAL.waitingZ)) return;
+    transaction.claimTarget = {
+      soulId: transaction.soulId,
+      center: position,
+      radius: transaction.claimConfig.hitRadius,
+    };
+    this.#notify();
+    this.#warnIfWaitingVisualInvalid(transaction);
+  }
+
+  #waitingVisualSnapshot(): WaitingSoulVisualSnapshot | null {
+    const transaction = this.#active;
+    if (!transaction?.soul || !transaction.claimTarget || transaction.claimState.stage !== "WAITING") {
+      return null;
+    }
+    const visual = transaction.soul.getVisualSnapshot();
+    if (!visual) return null;
+    const screenPosition = this.#visual.worldToScreen(visual.position) ?? transaction.claimTarget.center;
+    // The ACTIVE sprite occupies 1.35 world units and the orthographic camera
+    // uses 100 CSS pixels per world unit. The texture's readable core is ~62%.
+    const screenSize = visual.scale * 1.35 * 100 * 0.62;
+    const viewport = this.#viewport();
+    const issues = validateWaitingSoulVisual({
+      visible: visual.visible,
+      opacity: visual.opacity,
+      scale: visual.scale,
+      screenSize,
+      screenPosition,
+      hitCenter: transaction.claimTarget.center,
+      viewport,
+    });
+    return {
+      soulId: transaction.soulId,
+      worldPosition: visual.position,
+      screenPosition,
+      screenSize,
+      scale: visual.scale,
+      opacity: visual.opacity,
+      glow: visual.glow,
+      aura: visual.aura,
+      visible: visual.visible,
+      renderOrder: visual.renderOrder,
+      hitRadius: transaction.claimTarget.radius,
+      hitCenter: transaction.claimTarget.center,
+      viewportSafe: !issues.includes("outside-viewport") && !issues.includes("outside-safe-bounds"),
+      issues,
+    };
+  }
+
+  #warnIfWaitingVisualInvalid(transaction: ActiveTransaction): void {
+    if (process.env.NODE_ENV !== "development" || this.#active?.id !== transaction.id) return;
+    const snapshot = this.#waitingVisualSnapshot();
+    if (!snapshot || snapshot.issues.length === 0) return;
+    console.warn(`Waiting Soul visibility contract failed for ${transaction.soulId}.`, snapshot);
   }
 
   #result(

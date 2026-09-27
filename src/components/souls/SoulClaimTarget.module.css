@@ -49,3 +49,24 @@
   outline: 1px dashed rgb(255 200 208 / 72%);
   background: rgb(222 36 64 / 8%);
 }
+
+:global([data-soul-hit-debug="true"]) .target::after {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  width: max-content;
+  max-width: 260px;
+  padding: 5px 7px;
+  border: 1px solid rgb(255 200 208 / 32%);
+  border-radius: 3px;
+  background: rgb(4 3 5 / 88%);
+  color: rgb(255 221 226 / 90%);
+  content:
+    attr(data-soul-id) " · screen " attr(data-screen-position) " · z " attr(data-depth)
+    " · scale " attr(data-visual-scale) " · opacity " attr(data-visual-opacity)
+    " · order " attr(data-render-order) " · hit " attr(data-hit-radius)
+    " · safe " attr(data-viewport-safe);
+  font: 10px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+  pointer-events: none;
+  transform: translateX(-50%);
+}

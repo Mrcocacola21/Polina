@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: rgb(0 0 0 / 18%);
+  background: rgb(0 0 0 / 12%);
 }
 
 .roomMotion,
@@ -19,14 +19,15 @@
 }
 
 .room {
-  opacity: 0.76;
-  filter: brightness(0.55) saturate(0.56) contrast(1.1) hue-rotate(-3deg);
+  opacity: 0.94;
+  filter: brightness(0.84) saturate(0.72) contrast(1.03) hue-rotate(-3deg);
 }
 
 .shadow {
   background:
-    linear-gradient(90deg, rgb(0 0 0 / 88%) 0%, rgb(0 0 0 / 34%) 43%, rgb(0 0 0 / 62%) 100%),
-    linear-gradient(0deg, rgb(0 0 0 / 72%), transparent 48%, rgb(0 0 0 / 35%));
+    radial-gradient(ellipse at 60% 46%, rgb(76 88 118 / 11%) 0%, rgb(81 26 42 / 5%) 28%, transparent 58%),
+    linear-gradient(90deg, rgb(0 0 0 / 66%) 0%, rgb(0 0 0 / 16%) 43%, rgb(0 0 0 / 44%) 100%),
+    linear-gradient(0deg, rgb(0 0 0 / 52%), transparent 48%, rgb(0 0 0 / 24%));
   pointer-events: none;
 }
 
@@ -52,6 +53,7 @@
     0 30px 80px rgb(0 0 0 / 48%),
     0 0 42px rgb(84 22 36 / 12%);
   overflow: hidden;
+  filter: brightness(0.86) saturate(0.8) contrast(1.04);
 }
 
 .phrase {
@@ -62,6 +64,7 @@
   width: min(36vw, 30ch);
   margin: 0;
   color: rgb(245 237 239 / 90%);
+  text-shadow: 0 3px 28px rgb(0 0 0 / 82%);
   font-family: var(--font-narrative);
   font-size: clamp(30px, 2.25vw, 48px);
   font-weight: 400;

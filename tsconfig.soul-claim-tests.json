@@ -17,6 +17,8 @@
     "src/lib/souls/claim-config.ts",
     "src/lib/souls/claim-state.ts",
     "src/lib/souls/claim-state.test.ts",
+    "src/lib/souls/waiting-visual.ts",
+    "src/lib/souls/waiting-visual.test.ts",
     "src/lib/cinematic/scenes.ts",
     "src/lib/visuals/types.ts",
     "src/lib/visuals/quality.ts"

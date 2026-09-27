@@ -57,6 +57,7 @@ export function SoulClaimTarget() {
 
   const target = snapshot.claimTarget;
   if (!target || snapshot.claimStage !== "WAITING") return null;
+  const visual = snapshot.waitingVisual;
 
   const style: TargetStyle = {
     "--soul-claim-x": `${target.center[0]}px`,
@@ -79,6 +80,15 @@ export function SoulClaimTarget() {
       data-testid="soul-claim-target"
       data-soul-id={target.soulId}
       data-near="false"
+      data-world-position={visual?.worldPosition.map((value) => value.toFixed(3)).join(",")}
+      data-screen-position={visual?.screenPosition.map((value) => value.toFixed(1)).join(",")}
+      data-depth={visual?.worldPosition[2].toFixed(3)}
+      data-visual-scale={visual?.scale.toFixed(3)}
+      data-visual-opacity={visual?.opacity.toFixed(3)}
+      data-render-order={visual?.renderOrder}
+      data-hit-radius={target.radius}
+      data-viewport-safe={visual?.viewportSafe ? "true" : "false"}
+      data-visibility-issues={visual?.issues.join(",") ?? ""}
       aria-label={`Collect ${target.soulId.replace("SOUL_", "Soul ")} of 10`}
       onFocus={() => runtime.setClaimProximity(true)}
       onBlur={() => runtime.setClaimProximity(false)}

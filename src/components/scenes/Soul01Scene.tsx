@@ -54,10 +54,10 @@ export function Soul01Scene() {
   useEffect(() => {
     collectionRuntime.showHud();
     visual.setCursorMode("DEFAULT");
-    visual.setFog("NEUTRAL", 0.1, 1.4);
+    visual.setFog("NEUTRAL", 0.075, 1.4);
     visual.setGrain(0.028);
-    visual.setVignette(0.48, 0.7);
-    visual.setLightLeak(0.025, { position: [74, 46], scale: 1.18, rotation: -5, drift: true });
+    visual.setVignette(0.34, 0.74);
+    visual.setLightLeak(0.038, { position: [74, 46], scale: 1.18, rotation: -5, drift: true });
     const particles = visual.spawnParticleField({
       mode: "AMBIENT_DRIFT",
       count: 58,
@@ -166,8 +166,8 @@ export function Soul01Scene() {
     }, S01_TIMING.settle);
     timeline.call(() => {
       particlesRef.current?.update({ velocity: 0.009, drift: 0.028, opacity: 0.1 });
-      visual.setFogOpacity(0.075, 1.8);
-      visual.setLightLeak(0.012, { drift: false });
+      visual.setFogOpacity(0.055, 1.8);
+      visual.setLightLeak(0.022, { drift: false });
     }, [], S01_TIMING.settle);
     // GSAP invokes this after render; the function declaration is stable for this keyed run.
     // eslint-disable-next-line react-hooks/immutability

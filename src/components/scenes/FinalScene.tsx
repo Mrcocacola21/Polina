@@ -368,6 +368,16 @@ export function FinalScene() {
     toneRef.current = sceneAudio.applyMusicTone({ ...FILM_MIX.finalTone, rampSeconds: 0.8 });
   }, [audio, controller, disposeBranchVisuals, sceneAudio, visual]);
 
+  const restartStory = useCallback(() => {
+    const answerCleared = clearPersistedAnswer(window.localStorage);
+    const recoveryCleared = clearRecovery(window.sessionStorage);
+    if (!answerCleared || !recoveryCleared) {
+      setPersistenceStatus("unavailable");
+      return;
+    }
+    window.location.reload();
+  }, []);
+
   const forceStable = useCallback((result: AnswerResult) => {
     controller.reset();
     const transaction = controller.commit(result, new Date()).snapshot.transaction;
@@ -616,6 +626,20 @@ export function FinalScene() {
 
       <div ref={endingRef} className={styles.ending} tabIndex={-1} aria-label={ending === "yes" ? `Ответ сохранён. ${answer.finalDateDisplay ?? ""}` : ending === "think" ? "Ответ сохранён." : undefined}>
         {dateVisible && answer.finalDateDisplay ? <time dateTime={answer.answeredAt ?? undefined} className={styles.finalDate} data-testid="final-answer-date">{answer.finalDateDisplay}</time> : null}
+        {ending !== "none" ? (
+          <button
+            className={styles.restartButton}
+            data-testid="restart-story"
+            type="button"
+            onClick={restartStory}
+            onPointerEnter={() => visual.setCursorMode("INTERACTIVE")}
+            onPointerLeave={() => visual.setCursorMode("DIMMED")}
+            onFocus={() => visual.setCursorMode("INTERACTIVE")}
+            onBlur={() => visual.setCursorMode("DIMMED")}
+          >
+            Пройти заново
+          </button>
+        ) : null}
       </div>
 
       {debugVisible ? (

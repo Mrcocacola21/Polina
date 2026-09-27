@@ -4,11 +4,13 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFile(path.join(root, relative), "utf8");
-const [config, runtime, target, types, ...scenes] = await Promise.all([
+const [config, runtime, target, types, waitingVisual, canvas, ...scenes] = await Promise.all([
   read("src/lib/souls/claim-config.ts"),
   read("src/lib/souls/SoulCollectionRuntime.ts"),
   read("src/components/souls/SoulClaimTarget.tsx"),
   read("src/lib/souls/types.ts"),
+  read("src/lib/souls/waiting-visual.ts"),
+  read("src/components/visuals/GlobalWebGLCanvas.tsx"),
   ...Array.from({ length: 10 }, (_, index) => read(`src/components/scenes/Soul${String(index + 1).padStart(2, "0")}Scene.tsx`)),
 ]);
 const errors = [];
@@ -26,6 +28,12 @@ if (!target.includes('runtime.claimActiveSoul("POINTER")')) errors.push("Desktop
 if (!target.includes('runtime.claimActiveSoul("TOUCH")')) errors.push("Touch claim is missing.");
 if (!target.includes('runtime.claimActiveSoul("KEYBOARD")')) errors.push("Keyboard claim is missing.");
 if (!types.includes('"WAITING"')) errors.push("WAITING semantic state is missing.");
+if (!runtime.includes("resolveWaitingSoulPosition")) errors.push("WAITING claim position is not screen-safe.");
+if (!runtime.includes("setScreenPosition")) errors.push("WAITING hit target cannot follow responsive repositioning.");
+if (!waitingVisual.includes("minimumOpacity")) errors.push("WAITING visual opacity floor is missing.");
+if (!waitingVisual.includes("minimumScreenSize")) errors.push("WAITING minimum screen size is missing.");
+if (!waitingVisual.includes("validateWaitingSoulVisual")) errors.push("WAITING visibility validator is missing.");
+if (!canvas.includes("soulForegroundLayer")) errors.push("Souls are not isolated onto the foreground WebGL layer.");
 if (scenes.some((scene) => /autoCollect\s*[:=]\s*true/.test(scene))) errors.push("A production scene enables autoCollect.");
 if (scenes.some((scene) => /voice:\s*S\d+_COLLECTION/.test(scene))) errors.push("A production scene duplicates the voice mapping.");
 if (/Math\.random\s*\(/.test(config + runtime)) errors.push("Soul claim configuration uses randomness.");

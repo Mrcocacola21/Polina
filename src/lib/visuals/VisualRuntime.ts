@@ -37,6 +37,7 @@ export type SoulRecord = {
   visible: boolean;
   breathing: boolean;
   breathAmount: number;
+  renderOrder: number;
   stateWeights: { DORMANT: number; ACTIVE: number; CHARGED: number };
   flight?: {
     start: Vec3;
@@ -57,6 +58,18 @@ export type SoulRecord = {
   trailOpacity: number;
   trailWidth: number;
 };
+
+export type SoulVisualSnapshot = Readonly<{
+  position: Vec3;
+  state: SoulState;
+  scale: number;
+  opacity: number;
+  glow: number;
+  aura: number;
+  visible: boolean;
+  breathing: boolean;
+  renderOrder: number;
+}>;
 
 export type ParticleFieldRecord = {
   id: string;
@@ -111,6 +124,22 @@ export class SoulController {
   getPosition(): Vec3 | undefined {
     const record = this.#record();
     return record ? [...record.position] : undefined;
+  }
+
+  getVisualSnapshot(): SoulVisualSnapshot | undefined {
+    const record = this.#record();
+    if (!record) return undefined;
+    return {
+      position: [...record.position],
+      state: record.state,
+      scale: record.scale,
+      opacity: record.opacity,
+      glow: record.glow,
+      aura: record.aura,
+      visible: record.visible,
+      breathing: record.breathing,
+      renderOrder: record.renderOrder,
+    };
   }
 
   #record(): SoulRecord | undefined {
@@ -231,6 +260,84 @@ export class SoulController {
     const record = this.#record();
     if (!record) return;
     record.breathing = false;
+    this.#runtime.notify();
+  }
+
+  async settleTo(
+    destination: Readonly<{ screen: readonly [number, number]; z?: number }>,
+    options: Readonly<{
+      duration?: number;
+      scale: number;
+      opacity: number;
+      glow: number;
+      aura: number;
+      renderOrder: number;
+    }>,
+  ): Promise<boolean> {
+    const record = this.#record();
+    if (!record) return false;
+    const end = this.#runtime.screenToWorld(
+      destination.screen[0],
+      destination.screen[1],
+      destination.z,
+    );
+    if (!end) return false;
+    const proxy = {
+      x: record.position[0],
+      y: record.position[1],
+      z: record.position[2],
+    };
+    record.visible = true;
+    record.renderOrder = options.renderOrder;
+    const duration = (options.duration ?? 0.36) * this.#runtime.motionIntensity;
+    const [positioned, profiled, activated] = await Promise.all([
+      this.#animate(proxy, {
+        x: end[0],
+        y: end[1],
+        z: end[2],
+        duration,
+        ease: "sine.inOut",
+        onUpdate: () => {
+          record.position[0] = proxy.x;
+          record.position[1] = proxy.y;
+          record.position[2] = proxy.z;
+        },
+      }),
+      this.#animate(record, {
+        scale: options.scale,
+        opacity: options.opacity,
+        glow: options.glow,
+        aura: options.aura,
+        duration,
+        ease: "sine.inOut",
+      }),
+      this.setState("ACTIVE", Math.min(0.28, options.duration ?? 0.36)),
+    ]);
+    record.position = [...end];
+    record.baseScale = options.scale;
+    record.scale = options.scale;
+    record.opacity = options.opacity;
+    record.glow = options.glow;
+    record.aura = options.aura;
+    record.visible = true;
+    this.#runtime.notify();
+    return positioned && profiled && activated;
+  }
+
+  setScreenPosition(screen: readonly [number, number], z = 0): boolean {
+    const record = this.#record();
+    const world = this.#runtime.screenToWorld(screen[0], screen[1], z);
+    if (!record || !world) return false;
+    record.position = [...world];
+    this.#runtime.notify();
+    return true;
+  }
+
+  setProximity(near: boolean): void {
+    const record = this.#record();
+    if (!record) return;
+    record.glow = near ? Math.max(record.glow, 1.18) : Math.min(record.glow, 1.08);
+    record.aura = near ? Math.max(record.aura, 1.04) : Math.min(record.aura, 0.94);
     this.#runtime.notify();
   }
 
@@ -633,6 +740,7 @@ export class VisualRuntime {
       visible: true,
       breathing: false,
       breathAmount: 0.035,
+      renderOrder: 0,
       stateWeights: {
         DORMANT: state === "DORMANT" ? 1 : 0,
         ACTIVE: state === "ACTIVE" ? 1 : 0,
