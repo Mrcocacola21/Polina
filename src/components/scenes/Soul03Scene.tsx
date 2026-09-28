@@ -17,6 +17,7 @@ import {
   type MemoryCameraFrame,
 } from "@/lib/cinematic/phase7";
 import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
+import { MEMORY_TO_THREAD } from "@/lib/cinematic/memory-transition";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
@@ -38,6 +39,8 @@ function centerOf(element: HTMLElement | null): readonly [number, number] | null
 
 export function Soul03Scene() {
   const rootRef = useRef<HTMLElement>(null);
+  const environmentRef = useRef<HTMLDivElement>(null);
+  const streaksRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<HTMLDivElement>(null);
   const memoryOneRef = useRef<HTMLDivElement>(null);
   const memoryTwoRef = useRef<HTMLDivElement>(null);
@@ -48,6 +51,7 @@ export function Soul03Scene() {
   const particlesRef = useRef<ParticleFieldController | null>(null);
   const collectionStartedRef = useRef(false);
   const cameraFrameRef = useRef<MemoryCameraFrame>(evaluateMemoryCameraSpline(0));
+  const cameraInfluenceRef = useRef(1);
   const [collectionStatus, setCollectionStatus] = useState("pending");
   const { phase, runId, completeEnter, completeExit, setCanAdvance, setContinueVisible } =
     useSceneRuntime();
@@ -102,13 +106,17 @@ export function Soul03Scene() {
     let frame = 0;
     const update = () => {
       const path = cameraFrameRef.current;
+      const driftTime = performance.now() / 1000;
+      const driftX = capabilities.motionMode === "FULL" ? Math.sin(driftTime * 0.34) * 1.3 * cameraInfluenceRef.current : 0;
+      const driftY = capabilities.motionMode === "FULL" ? Math.cos(driftTime * 0.29) * 0.8 * cameraInfluenceRef.current : 0;
+      const driftZ = capabilities.motionMode === "FULL" ? Math.sin(driftTime * 0.22) * 0.5 * cameraInfluenceRef.current : 0;
       const pointerX = finePointer.matches && capabilities.motionMode === "FULL" && capabilities.visibility === "visible"
-        ? visual.pointer.smoothed.x * 8
+        ? visual.pointer.smoothed.x * 8 * cameraInfluenceRef.current
         : 0;
       const pointerY = finePointer.matches && capabilities.motionMode === "FULL" && capabilities.visibility === "visible"
-        ? visual.pointer.smoothed.y * 6
+        ? visual.pointer.smoothed.y * 6 * cameraInfluenceRef.current
         : 0;
-      camera.style.transform = `translate3d(${(-path.x + pointerX).toFixed(2)}px, ${(-path.y - pointerY).toFixed(2)}px, ${path.z.toFixed(2)}px) rotateY(${path.yaw.toFixed(2)}deg) rotateZ(${path.roll.toFixed(2)}deg)`;
+      camera.style.transform = `translate3d(${(-path.x + pointerX + driftX).toFixed(2)}px, ${(-path.y - pointerY + driftY).toFixed(2)}px, ${(path.z + driftZ).toFixed(2)}px) rotateY(${path.yaw.toFixed(2)}deg) rotateZ(${path.roll.toFixed(2)}deg)`;
       frame = window.requestAnimationFrame(update);
     };
     frame = window.requestAnimationFrame(update);
@@ -125,6 +133,22 @@ export function Soul03Scene() {
     timeline.eventCallback("onComplete", completeEnter);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
   }, [completeEnter, phase, scopeId, visual]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    const prepareTransitionLab = () => {
+      cameraFrameRef.current = evaluateMemoryCameraSpline(1);
+      cameraInfluenceRef.current = 1;
+      gsap.set([memoryOneRef.current, memoryTwoRef.current, memoryThreeRef.current], {
+        opacity: 1,
+        filter: "blur(0px) saturate(0.92)",
+        scale: 1,
+      });
+      gsap.set([phraseOneRef.current, phraseTwoRef.current], { opacity: 0 });
+    };
+    window.addEventListener("soulbound:memory-transition-lab-prepare", prepareTransitionLab);
+    return () => window.removeEventListener("soulbound:memory-transition-lab-prepare", prepareTransitionLab);
+  }, []);
 
   useEffect(() => {
     if (phase !== "active") return;
@@ -273,23 +297,98 @@ export function Soul03Scene() {
 
   useEffect(() => {
     if (phase !== "exiting") return;
-    ambienceRef.current?.stop({ fadeSeconds: 1.4 });
+    const finalMemory = memoryOneRef.current;
+    const recedingMemories = [memoryTwoRef.current, memoryThreeRef.current];
+    const finalRect = finalMemory?.getBoundingClientRect();
+    const targetX = window.innerWidth * 0.52;
+    const targetY = window.innerHeight * 0.48;
+    const centerX = finalRect ? finalRect.left + finalRect.width / 2 : targetX;
+    const centerY = finalRect ? finalRect.top + finalRect.height / 2 : targetY;
+    const reduced = capabilities.motionMode === "REDUCED";
+    const cameraMotion = { value: cameraInfluenceRef.current };
+
+    ambienceRef.current?.stop({ fadeSeconds: 2.8 });
     ambienceRef.current = null;
-    visual.fadeFog(0.045, 1.25);
+    visual.setCursorMode("DIMMED");
+    visual.fadeFog(0.008, 3.55);
     visual.setLightLeak(0, { drift: false });
-    const memories = [memoryOneRef.current, memoryTwoRef.current, memoryThreeRef.current];
-    const timeline = gsap.timeline({ onComplete: completeExit });
-    timeline.to(memories, {
-      z: -220,
-      opacity: 0.48,
-      filter: "saturate(0.66) blur(2px)",
-      duration: 1.45,
-      stagger: 0.12,
-      ease: "power2.inOut",
+    particlesRef.current?.update({
+      velocity: 0.0025,
+      drift: 0.008,
+      opacity: 0.025,
     });
-    timeline.to(rootRef.current, { filter: "brightness(0.68)", duration: 1.1 }, 0.2);
+
+    const timeline = gsap.timeline({ onComplete: completeExit });
+    timeline.to(cameraMotion, {
+      value: 0,
+      duration: MEMORY_TO_THREAD.cameraDeceleration,
+      ease: "power2.out",
+      onUpdate: () => {
+        cameraInfluenceRef.current = cameraMotion.value;
+      },
+    }, 0);
+    timeline.to(streaksRef.current, {
+      opacity: 0,
+      filter: "saturate(0.45) brightness(0.5) blur(2px)",
+      duration: 0.62,
+      ease: "power2.out",
+    }, 0.02);
+    timeline.to([phraseOneRef.current, phraseTwoRef.current], {
+      opacity: 0,
+      filter: "blur(7px)",
+      y: 6,
+      duration: 0.52,
+      stagger: 0.05,
+      ease: "power2.in",
+    }, 0.02);
+    timeline.to(recedingMemories, {
+      z: reduced ? -80 : -520,
+      scale: reduced ? 0.94 : 0.72,
+      opacity: 0,
+      filter: "saturate(0.42) brightness(0.52) blur(8px)",
+      duration: reduced ? 0.82 : 1.08,
+      stagger: 0.11,
+      ease: "power2.inOut",
+    }, MEMORY_TO_THREAD.recessionStartsAt);
+    timeline.to(finalMemory, {
+      x: reduced ? 0 : targetX - centerX,
+      y: reduced ? 0 : targetY - centerY,
+      z: reduced ? 0 : 18,
+      scale: reduced ? 1 : 1.025,
+      duration: 0.94,
+      ease: "sine.inOut",
+    }, 0.28);
+    timeline.to(environmentRef.current, {
+      opacity: 0.22,
+      filter: "saturate(0.48) brightness(0.42) contrast(1)",
+      duration: 1.65,
+      ease: "sine.inOut",
+    }, 0.35);
+    timeline.to(finalMemory, {
+      filter: "saturate(0.62) brightness(0.76) contrast(0.9) blur(0.35px)",
+      duration: 0.72,
+      ease: "sine.inOut",
+    }, MEMORY_TO_THREAD.holdEndsAt - 0.38);
+    timeline.to(finalMemory, {
+      "--memory-core": "0%",
+      opacity: 0,
+      filter: "saturate(0.5) brightness(0.58) contrast(0.82) blur(1.8px)",
+      duration: MEMORY_TO_THREAD.dissolveEndsAt - MEMORY_TO_THREAD.holdEndsAt,
+      ease: "sine.inOut",
+    }, MEMORY_TO_THREAD.holdEndsAt);
+    timeline.to(environmentRef.current, {
+      opacity: 0.035,
+      filter: "saturate(0.32) brightness(0.24) blur(2px)",
+      duration: 1.5,
+      ease: "sine.inOut",
+    }, 2.05);
+    timeline.to(rootRef.current, {
+      filter: "brightness(0.58)",
+      duration: MEMORY_TO_THREAD.handoffAt - 2.2,
+      ease: "sine.inOut",
+    }, 2.2);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
-  }, [completeExit, phase, scopeId, visual]);
+  }, [capabilities.motionMode, completeExit, phase, scopeId, visual]);
 
   return (
     <section
@@ -300,21 +399,21 @@ export function Soul03Scene() {
       data-collection-status={collectionStatus}
       aria-label="Shared Moments"
     >
-      <div className={styles.environment} aria-hidden="true">
+      <div ref={environmentRef} className={styles.environment} aria-hidden="true">
         {environment ? <MediaImage asset={environment} alt="" className={styles.environmentImage} eager /> : null}
       </div>
-      <div className={styles.streaks} aria-hidden="true">
+      <div ref={streaksRef} className={styles.streaks} aria-hidden="true">
         {streaks ? <MediaImage asset={streaks} alt="" className={styles.streakImage} eager /> : null}
       </div>
       <div className={styles.memoryViewport}>
         <div ref={cameraRef} className={styles.cameraRig}>
-          <div ref={memoryOneRef} className={`${styles.memory} ${styles.memoryOne}`}>
+          <div ref={memoryOneRef} className={`${styles.memory} ${styles.memoryOne}`} data-memory-id="together" data-final-memory="true">
             {together ? <MediaImage asset={together} alt="A shared private memory" objectFit="contain" sizes="(max-width: 720px) 55vw, 29vw" eager /> : null}
           </div>
-          <div ref={memoryTwoRef} className={`${styles.memory} ${styles.memoryTwo}`}>
+          <div ref={memoryTwoRef} className={`${styles.memory} ${styles.memoryTwo}`} data-memory-id="minecraft-together">
             {minecraft ? <MediaImage asset={minecraft} alt="A shared game memory" objectFit="contain" sizes="(max-width: 720px) 76vw, 42vw" eager /> : null}
           </div>
-          <div ref={memoryThreeRef} className={`${styles.memory} ${styles.memoryThree}`}>
+          <div ref={memoryThreeRef} className={`${styles.memory} ${styles.memoryThree}`} data-memory-id="living-together">
             {living ? <MediaImage asset={living} alt="A shared conversation memory" objectFit="contain" sizes="(max-width: 720px) 80vw, 40vw" eager /> : null}
           </div>
         </div>

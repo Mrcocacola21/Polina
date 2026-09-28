@@ -72,6 +72,8 @@
   height: 96%;
   overflow: visible;
   pointer-events: none;
+  transform-origin: 52% 48%;
+  animation: thread-breath 7s ease-in-out 4.8s infinite alternate both;
 }
 
 .thread path {
@@ -97,6 +99,49 @@
   background: rgb(181 45 68 / 84%);
   box-shadow: 0 0 13px rgb(154 28 50 / 52%);
   opacity: 0;
+}
+
+.scene[data-inherited-thread="true"] .environment {
+  opacity: 0.08;
+  filter: saturate(0.38) brightness(0.3) blur(1.5px);
+}
+
+.scene[data-inherited-thread="true"] .memoryWorld {
+  visibility: hidden;
+}
+
+.scene[data-inherited-thread="true"] .thread path {
+  stroke-dashoffset: 0;
+  animation: inherited-thread-takeover 1.02s step-end both;
+}
+
+.scene[data-inherited-thread="true"] .thread {
+  animation-delay: 1.02s;
+}
+
+.scene[data-inherited-thread="true"] .threadPoint {
+  animation: inherited-point-takeover 1.02s step-end both;
+}
+
+@keyframes inherited-thread-takeover {
+  0%, 99% { opacity: 0; }
+  100% { opacity: .56; }
+}
+
+@keyframes inherited-point-takeover {
+  0%, 99% { opacity: 0; transform: scale(.82); }
+  100% { opacity: .82; transform: scale(1); }
+}
+
+@keyframes thread-breath {
+  from { transform: translateX(-1px) scaleX(.999); }
+  to { transform: translateX(1px) scaleX(1.001); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread {
+    animation: none;
+  }
 }
 
 .phrase {

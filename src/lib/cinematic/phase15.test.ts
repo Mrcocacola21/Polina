@@ -8,6 +8,7 @@ import {
   TransitionRuntime,
   getTransitionDefinition,
 } from "./transitions";
+import { getMemoryTransitionMetrics, MEMORY_TO_THREAD } from "./memory-transition";
 
 test("every canonical production boundary after PROLOGUE has exactly one strategy", () => {
   const expected = SCENE_IDS.slice(1, -1).map((from) => `${from}->${getNextScene(from)!.id}`);
@@ -43,7 +44,7 @@ test("transition lock, runId handoff, reveal, and cancellation are stale-safe", 
 
 test("duration, mask, audio, cursor, HUD, and fallback metadata remain intentional", () => {
   for (const item of TRANSITION_DEFINITIONS) {
-    assert.ok(item.duration >= 0 && item.duration <= 2);
+    assert.ok(item.duration >= 0 && item.duration <= (item.id === "S03_S04" ? 5 : 2));
     assert.ok(item.revealDuration >= 0 && item.revealDuration <= 2);
     assert.ok(item.audioHandoff.length > 12);
     assert.ok(["DEFAULT", "DIMMED", "HIDDEN", "INTERACTIVE", "ABSORPTION"].includes(item.cursor));
@@ -54,4 +55,21 @@ test("duration, mask, audio, cursor, HUD, and fallback metadata remain intention
   assert.equal(getTransitionDefinition("S04", "S05")?.mask, "VERTICAL_SLIT");
   assert.equal(FINAL_TRANSITIONS.length, 3);
   assert.equal(FINAL_TRANSITIONS.every((item) => item.music === "HEART_AND_SOUL"), true);
+});
+
+test("S03 to S04 contracts from three memories into one continuously owned thread", () => {
+  const start = getMemoryTransitionMetrics(0);
+  const hold = getMemoryTransitionMetrics(MEMORY_TO_THREAD.finalMemoryOnlyAt + 0.1);
+  const dissolve = getMemoryTransitionMetrics(MEMORY_TO_THREAD.holdEndsAt + 0.25);
+  const handoff = getMemoryTransitionMetrics(MEMORY_TO_THREAD.handoffAt, "incoming");
+  assert.equal(MEMORY_TO_THREAD.finalMemoryId, "together");
+  assert.equal(start.remainingMemoryCount, 3);
+  assert.equal(hold.phase, "FINAL_MEMORY_HOLD");
+  assert.equal(hold.remainingMemoryCount, 1);
+  assert.equal(dissolve.phase, "DISSOLVING");
+  assert.ok(dissolve.threadOpacity > 0);
+  assert.equal(handoff.phase, "THREAD_ONLY");
+  assert.equal(handoff.threadOpacity, MEMORY_TO_THREAD.threadOpacity);
+  assert.equal(handoff.threadOwnership, "S04");
+  assert.ok(handoff.musicFilterFrequency < 2_000);
 });

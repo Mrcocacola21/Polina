@@ -16,6 +16,10 @@
 .field,
 .memory,
 .thread,
+.memoryThreadGroup,
+.memoryThread,
+.memoryThreadPoint,
+.memoryResidue,
 .motif,
 .motifSecondary,
 .aperture,
@@ -103,6 +107,56 @@
   transform-origin: center;
 }
 
+.memoryThreadGroup {
+  inset: 0;
+}
+
+.memoryThread {
+  inset: 4% 0 0;
+  width: 100%;
+  height: 96%;
+  overflow: visible;
+}
+
+.memoryThread path {
+  fill: none;
+  stroke: rgb(122 13 25 / 62%);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 760;
+  stroke-dashoffset: 760;
+  filter: drop-shadow(0 0 4px rgb(128 19 39 / 32%));
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+
+.memoryThreadPoint {
+  top: 48%;
+  left: 52%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgb(181 45 68 / 84%);
+  box-shadow: 0 0 13px rgb(154 28 50 / 52%);
+  opacity: 0;
+}
+
+.memoryResidue {
+  top: 48%;
+  left: 52%;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgb(161 55 72 / 72%);
+  box-shadow: 0 0 7px rgb(154 28 50 / 38%);
+  opacity: 0;
+}
+
+.residueOne { --residue-x: -44px; --residue-y: -25px; }
+.residueTwo { --residue-x: 36px; --residue-y: -18px; }
+.residueThree { --residue-x: 22px; --residue-y: 34px; }
+
 .memory {
   width: min(26vw, 360px);
   aspect-ratio: 16 / 10;
@@ -184,18 +238,30 @@
   animation: memory-depth-open 1.05s ease-out both;
 }
 
-/* Lightweight copies of the final three planes survive the component handoff. */
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memory {
-  animation: memory-drain 1.55s ease-in-out both;
+/* S03 removes visual information; this persistent layer owns the one surviving connection. */
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"] > .thread {
+  display: none;
 }
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryTwo { animation-delay: .08s; }
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThree { animation-delay: .16s; }
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="incoming"] .memory,
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="revealing"] .memory {
-  animation: memory-release .55s ease-in both;
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThread path {
+  animation: memory-thread-emerge 3.8s linear both;
 }
-.bridge[data-transition-bridge="MEMORY_TO_THREAD"] .thread {
-  animation: thread-remains 1.55s ease-in-out both;
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThreadPoint {
+  animation: memory-thread-point 3.8s linear both;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryResidue {
+  animation: memory-residue-converge 3.8s ease-in-out both;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="incoming"] .memoryThread path,
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="revealing"] .memoryThread path {
+  stroke-dashoffset: 0;
+  opacity: .56;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="incoming"] .memoryThreadPoint,
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="revealing"] .memoryThreadPoint {
+  opacity: .82;
+}
+.bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="revealing"] .memoryThreadGroup {
+  animation: memory-thread-handoff 1.02s step-end both;
 }
 
 .bridge[data-transition-bridge="THREAD_TO_MORNING"][data-transition-state="outgoing"] .thread {
@@ -270,6 +336,26 @@
 @keyframes memory-drain { from { opacity: .42; transform: perspective(900px) translateZ(-40px); filter: saturate(.7); } to { opacity: .1; transform: perspective(900px) translateZ(-420px) scale(.72); filter: saturate(.15) blur(6px); } }
 @keyframes memory-release { from { opacity: .1; transform: perspective(900px) translateZ(-420px) scale(.72); } to { opacity: 0; transform: perspective(900px) translateZ(-560px) scale(.62); filter: blur(10px); } }
 @keyframes thread-remains { 0% { opacity: 0; transform: rotate(8deg) scaleY(.7); } 58% { opacity: .7; } 100% { opacity: .3; transform: rotate(0) scaleY(1); } }
+@keyframes memory-thread-emerge {
+  0%, 54% { opacity: 0; stroke-dashoffset: 760; }
+  60% { opacity: .14; stroke-dashoffset: 716; }
+  88% { opacity: .5; stroke-dashoffset: 96; }
+  100% { opacity: .56; stroke-dashoffset: 0; }
+}
+@keyframes memory-thread-point {
+  0%, 57% { opacity: 0; transform: scale(.3); }
+  76% { opacity: .72; transform: scale(.82); }
+  100% { opacity: .82; transform: scale(1); }
+}
+@keyframes memory-residue-converge {
+  0%, 50% { opacity: 0; transform: translate(var(--residue-x), var(--residue-y)) scale(.4); }
+  62% { opacity: .62; }
+  84%, 100% { opacity: 0; transform: translate(0, 0) scale(.2); }
+}
+@keyframes memory-thread-handoff {
+  0%, 99% { opacity: 1; }
+  100% { opacity: 0; }
+}
 @keyframes thread-collapse { from { opacity: .7; transform: rotate(0) scaleX(1); background: #bb1730; } to { opacity: .8; transform: rotate(0) scaleX(2); background: #eee7d8; } }
 @keyframes morning-aperture { 0% { opacity: .8; scale: 1 1; } 58% { opacity: .58; scale: 36 1; } 100% { opacity: 0; scale: 120 1; filter: blur(4px); } }
 @keyframes light-contract { 0% { opacity: 0; scale: 16; } 45% { opacity: .65; } 100% { opacity: .9; scale: .55; } }
@@ -299,5 +385,10 @@
   .fracture,
   .ringSecondary {
     display: none;
+  }
+  .bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThread path,
+  .bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryThreadPoint,
+  .bridge[data-transition-bridge="MEMORY_TO_THREAD"][data-transition-state="outgoing"] .memoryResidue {
+    animation-duration: 3.8s !important;
   }
 }

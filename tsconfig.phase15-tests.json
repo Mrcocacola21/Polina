@@ -13,6 +13,7 @@
   "include": [
     "src/lib/cinematic/scenes.ts",
     "src/lib/cinematic/transitions.ts",
+    "src/lib/cinematic/memory-transition.ts",
     "src/lib/cinematic/phase15.test.ts",
     "src/lib/audio/types.ts",
     "src/lib/visuals/types.ts",

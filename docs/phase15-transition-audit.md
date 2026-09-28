@@ -7,7 +7,7 @@ This audit records the production boundary state found before Phase 15 and the r
 | PROLOGUE → S01 | SOUL_CIRCLE mask already worked, but HUD/room readiness was implicit | expanding Soul circle leaves a cold room field under the existing mask | 1.05s + 1.05s reveal |
 | S01 → S02 | generic black FADE made the component boundary visible | room/Discord light compresses into notification glow; no black mask | 0.90s |
 | S02 → S03 | local residue receded, followed by an idle FADE reveal call | notification point recedes into a persistent depth ring and Memory Void | 1.35s |
-| S03 → S04 | best existing local match, but memory DOM vanished at unmount | three lightweight cached memory planes desaturate/recede while one thread remains | 1.55s |
+| S03 → S04 | all three S03 planes moved/faded together, then three bridge copies and a separate line appeared before S04 mounted another memory world and SVG thread | camera/pointer motion settles; two memories physically recede; `together` holds, loses warmth and dissolves edge-first while the persistent bridge thread emerges from its center; S04 takes over matched geometry under a thread-only beat | 3.80s + 0.98s reveal |
 | S04 → S05 | correct VERTICAL_SLIT mask, but thread and slit were unrelated owners | persistent crimson thread becomes the pale slit under the existing mask | 1.20s + 1.25s reveal |
 | S05 → S06 | local warm point vanished at unmount | morning light contracts to the same warm heart point | 1.15s |
 | S06 → S07 | heart exit and portrait halo entered separately | residual particles form the incoming portrait halo | 1.15s |
@@ -31,3 +31,11 @@ Global findings before changes:
 - The main missing piece was a small persistent semantic bridge between local EXITING and incoming ENTERING DOM.
 - Generic FADE was materially visible only on S01 → S02; idle FADE reveal calls in S02/S03 also obscured the true ownership model.
 - Debug restart cancelled scene scopes but did not explicitly cancel the global mask/bridge; it does now.
+
+## S03 to S04 focused redesign
+
+- `together` is the bridge memory because it is the closest plane in S03's settled Z composition and remains legible as an isolated intimate image.
+- The outgoing scene owns camera deceleration, early streak removal, physical Z recession, final-memory hold, warmth drain, radial edge erosion, fog collapse, and removal of pointer influence.
+- The persistent bridge owns only the surviving crimson filament, three tiny converging residues, and continuous MUS-02 tone/gain automation. It never duplicates the heavy memory world.
+- Incoming S04 hides its legacy memory-recession setup for inherited entries, crossfades an identical SVG path beneath the bridge, waits 0.85s on thread alone, then begins the unchanged mandatory phrase.
+- Direct S04 debug entry retains its standard independent memory/thread setup.

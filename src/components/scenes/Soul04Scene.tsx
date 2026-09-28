@@ -14,7 +14,9 @@ import {
   S04_TIMING,
 } from "@/lib/cinematic/phase7";
 import { COLLECTION_SCENE_SCALE, FILM_MIX } from "@/lib/cinematic/directing";
+import { MEMORY_TO_THREAD } from "@/lib/cinematic/memory-transition";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
+import { useTransitionSnapshot } from "@/lib/cinematic/TransitionRuntimeContext";
 import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
   useSceneSoulCollection,
@@ -45,6 +47,10 @@ export function Soul04Scene() {
   const toneRef = useRef<MusicToneHandle | null>(null);
   const collectionStartedRef = useRef(false);
   const [collectionStatus, setCollectionStatus] = useState("pending");
+  const transition = useTransitionSnapshot();
+  const [inheritedEntry] = useState(
+    () => transition.definition?.id === "S03_S04" && transition.status !== "idle",
+  );
   const { phase, runId, completeEnter, completeExit, setCanAdvance, setContinueVisible } =
     useSceneRuntime();
   const environment = useMediaAsset("visual:sections.section03Asset02");
@@ -61,16 +67,16 @@ export function Soul04Scene() {
   useEffect(() => {
     collectionRuntime.showHud();
     visual.setCursorMode("DEFAULT");
-    visual.setFog("CRIMSON", 0.045, 1.3);
+    visual.setFog("CRIMSON", inheritedEntry ? 0.008 : 0.045, 1.3);
     visual.setGrain(0.02);
     visual.setVignette(0.62, 0.78);
     visual.setLightLeak(0, { drift: false });
     const particles = visual.spawnParticleField({
       mode: "AMBIENT_DRIFT",
-      count: 24,
+      count: inheritedEntry ? 12 : 24,
       spread: [8, 5, 3],
       size: [0.01, 0.032],
-      opacity: 0.09,
+      opacity: inheritedEntry ? 0.025 : 0.09,
       velocity: 0.008,
       drift: 0.02,
       color: "#7d1528",
@@ -81,18 +87,24 @@ export function Soul04Scene() {
       particlesRef.current = null;
       particles.dispose();
     };
-  }, [collectionRuntime, scopeId, visual]);
+  }, [collectionRuntime, inheritedEntry, scopeId, visual]);
 
   useEffect(() => {
     if (phase !== "entering") return;
-    const timeline = gsap.fromTo(
-      rootRef.current,
-      { opacity: 0.72, filter: "brightness(0.72)" },
-      { opacity: 1, filter: "brightness(1)", duration: 0.55, ease: "sine.out" },
-    );
+    const timeline = inheritedEntry
+      ? gsap.fromTo(
+        rootRef.current,
+        { opacity: 1, filter: "brightness(0.58)" },
+        { opacity: 1, filter: "brightness(1)", duration: MEMORY_TO_THREAD.inheritedEntryDuration, ease: "sine.out" },
+      )
+      : gsap.fromTo(
+        rootRef.current,
+        { opacity: 0.72, filter: "brightness(0.72)" },
+        { opacity: 1, filter: "brightness(1)", duration: 0.55, ease: "sine.out" },
+      );
     timeline.eventCallback("onComplete", completeEnter);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
-  }, [completeEnter, phase, scopeId, visual]);
+  }, [completeEnter, inheritedEntry, phase, scopeId, visual]);
 
   useEffect(() => {
     if (phase !== "active") return;
@@ -111,38 +123,40 @@ export function Soul04Scene() {
 
     const memories = [memoryOneRef.current, memoryTwoRef.current, memoryThreeRef.current];
     const timeline = gsap.timeline();
-    memories.forEach((memory, index) => {
-      timeline.to(memory, {
-        z: -360 - index * 150,
-        scale: 0.82 - index * 0.04,
-        opacity: 0.1,
-        filter: "saturate(0.34) blur(6px) brightness(0.55)",
-        duration: 3.25,
-        ease: "power2.inOut",
-      }, [
-        S04_TIMING.memoryOneRecede,
-        S04_TIMING.memoryTwoRecede,
-        S04_TIMING.memoryThreeRecede,
-      ][index]);
-    });
-    timeline.fromTo(threadRef.current, {
-      strokeDashoffset: 760,
-      opacity: 0,
-    }, {
-      strokeDashoffset: 0,
-      opacity: 0.56,
-      duration: 2.8,
-      ease: "sine.inOut",
-    }, 2.05);
-    timeline.fromTo(threadPointRef.current, {
-      opacity: 0,
-      scale: 0.3,
-    }, {
-      opacity: 0.82,
-      scale: 1,
-      duration: 1.1,
-      ease: "sine.out",
-    }, 3.35);
+    if (!inheritedEntry) {
+      memories.forEach((memory, index) => {
+        timeline.to(memory, {
+          z: -360 - index * 150,
+          scale: 0.82 - index * 0.04,
+          opacity: 0.1,
+          filter: "saturate(0.34) blur(6px) brightness(0.55)",
+          duration: 3.25,
+          ease: "power2.inOut",
+        }, [
+          S04_TIMING.memoryOneRecede,
+          S04_TIMING.memoryTwoRecede,
+          S04_TIMING.memoryThreeRecede,
+        ][index]);
+      });
+      timeline.fromTo(threadRef.current, {
+        strokeDashoffset: 760,
+        opacity: 0,
+      }, {
+        strokeDashoffset: 0,
+        opacity: MEMORY_TO_THREAD.threadOpacity,
+        duration: 2.8,
+        ease: "sine.inOut",
+      }, 2.05);
+      timeline.fromTo(threadPointRef.current, {
+        opacity: 0,
+        scale: 0.3,
+      }, {
+        opacity: 0.82,
+        scale: 1,
+        duration: 1.1,
+        ease: "sine.out",
+      }, 3.35);
+    }
     timeline.fromTo(phraseRef.current, {
       opacity: 0,
       filter: "blur(8px)",
@@ -153,7 +167,7 @@ export function Soul04Scene() {
       y: 0,
       duration: 1.1,
       ease: "power2.out",
-    }, S04_TIMING.phrase);
+    }, inheritedEntry ? MEMORY_TO_THREAD.threadOnlyBeat : S04_TIMING.phrase);
     timeline.to(phraseRef.current, {
       opacity: 0,
       filter: "blur(4px)",
@@ -175,7 +189,7 @@ export function Soul04Scene() {
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
     // This active scene run owns the thread collapse and its single collection attempt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
+  }, [phase, inheritedEntry]);
 
   async function runCollection() {
     if (collectionStartedRef.current) return;
@@ -232,6 +246,7 @@ export function Soul04Scene() {
       data-testid="s04-scene"
       data-scene-phase={phase}
       data-collection-status={collectionStatus}
+      data-inherited-thread={inheritedEntry ? "true" : "false"}
       aria-label="Miss You"
     >
       <div className={styles.environment} aria-hidden="true">
@@ -251,7 +266,7 @@ export function Soul04Scene() {
       <svg className={styles.thread} viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
         <path
           ref={threadRef}
-          d="M 510 520 C 488 420, 556 356, 520 274 S 440 136, 572 18"
+          d="M 520 274 C 556 356, 488 420, 510 520 C 488 420, 556 356, 520 274 S 440 136, 572 18"
           pathLength="760"
         />
       </svg>

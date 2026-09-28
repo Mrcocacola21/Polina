@@ -47,6 +47,7 @@
     "test:phase14:browser": "node scripts/verify-phase14-browser.mjs",
     "test:phase15": "node scripts/verify-phase15.mjs",
     "test:phase15:browser": "node scripts/verify-phase15-browser.mjs",
+    "test:memory-transition:browser": "node scripts/verify-memory-transition-browser.mjs",
     "test:phase15:film": "node scripts/verify-phase15-film.mjs",
     "test:phase16": "node scripts/verify-phase16.mjs",
     "test:phase16:film": "node scripts/verify-phase16-film.mjs",

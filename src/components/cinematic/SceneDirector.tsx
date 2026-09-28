@@ -239,7 +239,13 @@ export function SceneDirector({
     labStartedRef.current = true;
     if (labRun.labAutoAdvance === false) return;
     dispatch({ type: "SET_CAN_ADVANCE", runId: state.runId, value: true });
-    window.setTimeout(() => dispatch({ type: "REQUEST_ADVANCE", runId: state.runId }), 40);
+    if (labRun.id === "S03_S04") {
+      window.dispatchEvent(new Event("soulbound:memory-transition-lab-prepare"));
+    }
+    window.setTimeout(
+      () => dispatch({ type: "REQUEST_ADVANCE", runId: state.runId }),
+      labRun.id === "S03_S04" ? 180 : 40,
+    );
   }, [labRun, state.currentSceneId, state.phase, state.runId, transitionLabEnabled]);
 
   useEffect(() => {
