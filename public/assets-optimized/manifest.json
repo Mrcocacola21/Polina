@@ -5,14 +5,14 @@
       "kind": "image",
       "master": {
         "path": "BRAND/BRAND-02.png",
-        "bytes": 577437,
-        "sha256": "bc2b8de4eb37dd74c0298e735d11c2bb96f6d7143ae881c7a8a207fe9cf4b3b4"
+        "bytes": 78385,
+        "sha256": "9ea98516fb532b250bc558a1f971478c2644eaa88a34ac98fbac3f60b6af29b7"
       },
       "variants": [
         {
-          "path": "images/BRAND/BRAND-02.76224ce8adcf.webp",
-          "bytes": 321072,
-          "sha256": "76224ce8adcf89417280346d2b8378f9ba5b8121d25874163939ff91aab6b6fe",
+          "path": "images/BRAND/BRAND-02.ae6b9f78c180.webp",
+          "bytes": 39126,
+          "sha256": "ae6b9f78c1800ab6f2fa8a00260bd32fd48cdb038bf8e652b770a1ac367c03b9",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 1254,
@@ -25,14 +25,14 @@
       "kind": "image",
       "master": {
         "path": "FIN/FIN-01.png",
-        "bytes": 1762111,
-        "sha256": "b0502171bfbd25aff8427d0bbab128729667b1b76d6d9f7bb9d25c1e0eb77e5b"
+        "bytes": 2294346,
+        "sha256": "5e997f05a8bc8493a7ed436088f4b368f238d4fdeca37a95aafccccbfa8ea232"
       },
       "variants": [
         {
-          "path": "images/FIN/FIN-01.d6c5800ed7bf.webp",
-          "bytes": 1306614,
-          "sha256": "d6c5800ed7bfff198e49163069ad47dcf7f375d8b0ee979f02162ec7babcebcf",
+          "path": "images/FIN/FIN-01.f3db44c38353.webp",
+          "bytes": 1845370,
+          "sha256": "f3db44c38353ff41402cb9bd823ecf2faf379cf92a03deeebca9269c499f148f",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 1254,
@@ -45,14 +45,14 @@
       "kind": "image",
       "master": {
         "path": "FIN/FIN-01A.png",
-        "bytes": 5770078,
-        "sha256": "9ae4fd96e8f77e271f02710350ad609820cfe2af4f72795c838cab22eeb4529a"
+        "bytes": 12555385,
+        "sha256": "04c08c5ebaa8fc232eb3f1c92872ed60675bd237e9933d3bd587b75ac0e66da6"
       },
       "variants": [
         {
-          "path": "images/FIN/FIN-01A.9e8a71449ea0.webp",
-          "bytes": 3217682,
-          "sha256": "9e8a71449ea050acba38c3c495409e6aecb369842fccbd66568f2b71df77c7c4",
+          "path": "images/FIN/FIN-01A.8a2806f3454e.webp",
+          "bytes": 5059254,
+          "sha256": "8a2806f3454ee721fbb8e9d6362a7cc89a2d245a188d690faccc61eb724d9afb",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 4096,
@@ -60,9 +60,9 @@
           "lossless": true
         },
         {
-          "path": "images/FIN/FIN-01A.mobile.e7b726cb1393.webp",
-          "bytes": 1515308,
-          "sha256": "e7b726cb1393daeebdde6845bdc197de3269892c4c84f10b861c9600fbbd7473",
+          "path": "images/FIN/FIN-01A.mobile.521849a3c2eb.webp",
+          "bytes": 2343126,
+          "sha256": "521849a3c2eb1bb12bfcebbfee5158d5ee88ae21d48902991290261cfabbf507",
           "profile": "mobile",
           "mimeType": "image/webp",
           "width": 2048,
@@ -75,14 +75,14 @@
       "kind": "image",
       "master": {
         "path": "FIN/FIN-01B.png",
-        "bytes": 3916327,
-        "sha256": "ec9c03722e35fe6bd8a086e596a2b57cd49630a6588b8a144e85ef8e709ecfc9"
+        "bytes": 6964110,
+        "sha256": "05a75c651ce3202a778422c824c069e1044a5740d303f6926b8ef28f0b66bf54"
       },
       "variants": [
         {
-          "path": "images/FIN/FIN-01B.e618e09b0f46.webp",
-          "bytes": 2303218,
-          "sha256": "e618e09b0f466df07406502909d1db4f1245372fe2e070c3e29da6f9e35f6671",
+          "path": "images/FIN/FIN-01B.b614fb884a60.webp",
+          "bytes": 3826712,
+          "sha256": "b614fb884a60bf4f40d774b85904bf4429956d1b0398237aea82c431c30d7ba0",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 4096,
@@ -90,9 +90,9 @@
           "lossless": true
         },
         {
-          "path": "images/FIN/FIN-01B.mobile.2132ade9b463.webp",
-          "bytes": 1090932,
-          "sha256": "2132ade9b46382c3db27a7e45bdd7bc651bc25cc5c5e9ae6fc68e62a48b3fb82",
+          "path": "images/FIN/FIN-01B.mobile.6cdd2631e044.webp",
+          "bytes": 1718482,
+          "sha256": "6cdd2631e04469288efc6f8a15132a367eb207bdfec6bac7e6a00d2c3af13ac3",
           "profile": "mobile",
           "mimeType": "image/webp",
           "width": 2048,
@@ -105,14 +105,14 @@
       "kind": "image",
       "master": {
         "path": "FIN/FIN-01C.png",
-        "bytes": 2967674,
-        "sha256": "086f4c701d4520a405c6ea8629fbf0874e84ce54b3ea5eb100fdb950c6d5b5d7"
+        "bytes": 5833213,
+        "sha256": "a38d9f358536774faba04afb43b0abdb0131832854d387a5952890e6ba207cb0"
       },
       "variants": [
         {
-          "path": "images/FIN/FIN-01C.8e58376eefc0.webp",
-          "bytes": 1953532,
-          "sha256": "8e58376eefc08e46658bad193b50148a70861a997549dff247a96c4f783203d3",
+          "path": "images/FIN/FIN-01C.b8db6f8ead02.webp",
+          "bytes": 3563192,
+          "sha256": "b8db6f8ead02d6d28faa6479ce9d34b089a1d6fee5eab1fe1957cf7d2d43beca",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 4096,
@@ -120,9 +120,9 @@
           "lossless": true
         },
         {
-          "path": "images/FIN/FIN-01C.mobile.f4727e8824ef.webp",
-          "bytes": 1040162,
-          "sha256": "f4727e8824ef2da12ea7a02eafd29082a99a1d88bd2ef34487485c9b65fccf34",
+          "path": "images/FIN/FIN-01C.mobile.d5422589c857.webp",
+          "bytes": 1826936,
+          "sha256": "d5422589c857561ac7506722037d99810d96f3f37c758b0a56e1c088f5467404",
           "profile": "mobile",
           "mimeType": "image/webp",
           "width": 2048,
@@ -135,14 +135,14 @@
       "kind": "image",
       "master": {
         "path": "FIN/FIN-02.png",
-        "bytes": 1025830,
-        "sha256": "ea99dbe27994095c8332ebd9b16200118e30fd39fff34fb822c0fb0829cc95a7"
+        "bytes": 1168556,
+        "sha256": "ecd4bd2cadfb40730164b854b1a91da2abe59f08233b885d0dece01732056e3e"
       },
       "variants": [
         {
-          "path": "images/FIN/FIN-02.86025cd1dbba.webp",
-          "bytes": 719566,
-          "sha256": "86025cd1dbbaae3433c771db7f0570d4fb9f4963d9fe7f6177e08f3a4d5cb11c",
+          "path": "images/FIN/FIN-02.7e907d054296.webp",
+          "bytes": 1022796,
+          "sha256": "7e907d054296d39745506b9adc30c7250d4b18ae9ee92d043c0487985df5a73c",
           "profile": "default",
           "mimeType": "image/webp",
           "width": 1254,

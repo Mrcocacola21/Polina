@@ -27,7 +27,9 @@
 .sigil {
   position: absolute;
   inset: 20px;
+  background: transparent !important;
   opacity: 0.72;
+  --media-matte: transparent;
   filter: saturate(0.72) drop-shadow(0 0 16px rgb(148 21 45 / 24%));
 }
 
