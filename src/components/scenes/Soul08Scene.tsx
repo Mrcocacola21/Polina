@@ -154,7 +154,7 @@ export function Soul08Scene() {
 
   useEffect(() => {
     collectionRuntime.showHud();
-    visual.setCursorMode("DIMMED");
+    visual.setCursorMode("DEFAULT");
     visual.setFog("CRIMSON", 0.17, 0.8);
     visual.setGrain(0.025);
     visual.setVignette(0.74, 0.78);

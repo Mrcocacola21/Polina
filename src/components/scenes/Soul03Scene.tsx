@@ -272,7 +272,7 @@ export function Soul03Scene() {
       centerOf(memoryThreeRef.current),
     ].filter((point): point is readonly [number, number] => point !== null);
     if (points.length !== 3) return;
-    const convergence = [window.innerWidth * 0.54, window.innerHeight * 0.48] as const;
+    const convergence = [window.innerWidth * 0.5, window.innerHeight * 0.48] as const;
     setCollectionStatus("collecting");
     const result = await collect({
       source: { type: "POINTS", points, convergence },
