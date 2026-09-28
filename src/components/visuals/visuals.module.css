@@ -24,12 +24,17 @@
   mix-blend-mode: screen;
 }
 
+.webglLayer *,
+.soulForegroundLayer * {
+  /* React Three Fiber applies pointer-events inline on its Canvas wrapper. */
+  pointer-events: none !important;
+}
+
 .webglLayer canvas,
 .soulForegroundLayer canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  pointer-events: none;
 }
 
 .webglFallback {

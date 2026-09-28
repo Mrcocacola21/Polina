@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import process from "node:process";
 
 const read = (file) => readFile(file, "utf8");
-const [capabilities, motion, director, prologue, s02, s05, s06, s09, final, webgl, globalCss] = await Promise.all([
+const [capabilities, motion, director, prologue, s02, s05, s06, s09, final, webgl, visualCss, globalCss] = await Promise.all([
   read("src/lib/accessibility/capabilities.ts"),
   read("src/components/visuals/MotionPreference.tsx"),
   read("src/components/cinematic/SceneDirector.tsx"),
@@ -13,6 +13,7 @@ const [capabilities, motion, director, prologue, s02, s05, s06, s09, final, webg
   read("src/components/scenes/Soul09Scene.tsx"),
   read("src/components/scenes/FinalScene.tsx"),
   read("src/components/visuals/GlobalWebGLCanvas.tsx"),
+  read("src/components/visuals/visuals.module.css"),
   read("src/app/globals.css"),
 ]);
 
@@ -25,6 +26,7 @@ const checks = [
   [final.includes('id="final-question"') && final.includes('aria-labelledby="final-question"') && final.includes("<fieldset"), "final question and answer group association"],
   [final.includes("FINAL_QUESTION") && final.includes("ANSWER_LABELS.YES") && final.includes("ANSWER_LABELS.THINK"), "mandatory final text remains semantic"],
   [webgl.includes('aria-hidden="true"'), "decorative WebGL and DOM fallback hidden from accessibility tree"],
+  [/\.webglLayer \*,\s*\.soulForegroundLayer \*\s*\{[^}]*pointer-events:\s*none\s*!important/s.test(visualCss), "decorative WebGL descendants cannot intercept controls"],
   [globalCss.includes(":focus-visible") && globalCss.includes("forced-colors"), "visible focus and forced-colors baseline"],
   [!globalCss.includes("user-scalable=no") && !globalCss.includes("maximum-scale=1"), "browser zoom remains enabled"],
 ];
