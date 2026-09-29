@@ -13,6 +13,7 @@ const EXTENSION_KIND: Readonly<Record<string, MediaKind>> = {
   ".mp4": "video",
   ".wav": "audio",
   ".mp3": "audio",
+  ".ogg": "audio",
   ".webm": "audio",
 };
 

@@ -9,10 +9,14 @@ import {
   createSingleExecutionLock,
   S02_COLLECTION,
   S02_COPY,
+  S02_NOTIFICATION_ASSETS,
+  S02_NOTIFICATION_AUDIO,
   S02_TIMING,
 } from "@/lib/cinematic/phase6";
 import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
 import { useSceneRuntime } from "@/lib/cinematic/SceneRuntimeContext";
+import { MediaImage } from "@/components/media/MediaImage";
+import { useMediaAsset } from "@/lib/media/MediaPreloadContext";
 import {
   useSceneSoulCollection,
   useSoulCollectionRuntime,
@@ -41,6 +45,9 @@ export function Soul02Scene() {
   const [collectionStatus, setCollectionStatus] = useState("pending");
   const { phase, runId, completeEnter, completeExit, setCanAdvance, setContinueVisible } =
     useSceneRuntime();
+  const ordinaryOne = useMediaAsset(S02_NOTIFICATION_ASSETS.ordinaryOne);
+  const ordinaryTwo = useMediaAsset(S02_NOTIFICATION_ASSETS.ordinaryTwo);
+  const notificationPolina = useMediaAsset(S02_NOTIFICATION_ASSETS.special);
   const audio = useAudioEngine();
   const sceneAudio = useSceneAudio();
   const { collect } = useSceneSoulCollection();
@@ -112,14 +119,14 @@ export function Soul02Scene() {
       }, at);
     };
     const timeline = gsap.timeline();
-    timeline.call(() => playCue("audio:scenes.s02.cue01", FILM_MIX.sfx.s02Ordinary), [], S02_TIMING.ordinaryOne);
+    timeline.call(() => playCue(S02_NOTIFICATION_AUDIO.ordinary, FILM_MIX.sfx.s02Ordinary), [], S02_TIMING.ordinaryOne);
     appear(ordinaryOneRef.current, S02_TIMING.ordinaryOne);
     disappear(ordinaryOneRef.current, S02_TIMING.ordinaryOneOut);
-    timeline.call(() => playCue("audio:scenes.s02.cue01", FILM_MIX.sfx.s02Ordinary * 0.94), [], S02_TIMING.ordinaryTwo);
+    timeline.call(() => playCue(S02_NOTIFICATION_AUDIO.ordinary, FILM_MIX.sfx.s02Ordinary * 0.94), [], S02_TIMING.ordinaryTwo);
     appear(ordinaryTwoRef.current, S02_TIMING.ordinaryTwo);
     disappear(ordinaryTwoRef.current, S02_TIMING.ordinaryTwoOut);
     timeline.call(() => {
-      playCue("audio:scenes.s02.cue02", FILM_MIX.sfx.s02Warm);
+      playCue(S02_NOTIFICATION_AUDIO.special, FILM_MIX.sfx.s02Warm);
       setSpecialReady(true);
     }, [], S02_TIMING.special);
     appear(specialRef.current, S02_TIMING.special);
@@ -145,24 +152,26 @@ export function Soul02Scene() {
     visual.setCursorMode("DEFAULT");
     particlesRef.current?.attract([0.35, 0, 0]);
     if (audio.getSnapshot().isUnlocked) {
-      void sceneAudio.playSfx("audio:scenes.s02.cue03", {
+      void sceneAudio.playSfx(S02_NOTIFICATION_AUDIO.open, {
         gain: FILM_MIX.sfx.s02Open,
         duckMusic: DUCK_PRESETS.intimateNotification,
+      });
+      void sceneAudio.playSfx(S02_NOTIFICATION_AUDIO.personalOpen, {
+        gain: FILM_MIX.sfx.s02PolinaOpen,
       });
     }
 
     const timeline = gsap.timeline();
     timeline.to(specialRef.current, {
-      scale: 1.028,
-      borderColor: "rgb(169 35 59 / 38%)",
-      boxShadow: "0 26px 70px rgb(0 0 0 / 58%), 0 0 50px rgb(126 19 39 / 16%)",
+      scale: 1.018,
+      filter: "brightness(1.06) drop-shadow(0 24px 42px rgb(0 0 0 / 52%)) drop-shadow(0 0 22px rgb(126 19 39 / 16%))",
       duration: 0.62,
       ease: "power2.out",
     });
     timeline.to(specialRef.current, {
       opacity: 0.2,
-      filter: "blur(2px)",
-      scale: 1.01,
+      filter: "brightness(0.72) blur(1.5px)",
+      scale: 1.008,
       duration: 0.9,
       ease: "power2.inOut",
     }, 0.72);
@@ -285,19 +294,23 @@ export function Soul02Scene() {
       aria-label="Notification"
     >
       <div className={styles.notificationSpace}>
-        <article ref={ordinaryOneRef} className={`${styles.card} ${styles.ordinaryOne}`} aria-hidden="true">
-          <span className={styles.marker} />
-          <span className={styles.cardCopy}><small>NIGHT SIGNAL</small><strong>background event</strong></span>
-          <time>00:41</time>
+        <article ref={ordinaryOneRef} className={`${styles.notification} ${styles.ordinary} ${styles.ordinaryOne}`} aria-hidden="true" data-notification-asset="not1">
+          {ordinaryOne ? (
+            <MediaImage asset={ordinaryOne} alt="" className={`${styles.notificationArtwork} ${styles.ordinaryArtwork}`} objectFit="contain" sizes="(max-width: 720px) calc(100vw - 28px), 34vw" eager />
+          ) : (
+            <span className={`${styles.notificationArtwork} ${styles.ordinaryArtwork}`} />
+          )}
         </article>
-        <article ref={ordinaryTwoRef} className={`${styles.card} ${styles.ordinaryTwo}`} aria-hidden="true">
-          <span className={styles.marker} />
-          <span className={styles.cardCopy}><small>QUIET CHANNEL</small><strong>new activity</strong></span>
-          <time>00:43</time>
+        <article ref={ordinaryTwoRef} className={`${styles.notification} ${styles.ordinary} ${styles.ordinaryTwo}`} aria-hidden="true" data-notification-asset="not2">
+          {ordinaryTwo ? (
+            <MediaImage asset={ordinaryTwo} alt="" className={`${styles.notificationArtwork} ${styles.ordinaryArtwork}`} objectFit="contain" sizes="(max-width: 720px) calc(100vw - 28px), 34vw" eager />
+          ) : (
+            <span className={`${styles.notificationArtwork} ${styles.ordinaryArtwork}`} />
+          )}
         </article>
         <button
           ref={specialRef}
-          className={`${styles.card} ${styles.special}`}
+          className={`${styles.notification} ${styles.special}`}
           type="button"
           disabled={!specialReady || opened}
           onClick={activateSpecial}
@@ -306,11 +319,14 @@ export function Soul02Scene() {
           onFocus={enterSpecial}
           onBlur={leaveSpecial}
           data-testid="special-notification"
-          aria-label="Open the special notification"
+          data-notification-asset="notPolina"
+          aria-label="Открыть уведомление"
         >
-          <span className={styles.sigil} aria-hidden="true"><i /></span>
-          <span className={styles.cardCopy}><small>SOUL FREQUENCY</small><strong>something familiar</strong></span>
-          <span className={styles.openHint}>open</span>
+          {notificationPolina ? (
+            <MediaImage asset={notificationPolina} alt="" className={`${styles.notificationArtwork} ${styles.specialArtwork}`} objectFit="contain" sizes="(max-width: 720px) calc(100vw - 24px), 46vw" eager />
+          ) : (
+            <span className={`${styles.notificationArtwork} ${styles.specialArtwork}`} aria-hidden="true" />
+          )}
         </button>
       </div>
       <p ref={phraseRef} className={styles.phrase} aria-label={S02_COPY.full}>

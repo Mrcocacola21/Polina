@@ -138,7 +138,6 @@ for (const [source, ref, label] of [
   [s07, "visual:sections.section07Asset05", "S07 petals"],
   [s07, "visual:screens.polina", "S07 still"],
   [s07, "visual:screens.polinaCircle", "S07 video"],
-  [s07, "visual:screens.prosOfDatingMe", "S07 playful card"],
   [s07, "audio:scenes.s07.cue01", "S07 portrait cue"],
   [s07, "audio:scenes.s07.cue02", "S07 infinity cue"],
   [s07, "audio:scenes.s07.cue03", "S07 aside cue"],

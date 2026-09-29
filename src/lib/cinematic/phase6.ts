@@ -38,6 +38,19 @@ export const S02_COLLECTION = Object.freeze({
   visualState: "ACTIVE" satisfies SoulState,
 });
 
+export const S02_NOTIFICATION_ASSETS = Object.freeze({
+  ordinaryOne: "visual:screens.notificationOne",
+  ordinaryTwo: "visual:screens.notificationTwo",
+  special: "visual:screens.notificationPolina",
+});
+
+export const S02_NOTIFICATION_AUDIO = Object.freeze({
+  ordinary: "audio:scenes.s02.cue01",
+  special: "audio:scenes.s02.cue02",
+  open: "audio:scenes.s02.cue03",
+  personalOpen: "audio:scenes.s02.notPolinaSound",
+});
+
 export const PROLOGUE_TIMING = FILM_TIMING.prologue;
 export const S01_TIMING = FILM_TIMING.s01;
 export const S02_TIMING = FILM_TIMING.s02;

@@ -9,6 +9,8 @@ import {
   S01_COPY,
   S02_COLLECTION,
   S02_COPY,
+  S02_NOTIFICATION_ASSETS,
+  S02_NOTIFICATION_AUDIO,
 } from "./phase6";
 
 test("Phase 6 mandatory copy is byte-exact", () => {
@@ -48,6 +50,23 @@ test("Phase 6 uses NIGHT continuously and the required collection mapping", () =
     soulId: "SOUL_02",
     variant: "NORMAL",
     visualState: "ACTIVE",
+  });
+});
+
+test("S02 maps the two ordinary notifications and Polina special notification exactly", () => {
+  assert.deepEqual(S02_NOTIFICATION_ASSETS, {
+    ordinaryOne: "visual:screens.notificationOne",
+    ordinaryTwo: "visual:screens.notificationTwo",
+    special: "visual:screens.notificationPolina",
+  });
+});
+
+test("S02 layers the personal Polina sound onto the authoritative open cue", () => {
+  assert.deepEqual(S02_NOTIFICATION_AUDIO, {
+    ordinary: "audio:scenes.s02.cue01",
+    special: "audio:scenes.s02.cue02",
+    open: "audio:scenes.s02.cue03",
+    personalOpen: "audio:scenes.s02.notPolinaSound",
   });
 });
 

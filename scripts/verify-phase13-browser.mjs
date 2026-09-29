@@ -227,7 +227,7 @@ assert.equal(state.music?.includes("decks 1"), true);
 assert.equal(state.activeAudio, "A 0 · S 0 · P 0");
 assert.equal(state.continueCount, 0);
 assert.equal(state.finalButtons, 0);
-assert.equal(state.media.length, 5);
+assert.equal(state.media.length, 6);
 assert.equal(state.media.every((status) => status === "ready"), true);
 assert.equal(state.cursor, "DIMMED");
 assert.equal(state.hudMode, "HIDDEN");

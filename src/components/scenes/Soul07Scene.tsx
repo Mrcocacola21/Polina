@@ -49,7 +49,6 @@ export function Soul07Scene() {
   const ratingLineRef = useRef<HTMLSpanElement>(null);
   const heroRef = useRef<HTMLSpanElement>(null);
   const asideRef = useRef<HTMLSpanElement>(null);
-  const prosRef = useRef<HTMLDivElement>(null);
   const displacementRef = useRef<HTMLDivElement>(null);
   const crimsonFlashRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<ParticleFieldController | null>(null);
@@ -65,7 +64,6 @@ export function Soul07Scene() {
   const warmth = useMediaAsset("visual:global.asset07");
   const polina = useMediaAsset("visual:screens.polina");
   const polinaCircle = useMediaAsset("visual:screens.polinaCircle");
-  const pros = useMediaAsset("visual:screens.prosOfDatingMe");
   const displacement = useMediaAsset("visual:global.asset06");
   const audio = useAudioEngine();
   const sceneAudio = useSceneAudio();
@@ -171,8 +169,6 @@ export function Soul07Scene() {
       particlesRef.current?.burst();
     }, [], S07_TIMING.infinity);
     timeline.to([orbitOneRef.current, orbitTwoRef.current], { rotation: "+=24", duration: 0.7, ease: "power2.inOut" }, S07_TIMING.infinity);
-    timeline.fromTo(prosRef.current, { opacity: 0, x: 28, rotate: 2 }, { opacity: 0.88, x: 0, rotate: -1, duration: 0.25, ease: "power2.out" }, S07_TIMING.infinity + 0.12);
-    timeline.to(prosRef.current, { opacity: 0, x: 18, duration: 0.28, ease: "power2.in" }, S07_TIMING.infinity + 1.08);
     timeline.fromTo(heroRef.current, { opacity: 0, filter: "blur(7px)", scale: 0.92 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.75, ease: "power3.out" }, S07_TIMING.hero);
     timeline.call(() => {
       if (audio.getSnapshot().isUnlocked) void sceneAudio.playSfx("audio:scenes.s07.cue03", { gain: FILM_MIX.sfx.s07Pop });
@@ -231,7 +227,6 @@ export function Soul07Scene() {
         <span className={styles.srOnly}>{ratingResolved ? "Admiration beyond a finite percentage." : "Admiration is being expressed."}</span>
         <span ref={ratingLineRef} className={styles.ratingLine} aria-hidden="true" />
       </div>
-      <div ref={prosRef} className={styles.prosCard} aria-hidden="true">{pros ? <MediaImage asset={pros} alt="" objectFit="contain" eager /> : null}</div>
       <div ref={displacementRef} className={styles.displacementPulse} aria-hidden="true">{displacement ? <MediaImage asset={displacement} alt="" eager /> : null}</div>
       <div ref={crimsonFlashRef} className={styles.crimsonFlash} aria-hidden="true" />
     </section>

@@ -134,6 +134,51 @@
   transform: rotate(180deg);
 }
 
+.keepsake {
+  position: absolute;
+  top: clamp(32px, 11vh, 112px);
+  right: clamp(28px, 7vw, 128px);
+  z-index: 3;
+  width: clamp(142px, 13vw, 210px);
+  aspect-ratio: 1;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 50% 12%;
+  will-change: opacity, transform;
+}
+
+.keepsakeArt {
+  position: absolute;
+  inset: 0;
+  padding: clamp(5px, .55vw, 9px);
+  border: 1px solid rgb(255 245 238 / 22%);
+  background: linear-gradient(145deg, #f3efeb, #d8d1cc);
+  box-shadow:
+    0 24px 64px rgb(0 0 0 / 72%),
+    0 0 34px rgb(173 23 49 / 16%),
+    inset 0 0 0 1px rgb(255 255 255 / 48%);
+  animation: keepsake-float 6.4s ease-in-out infinite alternate;
+}
+
+.keepsakeImage {
+  --media-matte: #eeeae7;
+  filter: sepia(.06) contrast(.98);
+}
+
+.keepsakeTape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 2;
+  width: 38%;
+  height: 22px;
+  background: linear-gradient(90deg, rgb(214 197 181 / 58%), rgb(244 229 207 / 72%), rgb(204 185 169 / 54%));
+  box-shadow: 0 2px 5px rgb(0 0 0 / 16%);
+  transform: translateX(-50%) rotate(-4deg);
+  opacity: .82;
+}
+
 .copy {
   position: absolute;
   right: 5vw;
@@ -385,6 +430,18 @@
     top: 40%;
   }
 
+  .keepsake {
+    top: max(22px, 3.5vh);
+    right: auto;
+    left: 5vw;
+    width: clamp(104px, 29vw, 132px);
+  }
+
+  .keepsakeTape {
+    top: -7px;
+    height: 15px;
+  }
+
   .copy {
     right: 6vw;
     bottom: max(7vh, 34px);
@@ -428,6 +485,13 @@
     width: min(58vh, 430px);
   }
 
+  .keepsake {
+    top: 5vh;
+    right: auto;
+    left: 3vw;
+    width: min(18vw, 120px);
+  }
+
   .copy {
     bottom: 4vh;
   }
@@ -463,7 +527,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fullLayer,
-  .microParticles span {
+  .microParticles span,
+  .keepsakeArt {
     animation: none;
   }
 
@@ -493,4 +558,9 @@
 @keyframes mote-drift {
   from { transform: translate3d(-2px, 3px, 0); opacity: .28; }
   to { transform: translate3d(3px, -5px, 0); opacity: .72; }
+}
+
+@keyframes keepsake-float {
+  from { transform: translate3d(0, -2px, 0) rotate(-.35deg); }
+  to { transform: translate3d(0, 5px, 0) rotate(.35deg); }
 }

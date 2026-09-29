@@ -1,7 +1,7 @@
 "use client";
 
 import gsap from "gsap";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { MediaImage } from "@/components/media/MediaImage";
 import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
@@ -14,7 +14,9 @@ import {
   S08_CAMERA,
   S08_COLLECTION,
   S08_COPY,
+  S08_SCREENSHOT,
   S08_TIMING,
+  s08CropClipPath,
   type S08AudioCue,
 } from "@/lib/cinematic/phase9";
 import { COLLECTION_SCENE_SCALE, DUCK_PRESETS, FILM_MIX } from "@/lib/cinematic/directing";
@@ -51,7 +53,10 @@ export function Soul08Scene() {
   const hallRef = useRef<HTMLDivElement>(null);
   const sigilRef = useRef<HTMLDivElement>(null);
   const sigilRingRef = useRef<HTMLSpanElement>(null);
+  const relicStageRef = useRef<HTMLDivElement>(null);
   const relicRef = useRef<HTMLDivElement>(null);
+  const killHighlightRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const deathFocusRef = useRef<HTMLSpanElement>(null);
   const ruptureRef = useRef<HTMLDivElement>(null);
   const impactWashRef = useRef<HTMLDivElement>(null);
   const firstRef = useRef<HTMLSpanElement>(null);
@@ -218,8 +223,19 @@ export function Soul08Scene() {
   useEffect(() => {
     if (phase !== "active") return;
     const fragmentElements = fragmentRefs.current.filter((element): element is HTMLSpanElement => Boolean(element));
+    const killHighlightElements = killHighlightRefs.current.filter((element): element is HTMLSpanElement => Boolean(element));
+    const evidenceFocusElements = deathFocusRef.current
+      ? [...killHighlightElements, deathFocusRef.current]
+      : killHighlightElements;
+    const mobile = window.matchMedia("(max-width: 760px)").matches;
+    const reducedMotion = visual.motionIntensity < 0.5;
+    const fiveKillClip = s08CropClipPath(S08_SCREENSHOT.fiveKills);
+    const deathRevealClip = s08CropClipPath(mobile ? S08_SCREENSHOT.mobileDeathReveal : S08_SCREENSHOT.deathReveal);
     const cameraDuration = S08_TIMING.collection - 0.6;
     const timeline = gsap.timeline();
+    timeline.set(relicStageRef.current, { xPercent: mobile ? -31.1 : 0, y: 0 }, 0);
+    timeline.set(relicRef.current, { clipPath: fiveKillClip }, 0);
+    timeline.set(evidenceFocusElements, { opacity: 0 }, 0);
     timeline.to(cameraRef.current, {
       ...S08_CAMERA.end,
       duration: cameraDuration,
@@ -256,15 +272,36 @@ export function Soul08Scene() {
       y: 14,
       scale: 0.965,
     }, {
-      opacity: 0.52,
-      filter: "blur(0px) brightness(.7) saturate(.72)",
+      opacity: 0.94,
+      filter: "blur(0px) brightness(.92) saturate(.84)",
       y: 0,
       scale: 1,
       duration: 1.35,
       ease: "power2.out",
     }, S08_TIMING.screenshot);
+    timeline.to(hallRef.current, {
+      filter: "brightness(.44) contrast(1.1) saturate(.66)",
+      duration: 0.75,
+      ease: "sine.inOut",
+    }, S08_TIMING.screenshot + 0.22);
+    timeline.to(sigilRef.current, {
+      opacity: 0.22,
+      filter: "brightness(.52) saturate(.62)",
+      duration: 0.68,
+      ease: "sine.inOut",
+    }, S08_TIMING.screenshot + 0.34);
+    timeline.fromTo(killHighlightElements, {
+      opacity: 0,
+    }, {
+      opacity: reducedMotion ? 0.16 : 0.28,
+      duration: reducedMotion ? 0.12 : 0.18,
+      stagger: reducedMotion ? 0.13 : 0.22,
+      repeat: 1,
+      yoyo: true,
+      ease: "sine.inOut",
+    }, S08_TIMING.screenshot + 0.34);
     timeline.call(() => {
-      setSceneBeat("first-declaration");
+      setSceneBeat("first-phrase");
       collectionRuntime.dimHud();
       runCameraImpact(false);
     }, [], S08_TIMING.firstDeclaration);
@@ -276,31 +313,56 @@ export function Soul08Scene() {
       ease: "power3.out",
     }, S08_TIMING.firstDeclaration);
     timeline.call(() => {
-      setSceneBeat("fragments");
+      setSceneBeat("death-reveal");
       playCue(S08_AUDIO_CUE_ORDER[2]);
       particlesRef.current?.burst();
     }, [], S08_TIMING.fragments);
+    timeline.to(firstRef.current, {
+      opacity: 0,
+      filter: "blur(3px)",
+      scale: 0.992,
+      duration: reducedMotion ? 0.2 : 0.48,
+      ease: "sine.in",
+    }, S08_TIMING.fragments);
+    timeline.to(relicStageRef.current, {
+      xPercent: mobile ? 22.2 : 0,
+      y: mobile ? 34 : 0,
+      duration: reducedMotion ? 0.28 : 1.22,
+      ease: reducedMotion ? "none" : "power2.inOut",
+    }, S08_TIMING.fragments + 0.1);
+    timeline.to(relicRef.current, {
+      clipPath: deathRevealClip,
+      scale: reducedMotion ? 1 : 0.992,
+      duration: reducedMotion ? 0.28 : 1.22,
+      ease: reducedMotion ? "none" : "power2.inOut",
+    }, S08_TIMING.fragments + 0.1);
     timeline.fromTo(fragmentElements, {
       opacity: 0,
       xPercent: -22,
       yPercent: 12,
       scale: 0.82,
     }, {
-      opacity: 0.74,
-      xPercent: 18,
+      opacity: 0.34,
+      xPercent: 24,
       yPercent: -7,
       scale: 1,
       duration: 2.15,
       stagger: 0.08,
       ease: "power2.out",
     }, S08_TIMING.fragments);
-    timeline.to(firstRef.current, { opacity: 0, filter: "blur(4px)", scale: 0.985, duration: 0.55, ease: "sine.in" }, S08_TIMING.fragments + 0.55);
+    timeline.fromTo(deathFocusRef.current, {
+      opacity: 0,
+    }, {
+      opacity: 0.48,
+      duration: 0.28,
+      ease: "sine.out",
+    }, S08_TIMING.fragments + (reducedMotion ? 0.42 : 1.38));
     timeline.call(() => {
-      setSceneBeat("second-declaration");
+      setSceneBeat("second-phrase");
       playCue(S08_AUDIO_CUE_ORDER[3]);
-      runCameraImpact(true);
-      visual.setFogOpacity(0.24, 0.35);
-      visual.setLightLeak(0.13, { position: [52, 46], scale: 1.22, rotation: 3, drift: false });
+      runCameraImpact(false);
+      visual.setFogOpacity(0.19, 0.35);
+      visual.setLightLeak(0.075, { position: [52, 46], scale: 1.12, rotation: 2, drift: false });
     }, [], S08_TIMING.secondDeclaration);
     timeline.fromTo(secondRef.current, { opacity: 0, filter: "blur(4px)", scale: 1.045 }, {
       opacity: 1,
@@ -309,7 +371,7 @@ export function Soul08Scene() {
       duration: 0.34,
       ease: "power3.out",
     }, S08_TIMING.secondDeclaration);
-    timeline.fromTo(impactWashRef.current, { opacity: 0 }, { opacity: 0.34, duration: 0.08, ease: "none" }, S08_TIMING.secondDeclaration);
+    timeline.fromTo(impactWashRef.current, { opacity: 0 }, { opacity: 0.14, duration: 0.1, ease: "none" }, S08_TIMING.secondDeclaration);
     timeline.to(impactWashRef.current, { opacity: 0, duration: 0.5, ease: "power2.out" });
     timeline.call(() => {
       setSceneBeat("deescalate");
@@ -318,8 +380,9 @@ export function Soul08Scene() {
       particlesRef.current?.update({ mode: "AMBIENT_DRIFT", opacity: 0.12, velocity: 0.012, drift: 0.025 });
     }, [], S08_TIMING.deescalate);
     timeline.to(secondRef.current, { opacity: 0, filter: "blur(5px)", scale: 0.99, duration: 0.75, ease: "sine.in" }, S08_TIMING.deescalate);
+    timeline.to(deathFocusRef.current, { opacity: 0, duration: 0.45, ease: "sine.in" }, S08_TIMING.deescalate);
     timeline.to(fragmentElements, { opacity: 0.16, xPercent: 24, scale: 0.92, duration: 1.2, ease: "sine.inOut" }, S08_TIMING.deescalate);
-    timeline.to(relicRef.current, { opacity: 0.2, filter: "blur(2px) brightness(.45) saturate(.5)", scale: 0.985, duration: 1.05 }, S08_TIMING.deescalate);
+    timeline.to(relicRef.current, { opacity: 0.055, filter: "blur(2px) brightness(.38) saturate(.42)", scale: 0.972, duration: 1.15, ease: "sine.inOut" }, S08_TIMING.deescalate);
     timeline.to(sigilRef.current, { opacity: 0.92, filter: "brightness(.92) saturate(.92)", scale: 0.82, duration: 1.2, ease: "power2.inOut" }, S08_TIMING.collection - 1.15);
     timeline.call(() => {
       collectionRuntime.showHud();
@@ -351,6 +414,13 @@ export function Soul08Scene() {
       data-testid="s08-scene"
       data-scene-phase={phase}
       data-scene-beat={sceneBeat}
+      data-screenshot-stage={sceneBeat === "relic" || sceneBeat === "first-phrase"
+        ? "five-kills"
+        : sceneBeat === "death-reveal" || sceneBeat === "second-phrase"
+          ? "death-reveal"
+          : sceneBeat === "deescalate"
+            ? "receding"
+            : "hidden"}
       data-collection-status={collectionStatus}
       data-music-state={PHASE9_MUSIC_STATE}
       aria-label="Queen"
@@ -363,8 +433,42 @@ export function Soul08Scene() {
           <div ref={hallRef} className={styles.hall} aria-hidden="true">
             {hall ? <MediaImage asset={hall} alt="" eager /> : null}
           </div>
-          <div ref={relicRef} className={styles.relic}>
-            {relic ? <MediaImage asset={relic} alt="A personal memory" objectFit="contain" sizes="(max-width: 760px) 56vw, 24vw" eager /> : null}
+          <div className={styles.relicAnchor}>
+            <div ref={relicStageRef} className={styles.relicStage}>
+              <div ref={relicRef} className={styles.relic} data-testid="s08-queen-evidence">
+                {relic ? (
+                  <MediaImage
+                    asset={relic}
+                    alt="A personal memory"
+                    className={styles.relicMedia}
+                    objectFit="contain"
+                    sizes="(max-width: 760px) 205vw, 64vw"
+                    eager
+                  />
+                ) : null}
+                <div className={styles.killHighlights} aria-hidden="true">
+                  {S08_SCREENSHOT.killRowCenters.map((center, index) => (
+                    <span
+                      key={center}
+                      ref={(element) => { killHighlightRefs.current[index] = element; }}
+                      className={styles.killHighlight}
+                      style={{ "--kill-row-center": `${center * 100}%` } as CSSProperties}
+                    />
+                  ))}
+                </div>
+                <span
+                  ref={deathFocusRef}
+                  className={styles.deathFocus}
+                  aria-hidden="true"
+                  style={{
+                    left: `${S08_SCREENSHOT.deathFocus.left * 100}%`,
+                    top: `${S08_SCREENSHOT.deathFocus.top * 100}%`,
+                    width: `${S08_SCREENSHOT.deathFocus.width * 100}%`,
+                    height: `${S08_SCREENSHOT.deathFocus.height * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
           </div>
           <div ref={sigilRef} className={styles.sigil} aria-hidden="true">
             {sigil ? (

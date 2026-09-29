@@ -41,6 +41,7 @@ test("the progressive words reconstruct the exact final question", () => {
 test("Final media order and audio semantics match the authored payoff", () => {
   assert.deepEqual(FINAL_LAYER_ORDER, ["C", "A", "B", "FULL"]);
   assert.equal(FINAL_ASSETS.halo, "visual:finale.asset02");
+  assert.equal(FINAL_ASSETS.keepsake, "visual:screens.prosOfDatingMe");
   assert.deepEqual(
     [FINAL_AUDIO.awakening, FINAL_AUDIO.merge, FINAL_AUDIO.halo],
     [

@@ -91,7 +91,7 @@ export const FILM_MIX = Object.freeze({
   ambient: Object.freeze({ s01Room: 0.1, s03Memory: 0.1, s05Morning: 0.09, s09Drone: 0.18, s09Rain: 0.26 }),
   sfx: Object.freeze({
     prologueAwakening: 0.68,
-    s02Ordinary: 0.48, s02Warm: 0.58, s02Open: 0.56,
+    s02Ordinary: 0.48, s02Warm: 0.58, s02Open: 0.56, s02PolinaOpen: 0.4,
     s03Memory: 0.42, s03Pass: 0.34,
     s05Reveal: 0.44, s05PianoA: 0.38, s05PianoB: 0.36, s05PianoC: 0.4,
     s06Heart: 0.48,

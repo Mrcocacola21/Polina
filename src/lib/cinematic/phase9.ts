@@ -32,6 +32,53 @@ export type S08AudioCue = (typeof S08_AUDIO_CUE_ORDER)[number];
 
 export const S08_TIMING = FILM_TIMING.s08;
 
+type NormalizedCrop = Readonly<{
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}>;
+
+/**
+ * Storytelling geometry measured from Screens/queen-cant-die.png (932x703).
+ * The desktop reveal opens the same image surface from the right-side five-kill
+ * evidence to the timestamp and earlier death. Mobile keeps the evidence at a
+ * readable scale and reframes that surface toward the earlier-death detail.
+ */
+export const S08_SCREENSHOT = Object.freeze({
+  source: Object.freeze({ width: 932, height: 703 }),
+  fiveKills: Object.freeze({
+    left: 580 / 932,
+    top: 132 / 703,
+    right: 0,
+    bottom: 0,
+  }) satisfies NormalizedCrop,
+  deathReveal: Object.freeze({
+    left: 39 / 932,
+    top: 34 / 703,
+    right: 0,
+    bottom: 0,
+  }) satisfies NormalizedCrop,
+  mobileDeathReveal: Object.freeze({
+    left: 39 / 932,
+    top: 34 / 703,
+    right: (932 - 480) / 932,
+    bottom: (703 - 205) / 703,
+  }) satisfies NormalizedCrop,
+  killRowCenters: Object.freeze([164, 224, 284, 344, 665].map((y) => y / 703)),
+  deathFocus: Object.freeze({
+    left: 39 / 932,
+    top: 78 / 703,
+    width: 282 / 932,
+    height: 52 / 703,
+  }),
+});
+
+export function s08CropClipPath(crop: NormalizedCrop): string {
+  const percent = (value: number) => `${(value * 100).toFixed(3)}%`;
+  return `inset(${percent(crop.top)} ${percent(crop.right)} ${percent(crop.bottom)} ${percent(crop.left)})`;
+}
+
 export const S08_CAMERA = Object.freeze({
   start: Object.freeze({ x: 0, y: 0, scale: 1, rotation: 0 }),
   end: Object.freeze({ x: 0, y: -12, scale: 1.065, rotation: 0 }),

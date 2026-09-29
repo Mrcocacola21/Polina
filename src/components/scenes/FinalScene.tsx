@@ -70,6 +70,7 @@ export function FinalScene() {
   const rightStreamRef = useRef<HTMLSpanElement>(null);
   const questionRef = useRef<HTMLParagraphElement>(null);
   const tagRef = useRef<HTMLParagraphElement>(null);
+  const keepsakeRef = useRef<HTMLElement>(null);
   const timelineStartedRef = useRef(false);
   const finalTimelineRef = useRef<gsap.core.Timeline | null>(null);
   const branchTimelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -106,6 +107,7 @@ export function FinalScene() {
   const energy = useMediaAsset(FINAL_ASSETS.energy);
   const full = useMediaAsset(FINAL_ASSETS.full);
   const halo = useMediaAsset(FINAL_ASSETS.halo);
+  const keepsake = useMediaAsset(FINAL_ASSETS.keepsake);
   const question = useMemo(() => buildFinalQuestion(questionStep), [questionStep]);
 
   const disposeBranchVisuals = useCallback(() => {
@@ -152,6 +154,13 @@ export function FinalScene() {
     gsap.set(haloRef.current, { opacity: result === "YES" ? 0.52 : 0.31, scale: result === "YES" ? 1.05 : 1 });
     gsap.set(questionRef.current, { opacity: result === "THINK" ? 0.9 : 0 });
     gsap.set(tagRef.current, { opacity: result === "THINK" ? 0.5 : 0 });
+    gsap.set(keepsakeRef.current, {
+      opacity: result === "THINK" ? 0.9 : 0,
+      x: 0,
+      y: 0,
+      rotate: 2.25,
+      scale: 1,
+    });
     gsap.set(cameraRef.current, { scale: result === "YES" ? YES_VISUAL_LEVELS.yesCameraScale : 1 });
     toneRef.current?.release(1.2);
     toneRef.current = null;
@@ -254,7 +263,7 @@ export function FinalScene() {
     }, [], YES_TIMING.release);
     timeline.to(cameraRef.current, { scale: reducedMotion ? 0.992 : YES_VISUAL_LEVELS.yesCameraScale, duration: 3.2, ease: "sine.inOut" }, YES_TIMING.release);
     timeline.to(haloRef.current, { opacity: 0.5, scale: 1.05, duration: 3.1, ease: "sine.inOut" }, YES_TIMING.release + 1.1);
-    timeline.to([questionRef.current, tagRef.current], { opacity: 0, duration: 1.8, ease: "sine.out" }, YES_TIMING.releaseSettle - 0.8);
+    timeline.to([questionRef.current, tagRef.current, keepsakeRef.current], { opacity: 0, duration: 1.8, ease: "sine.out" }, YES_TIMING.releaseSettle - 0.8);
     timeline.call(() => {
       if (!isCurrent()) return;
       playYesCue(YES_AUDIO.finalResolve, FILM_MIX.sfx.yesResolve, transaction);
@@ -364,6 +373,7 @@ export function FinalScene() {
     gsap.set(haloRef.current, { opacity: 0.48, scale: 1.035 });
     gsap.set(questionRef.current, { opacity: 1, filter: "blur(0px)", y: 0 });
     gsap.set(tagRef.current, { opacity: 0.66, filter: "blur(0px)", y: 0 });
+    gsap.set(keepsakeRef.current, { opacity: 0.9, x: 0, y: 0, rotate: 2.25, scale: 1 });
     gsap.set(cameraRef.current, { scale: 1 });
     toneRef.current = sceneAudio.applyMusicTone({ ...FILM_MIX.finalTone, rampSeconds: 0.8 });
   }, [audio, controller, disposeBranchVisuals, sceneAudio, visual]);
@@ -487,6 +497,7 @@ export function FinalScene() {
         gsap.set(haloRef.current, { opacity: 0.48, scale: 1.035 });
         gsap.set(questionRef.current, { opacity: 1, filter: "blur(0px)", y: 0 });
         gsap.set(tagRef.current, { opacity: 0.66, filter: "blur(0px)", y: 0 });
+        gsap.set(keepsakeRef.current, { opacity: 0.9, x: 0, y: 0, rotate: 2.25, scale: 1 });
       });
       return () => deferred.kill();
     }
@@ -497,6 +508,7 @@ export function FinalScene() {
     gsap.set(layers, { opacity: 0 });
     gsap.set(questionRef.current, { opacity: 0, filter: "blur(3px)", y: 4 });
     gsap.set(tagRef.current, { opacity: 0, filter: "blur(2px)", y: 3 });
+    gsap.set(keepsakeRef.current, { opacity: 0, x: 0, y: 0, rotate: 7, scale: 0.9 });
     gsap.set([leftStreamRef.current, rightStreamRef.current], { opacity: 0, x: 0, y: 0 });
     const timeline = gsap.timeline();
     finalTimelineRef.current = timeline;
@@ -544,6 +556,12 @@ export function FinalScene() {
     timeline.fromTo(fullRef.current, { opacity: 0, scale: reducedMotion ? 0.998 : 0.992 }, { opacity: 0.88, scale: 1, duration: 2.15, ease: "sine.inOut" }, FINAL_TIMING.full);
     timeline.fromTo(haloRef.current, { opacity: 0, scale: 0.94 }, { opacity: 0.48, scale: 1.035, duration: 2.65, ease: "sine.out" }, FINAL_TIMING.full);
     timeline.fromTo(questionRef.current, { opacity: 0.66, filter: "blur(1.2px)", y: 2 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.82, ease: "sine.out" }, FINAL_TIMING.full);
+    timeline.fromTo(
+      keepsakeRef.current,
+      { opacity: 0, x: reducedMotion ? 0 : 42, y: reducedMotion ? 0 : 16, rotate: 7, scale: reducedMotion ? 1 : 0.9 },
+      { opacity: 0.9, x: 0, y: 0, rotate: 2.25, scale: 1, duration: 1.45, ease: "power2.out" },
+      FINAL_TIMING.full + 0.28,
+    );
     timeline.call(() => setBeat("tag"), [], FINAL_TIMING.tag);
     timeline.to(tagRef.current, { opacity: 0.66, filter: "blur(0px)", y: 0, duration: 0.82, ease: "sine.out" }, FINAL_TIMING.tag);
     timeline.call(() => setBeat("stable"), [], FINAL_TIMING.stable);
@@ -611,6 +629,12 @@ export function FinalScene() {
           <span ref={leftStreamRef} className={`${styles.mergeStream} ${styles.leftStream}`} />
           <span ref={rightStreamRef} className={`${styles.mergeStream} ${styles.rightStream}`} />
         </div>
+        <figure ref={keepsakeRef} className={styles.keepsake} data-testid="final-keepsake">
+          <div className={styles.keepsakeArt}>
+            <span className={styles.keepsakeTape} aria-hidden="true" />
+            {keepsake ? <MediaImage className={styles.keepsakeImage} asset={keepsake} alt="Мем «плюсы встречаться со мной»" objectFit="contain" sizes="(max-width: 760px) 30vw, 210px" eager /> : null}
+          </div>
+        </figure>
         <div className={styles.copy}>
           <p id="final-question" ref={questionRef} className={styles.question} aria-label={questionStep === 4 ? FINAL_QUESTION : undefined}>{question}</p>
           <p ref={tagRef} className={styles.tag}>{FINAL_TAG}</p>
@@ -626,7 +650,7 @@ export function FinalScene() {
 
       <div ref={endingRef} className={styles.ending} tabIndex={-1} aria-label={ending === "yes" ? `Ответ сохранён. ${answer.finalDateDisplay ?? ""}` : ending === "think" ? "Ответ сохранён." : undefined}>
         {dateVisible && answer.finalDateDisplay ? <time dateTime={answer.answeredAt ?? undefined} className={styles.finalDate} data-testid="final-answer-date">{answer.finalDateDisplay}</time> : null}
-        {ending !== "none" ? (
+        {ending === "yes" ? (
           <button
             className={styles.restartButton}
             data-testid="restart-story"

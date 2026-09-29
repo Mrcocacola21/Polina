@@ -54,6 +54,7 @@
     "test:phase17": "node scripts/verify-phase17.mjs",
     "test:phase17:film": "node scripts/verify-phase17-film.mjs",
     "test:phase17:responsive": "node scripts/verify-phase17-responsive.mjs",
+    "test:s08-story:browser": "node scripts/verify-s08-story-browser.mjs",
     "test:phase19": "node scripts/verify-phase19.mjs",
     "test:phase19:browser": "node scripts/verify-phase19-browser.mjs",
     "test:phase20": "node scripts/verify-phase20.mjs",

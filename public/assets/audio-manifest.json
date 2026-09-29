@@ -17,7 +17,8 @@
     "s02": {
       "cue01": "sfx/AUD-S02-01.wav",
       "cue02": "sfx/AUD-S02-02.wav",
-      "cue03": "sfx/AUD-S02-03.wav"
+      "cue03": "sfx/AUD-S02-03.wav",
+      "notPolinaSound": "sfx/notPolinaSound.ogg"
     },
     "s03": {
       "cue01": {

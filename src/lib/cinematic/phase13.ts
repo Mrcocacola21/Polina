@@ -38,6 +38,7 @@ export const FINAL_ASSETS = Object.freeze({
   energy: "visual:finale.asset01VariantB",
   full: "visual:finale.asset01",
   halo: "visual:finale.asset02",
+  keepsake: "visual:screens.prosOfDatingMe",
 });
 
 export const FINAL_LAYER_ORDER = Object.freeze([

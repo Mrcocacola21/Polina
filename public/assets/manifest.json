@@ -61,6 +61,9 @@
     "polina": "Screens/polina.png",
     "polinaCircle": "Screens/polina-circle.mp4",
     "livingTogether": "Screens/living-together.jpg",
-    "heartReaction": "Screens/heart-reaction.png"
+    "heartReaction": "Screens/heart-reaction.png",
+    "notificationOne": "Screens/not1.png",
+    "notificationTwo": "Screens/not2.png",
+    "notificationPolina": "Screens/notPolina.png"
   }
 }

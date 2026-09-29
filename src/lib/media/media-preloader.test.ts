@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { MediaManifests } from "../assets/manifests";
-import { MediaCatalog } from "./catalog";
+import { classifyMediaPath, MediaCatalog } from "./catalog";
 import { MediaPreloader } from "./media-preloader";
 import { MediaPreloadError, safePlayVideo } from "./preloaders";
 import type { ResolvedPreloadPlan } from "./preload-plan";
@@ -53,6 +53,10 @@ function createFixture(loaders: MediaLoaders, concurrency = 2) {
 function uniformLoaders(loader: (asset: MediaAsset) => Promise<void>): MediaLoaders {
   return { image: loader, video: loader, audio: loader };
 }
+
+test("OGG notification sounds use the decoded audio pipeline", () => {
+  assert.equal(classifyMediaPath("sfx/notPolinaSound.ogg"), "audio");
+});
 
 test("concurrent requests share one promise and one underlying load", async () => {
   let calls = 0;

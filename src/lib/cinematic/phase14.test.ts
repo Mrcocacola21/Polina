@@ -99,6 +99,7 @@ test("ending configuration uses exact choices, ten echoes, measured audio, and t
   assert.match(finalScene, /createSoul/);
   assert.match(finalScene, /spawnParticleField/);
   assert.match(finalScene, /data-testid="restart-story"/);
+  assert.match(finalScene, /ending === "yes" \? \([\s\S]*data-testid="restart-story"/);
   assert.match(finalScene, /clearPersistedAnswer\(window\.localStorage\)/);
   assert.match(finalScene, /clearRecovery\(window\.sessionStorage\)/);
   assert.doesNotMatch(finalScene, /fetch\(|sendBeacon|requestAdvance|setContinueVisible|collectSoul/);

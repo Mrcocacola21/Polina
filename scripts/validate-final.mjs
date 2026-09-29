@@ -19,6 +19,7 @@ const expected = [
   visualManifest.finale.asset01VariantB,
   visualManifest.finale.asset01,
   visualManifest.finale.asset02,
+  visualManifest.screens.prosOfDatingMe,
   audioManifest.final.soulHeartAwakening,
   audioManifest.final.twoSoulsMerge,
   audioManifest.final.haloBloom,
@@ -53,4 +54,4 @@ if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-console.log("Final validation passed: five FIN layers, three Final cues, MUS-04, exact copy, and terminal semantics.");
+console.log("Final validation passed: five FIN layers, the keepsake, three Final cues, MUS-04, exact copy, and terminal semantics.");

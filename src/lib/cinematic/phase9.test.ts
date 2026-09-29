@@ -12,11 +12,23 @@ import {
   S08_CAMERA,
   S08_COLLECTION,
   S08_COPY,
+  S08_SCREENSHOT,
+  s08CropClipPath,
 } from "./phase9";
 
 test("Phase 9 Queen declaration is exact and reconstructs exactly", () => {
   assert.equal(S08_COPY.full, "Королеву не убить, Я умру за королеву");
   assert.equal(`${S08_COPY.first}, ${S08_COPY.second}`, S08_COPY.full);
+});
+
+test("S08 screenshot geometry reveals five kills before the earlier death", () => {
+  assert.deepEqual(S08_SCREENSHOT.source, { width: 932, height: 703 });
+  assert.ok(S08_SCREENSHOT.fiveKills.left > S08_SCREENSHOT.deathFocus.left + S08_SCREENSHOT.deathFocus.width);
+  assert.ok(S08_SCREENSHOT.fiveKills.top > S08_SCREENSHOT.deathReveal.top);
+  assert.equal(S08_SCREENSHOT.killRowCenters.length, 5);
+  assert.ok(S08_SCREENSHOT.killRowCenters.every((center) => center >= S08_SCREENSHOT.fiveKills.top && center <= 1));
+  assert.equal(s08CropClipPath(S08_SCREENSHOT.fiveKills), "inset(18.777% 0.000% 0.000% 62.232%)");
+  assert.equal(s08CropClipPath(S08_SCREENSHOT.deathReveal), "inset(4.836% 0.000% 0.000% 4.185%)");
 });
 
 test("Phase 9 keeps MEMORIES and has canonical Soul 8 configuration", () => {
