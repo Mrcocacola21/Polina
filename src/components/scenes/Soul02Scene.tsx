@@ -327,6 +327,10 @@ export function Soul02Scene() {
           ) : (
             <span className={`${styles.notificationArtwork} ${styles.specialArtwork}`} aria-hidden="true" />
           )}
+          <span className={styles.interactionHint} aria-hidden="true">
+            <i />
+            нажми, чтобы открыть
+          </span>
         </button>
       </div>
       <p ref={phraseRef} className={styles.phrase} aria-label={S02_COPY.full}>
