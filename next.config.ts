@@ -13,6 +13,18 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Variant filenames are content-addressed, but this index is not. It
+        // must be revalidated so a deployment cannot keep pointing clients at
+        // hashed files removed by a newer asset build.
+        source: "/assets-optimized/manifest.json",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
         source: "/assets/:path*",
         headers: [
           {

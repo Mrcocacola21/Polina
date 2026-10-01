@@ -8,9 +8,18 @@ const root = process.cwd();
 const masterRoot = path.join(root, "public", "assets");
 const outputRoot = path.join(root, "public", "assets-optimized");
 const manifest = JSON.parse(await readFile(path.join(outputRoot, "manifest.json"), "utf8"));
+const nextConfig = await readFile(path.join(root, "next.config.ts"), "utf8");
+const manifestLoader = await readFile(path.join(root, "src", "lib", "assets", "manifests.ts"), "utf8");
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const errors = [];
 const referenced = new Set(["manifest.json"]);
+
+if (!nextConfig.includes('source: "/assets-optimized/manifest.json"') || !nextConfig.includes("must-revalidate")) {
+  errors.push("optimized manifest response must be revalidated");
+}
+if (!manifestLoader.includes('fetch("/assets-optimized/manifest.json", { cache: "no-store" })')) {
+  errors.push("optimized manifest request must bypass stale caches");
+}
 
 async function filesUnder(folder, prefix = "") {
   const result = [];

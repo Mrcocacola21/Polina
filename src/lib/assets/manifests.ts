@@ -99,7 +99,7 @@ export function loadMediaManifests(): Promise<MediaManifests> {
   mediaManifestsPromise ??= Promise.all([
     loadVisualManifest(),
     loadAudioManifest(),
-    fetch("/assets-optimized/manifest.json", { cache: "force-cache" })
+    fetch("/assets-optimized/manifest.json", { cache: "no-store" })
       .then((response) => response.ok ? response.json() as Promise<OptimizedAssetManifest> : null)
       .catch(() => null),
   ])
