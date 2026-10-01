@@ -56,6 +56,7 @@ function uniformLoaders(loader: (asset: MediaAsset) => Promise<void>): MediaLoad
 
 test("OGG notification sounds use the decoded audio pipeline", () => {
   assert.equal(classifyMediaPath("sfx/notPolinaSound.ogg"), "audio");
+  assert.equal(classifyMediaPath("REQ/ShadowFiendREQ-keyed.webm"), "video");
 });
 
 test("concurrent requests share one promise and one underlying load", async () => {

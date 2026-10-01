@@ -23,6 +23,10 @@ import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/So
 import type { ParticleFieldController } from "@/lib/visuals/VisualRuntime";
 import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { createSceneVisualScopeId } from "@/lib/visuals/VisualScope";
+import {
+  CinematicFractureController,
+  type CinematicFracturePreset,
+} from "@/lib/visuals/cinematic-fracture";
 
 import styles from "./Soul07Scene.module.css";
 
@@ -33,6 +37,27 @@ function centerOf(element: HTMLElement | null): readonly [number, number] | null
     ? [rect.left + rect.width / 2, rect.top + rect.height / 2]
     : null;
 }
+
+const S07_FRACTURES = Object.freeze({
+  first: Object.freeze({
+    intensity: 0.24, sliceAmount: 3, sliceCount: 2, chromaticOffset: 1,
+    verticalShear: 0, lumaTear: 0.04, frameEcho: 0, scanlineWarp: 0.08,
+    edgeEnergy: 0.08, duration: 68, seed: 7071, blackTears: 0, radialStretch: 0,
+    protectedBand: [0.24, 0.72] as const,
+  }),
+  second: Object.freeze({
+    intensity: 0.52, sliceAmount: 8, sliceCount: 4, chromaticOffset: 1.8,
+    verticalShear: 1.2, lumaTear: 0.09, frameEcho: 0.09, scanlineWarp: 0.14,
+    edgeEnergy: 0.16, duration: 118, seed: 7072, blackTears: 0, radialStretch: 0,
+    protectedBand: [0.24, 0.72] as const,
+  }),
+  final: Object.freeze({
+    intensity: 0.9, sliceAmount: 14, sliceCount: 6, chromaticOffset: 3,
+    verticalShear: 2.5, lumaTear: 0.16, frameEcho: 0.12, scanlineWarp: 0.22,
+    edgeEnergy: 0.32, duration: 260, seed: 7073, blackTears: 1, radialStretch: 0.012,
+    protectedBand: [0.24, 0.72] as const, revealAmount: 0.62,
+  }),
+} satisfies Readonly<Record<string, CinematicFracturePreset>>);
 
 export function Soul07Scene() {
   const rootRef = useRef<HTMLElement>(null);
@@ -49,7 +74,8 @@ export function Soul07Scene() {
   const ratingLineRef = useRef<HTMLSpanElement>(null);
   const heroRef = useRef<HTMLSpanElement>(null);
   const asideRef = useRef<HTMLSpanElement>(null);
-  const displacementRef = useRef<HTMLDivElement>(null);
+  const fractureHostRef = useRef<HTMLDivElement>(null);
+  const fractureControllerRef = useRef<CinematicFractureController | null>(null);
   const crimsonFlashRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<ParticleFieldController | null>(null);
   const ratingAudioRef = useRef<ProceduralHandle | null>(null);
@@ -64,7 +90,7 @@ export function Soul07Scene() {
   const warmth = useMediaAsset("visual:global.asset07");
   const polina = useMediaAsset("visual:screens.polina");
   const polinaCircle = useMediaAsset("visual:screens.polinaCircle");
-  const displacement = useMediaAsset("visual:global.asset06");
+  const throneHall = useMediaAsset("visual:sections.section08Asset02");
   const audio = useAudioEngine();
   const sceneAudio = useSceneAudio();
   const { collect } = useSceneSoulCollection();
@@ -97,6 +123,8 @@ export function Soul07Scene() {
       ratingAudioRef.current = null;
       particlesRef.current = null;
       particles.dispose();
+      fractureControllerRef.current?.dispose();
+      fractureControllerRef.current = null;
     };
   }, [collectionRuntime, scopeId, visual]);
 
@@ -134,6 +162,19 @@ export function Soul07Scene() {
   useEffect(() => {
     if (phase !== "active" || timelineStartedRef.current) return;
     timelineStartedRef.current = true;
+    const transitionLabReady = process.env.NODE_ENV === "development" &&
+      new URLSearchParams(window.location.search).get("transitionLab") === "1";
+    if (transitionLabReady) {
+      const readyTimer = window.setTimeout(() => setRatingResolved(true), 0);
+      if (ratingValueRef.current) ratingValueRef.current.textContent = formatRating(0, true);
+      ratingLineRef.current?.style.setProperty("--rating-fill", "100%");
+      rootRef.current?.setAttribute("data-transition-lab-state", "RATING_INFINITY_READY");
+      gsap.set(stageRef.current, { opacity: 1, filter: "blur(0px)", scale: 1 });
+      gsap.set([stillRef.current, videoRef.current], { opacity: 1, filter: "blur(0px)", scale: 1 });
+      gsap.set([ratingPanelRef.current, heroRef.current], { opacity: 1 });
+      gsap.set([orbitOneRef.current, orbitTwoRef.current], { opacity: 0.72, scale: 1 });
+      return () => window.clearTimeout(readyTimer);
+    }
     if (audio.getSnapshot().isUnlocked) {
       void audio.setMusicState(PHASE8_MUSIC_STATE, { gain: FILM_MIX.music.s07, gainRampSeconds: 1.2 });
       void sceneAudio.playSfx("audio:scenes.s07.cue01", { gain: FILM_MIX.sfx.s07Arrival });
@@ -188,18 +229,46 @@ export function Soul07Scene() {
     particlesRef.current?.dissolve();
     visual.setLightLeak(0, { drift: false });
     visual.fadeFog(0.01, 0.7);
+    const fracture = (preset: CinematicFracturePreset, revealHall = false) => {
+      if (!rootRef.current || !fractureHostRef.current) return;
+      fractureControllerRef.current ??= new CinematicFractureController(rootRef.current, fractureHostRef.current);
+      fractureControllerRef.current.fracture(
+        { ...preset, revealImageUrl: revealHall ? throneHall?.url : undefined },
+        {
+          quality: visual.quality,
+          motionMode: visual.motionMode,
+          mobile: window.matchMedia("(max-width: 760px)").matches,
+        },
+      );
+    };
+    const reduced = visual.motionMode === "REDUCED";
     const timeline = gsap.timeline({ onComplete: completeExit });
-    timeline.to(orbitOneRef.current, { rotation: "+=31", scale: 0.94, duration: 0.52, ease: "power2.in" }, 0.12);
-    timeline.to(orbitTwoRef.current, { rotation: "-=47", scale: 1.06, duration: 0.52, ease: "power2.in" }, 0.12);
-    timeline.to(ratingValueRef.current, { scaleX: 1.14, skewX: -7, x: 4, duration: 0.12, ease: "power2.in" }, 0.22);
-    timeline.to(ratingValueRef.current, { scaleX: 0.96, skewX: 2, x: -2, duration: 0.13, ease: "power2.out" }, 0.34);
-    timeline.fromTo(displacementRef.current, { opacity: 0, xPercent: -1.2 }, { opacity: 0.38, xPercent: 1.2, duration: 0.1, ease: "none" }, 0.29);
-    timeline.to(displacementRef.current, { opacity: 0, xPercent: 0, duration: 0.13, ease: "power2.in" }, 0.39);
-    timeline.fromTo(crimsonFlashRef.current, { opacity: 0 }, { opacity: 0.44, duration: 0.09, ease: "power2.out" }, 0.43);
-    timeline.to(crimsonFlashRef.current, { opacity: 0.08, duration: 0.32, ease: "power2.in" }, 0.52);
-    timeline.to(rootRef.current, { filter: "contrast(1.2) brightness(.28) saturate(.7)", opacity: 0.08, duration: 0.68, ease: "power2.inOut" }, 0.38);
+    timeline.to([orbitOneRef.current, orbitTwoRef.current], { rotation: 0, duration: 0.22, ease: "power2.out" }, 0);
+    if (!reduced) {
+      timeline.call(() => fracture(S07_FRACTURES.first), [], 0.28);
+      timeline.to(ratingValueRef.current, { scaleX: 1.055, x: 2, duration: 0.068, ease: "steps(2)" }, 0.28);
+      timeline.to(ratingValueRef.current, { scaleX: 1, x: 0, duration: 0.08, ease: "power2.out" }, 0.348);
+      timeline.call(() => fracture(S07_FRACTURES.second), [], 0.64);
+      timeline.to(ratingValueRef.current, { scaleX: 1.14, skewX: -4, x: 5, duration: 0.118, ease: "steps(3)" }, 0.64);
+      timeline.to(ratingValueRef.current, { scaleX: 1, skewX: 0, x: 0, duration: 0.1, ease: "power2.out" }, 0.758);
+      timeline.to(orbitOneRef.current, { rotation: "+=18", scaleX: 1.035, duration: 0.118, ease: "steps(3)" }, 0.64);
+      timeline.to(orbitTwoRef.current, { rotation: "-=25", scaleY: 0.975, duration: 0.118, ease: "steps(3)" }, 0.64);
+      timeline.to([orbitOneRef.current, orbitTwoRef.current], { scaleX: 1, scaleY: 1, duration: 0.12 }, 0.758);
+      timeline.call(() => fracture(S07_FRACTURES.final, true), [], 1.1);
+    } else {
+      timeline.call(() => fracture(S07_FRACTURES.final, true), [], 0.62);
+    }
+    timeline.fromTo(crimsonFlashRef.current, { opacity: 0 }, { opacity: 0.25, duration: 0.18, ease: "power2.out" }, reduced ? 0.62 : 1.1);
+    timeline.to(crimsonFlashRef.current, { opacity: 0.06, duration: 0.34, ease: "power2.in" });
+    timeline.to([stageRef.current, orbitOneRef.current, orbitTwoRef.current], {
+      scaleX: 0.972,
+      filter: "brightness(.34) saturate(.58) contrast(1.16)",
+      duration: 0.46,
+      ease: "power3.in",
+    }, reduced ? 0.72 : 1.18);
+    timeline.to(rootRef.current, { filter: "contrast(1.16) brightness(.24) saturate(.62)", opacity: 0.04, duration: 0.52, ease: "power2.inOut" }, reduced ? 0.84 : 1.38);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
-  }, [completeExit, phase, scopeId, visual]);
+  }, [completeExit, phase, scopeId, throneHall?.url, visual]);
 
   return (
     <section ref={rootRef} className={styles.scene} data-testid="s07-scene" data-scene-phase={phase} data-video-played={videoPlayed} data-rating-resolved={ratingResolved} data-collection-status={collectionStatus} aria-label="Admiration">
@@ -227,7 +296,7 @@ export function Soul07Scene() {
         <span className={styles.srOnly}>{ratingResolved ? "Admiration beyond a finite percentage." : "Admiration is being expressed."}</span>
         <span ref={ratingLineRef} className={styles.ratingLine} aria-hidden="true" />
       </div>
-      <div ref={displacementRef} className={styles.displacementPulse} aria-hidden="true">{displacement ? <MediaImage asset={displacement} alt="" eager /> : null}</div>
+      <div ref={fractureHostRef} className={styles.fractureHost} data-cinematic-fracture-host="true" aria-hidden="true" />
       <div ref={crimsonFlashRef} className={styles.crimsonFlash} aria-hidden="true" />
     </section>
   );

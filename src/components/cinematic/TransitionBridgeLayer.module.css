@@ -26,7 +26,6 @@
 .haze,
 .ring,
 .ringSecondary,
-.fracture,
 .particles,
 .particles i {
   position: absolute;
@@ -37,7 +36,6 @@
 
 .field,
 .haze,
-.fracture,
 .particles {
   inset: 0;
 }
@@ -179,12 +177,6 @@
   opacity: 0;
 }
 
-.fracture {
-  background:
-    linear-gradient(103deg, transparent 48.8%, rgb(210 35 63 / 38%) 49.2%, transparent 49.7%),
-    linear-gradient(77deg, transparent 50.2%, rgb(238 238 241 / 15%) 50.45%, transparent 50.8%);
-  opacity: 0;
-}
 
 .particles i {
   left: 50%;
@@ -293,9 +285,8 @@
 .bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="outgoing"] .ringSecondary {
   animation: orbit-rupture 1.2s cubic-bezier(.7, 0, .3, 1) both;
 }
-.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="outgoing"] .fracture { animation: fracture-pulse 1.2s ease-in-out both; }
 .bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="incoming"] .field,
-.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="revealing"] .field { animation: throne-field .92s ease-out both; }
+.bridge[data-transition-bridge="INFINITY_TO_THRONE"][data-transition-state="revealing"] .field { animation: throne-field .72s ease-out both; }
 
 .bridge[data-transition-bridge="ASH_TO_HEAVINESS"][data-transition-state="outgoing"] .particles i {
   animation: ash-fall 1.25s ease-in both;
@@ -363,7 +354,6 @@
 @keyframes particles-inward { 0% { opacity: 0; transform: translateY(24px) scale(.5); } 35% { opacity: .7; } 100% { opacity: .15; transform: translateY(-10px) scale(1.2); } }
 @keyframes halo-resolve { 0% { opacity: .55; scale: .72; filter: blur(4px); } 60% { opacity: .42; } 100% { opacity: 0; scale: 1.08; filter: blur(0); } }
 @keyframes orbit-rupture { 0% { opacity: .42; transform: rotate(0) scale(1); } 38% { opacity: .7; transform: rotate(18deg) scale(.98); } 52% { transform: rotate(-4deg) scale(1.08, .84); } 100% { opacity: 0; transform: rotate(34deg) scale(2.7, .18); } }
-@keyframes fracture-pulse { 0%, 34% { opacity: 0; } 46% { opacity: .7; transform: translateX(-1%); } 58% { opacity: .18; transform: translateX(1%); } 100% { opacity: 0; } }
 @keyframes throne-field { from { opacity: .7; background-color: rgb(31 1 8 / 72%); } to { opacity: 0; } }
 @keyframes ash-fall { 0% { opacity: .6; transform: translateY(-8px) scale(1); background: #75182b; } 100% { opacity: 0; transform: translateY(90px) scale(.35); background: #373238; filter: blur(2px); } }
 @keyframes heavy-arrival { from { opacity: .1; filter: blur(8px); } to { opacity: 0; filter: blur(0); } }
@@ -382,7 +372,6 @@
   }
   .memory,
   .particles,
-  .fracture,
   .ringSecondary {
     display: none;
   }

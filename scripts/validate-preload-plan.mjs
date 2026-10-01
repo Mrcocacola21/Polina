@@ -22,7 +22,7 @@ const requiredGroups = [
   "BEFORE_REQUIEM",
   "BEFORE_FINAL",
 ];
-const supportedExtensions = new Set([".png", ".jpg", ".jpeg", ".mp4", ".wav", ".mp3", ".ogg"]);
+const supportedExtensions = new Set([".png", ".jpg", ".jpeg", ".mp4", ".webm", ".wav", ".mp3", ".ogg"]);
 const intentionallyUnassignedPaths = new Set([
   "sfx/AUD-GLOBAL-04.wav",
   "Global/GLOBAL-09A.png",

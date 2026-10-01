@@ -14,7 +14,9 @@ const EXTENSION_KIND: Readonly<Record<string, MediaKind>> = {
   ".wav": "audio",
   ".mp3": "audio",
   ".ogg": "audio",
-  ".webm": "audio",
+  // Master WebM files in the visual manifest are VP9 video. Optimized Opus
+  // variants keep their kind from their original audio master entry.
+  ".webm": "video",
 };
 
 export type MediaCapabilities = Readonly<{

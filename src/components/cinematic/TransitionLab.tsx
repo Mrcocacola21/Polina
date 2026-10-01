@@ -94,6 +94,9 @@ export function TransitionLab({ state, onRun, onReset }: TransitionLabProps) {
         <div><dt>HUD</dt><dd>{souls.hudMode} / {souls.count}</dd></div>
         <div><dt>camera</dt><dd>identity (persistent R3F)</dd></div>
         <div><dt>mask</dt><dd>{visual.transition}</dd></div>
+        {selected.id === "S07_S08" || transition.definition?.id === "S07_S08" ? (
+          <div><dt>source state</dt><dd>{document.querySelector<HTMLElement>('[data-testid="s07-scene"]')?.dataset.transitionLabState ?? "RATING_INFINITY_READY"}</dd></div>
+        ) : null}
         {selected.id === "S03_S04" || transition.definition?.id === "S03_S04" ? <>
           <div><dt>phase</dt><dd data-testid="memory-transition-phase">{memoryMetrics.phase}</dd></div>
           <div><dt>final memory</dt><dd>{memoryMetrics.finalMemoryId}</dd></div>

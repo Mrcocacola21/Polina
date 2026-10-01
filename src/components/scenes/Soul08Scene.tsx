@@ -26,6 +26,7 @@ import { useSceneSoulCollection, useSoulCollectionRuntime } from "@/lib/souls/So
 import type { ParticleFieldController } from "@/lib/visuals/VisualRuntime";
 import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { createSceneVisualScopeId } from "@/lib/visuals/VisualScope";
+import { CinematicFractureController } from "@/lib/visuals/cinematic-fracture";
 
 import styles from "./Soul08Scene.module.css";
 
@@ -57,7 +58,8 @@ export function Soul08Scene() {
   const relicRef = useRef<HTMLDivElement>(null);
   const killHighlightRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const deathFocusRef = useRef<HTMLSpanElement>(null);
-  const ruptureRef = useRef<HTMLDivElement>(null);
+  const fractureHostRef = useRef<HTMLDivElement>(null);
+  const fractureControllerRef = useRef<CinematicFractureController | null>(null);
   const impactWashRef = useRef<HTMLDivElement>(null);
   const firstRef = useRef<HTMLSpanElement>(null);
   const secondRef = useRef<HTMLSpanElement>(null);
@@ -73,7 +75,6 @@ export function Soul08Scene() {
   const sigil = useMediaAsset("visual:sections.section08Asset01");
   const fragments = useMediaAsset("visual:sections.section08Asset03");
   const relic = useMediaAsset("visual:screens.queenCantDie");
-  const displacement = useMediaAsset("visual:global.asset06");
   const audio = useAudioEngine();
   const sceneAudio = useSceneAudio();
   const { collect } = useSceneSoulCollection();
@@ -191,6 +192,8 @@ export function Soul08Scene() {
       visual.setGrain(0.055);
       visual.setVignette(0.42, 0.62);
       visual.setVignetteCenter(50, 50);
+      fractureControllerRef.current?.dispose();
+      fractureControllerRef.current = null;
     };
   }, [collectionRuntime, scopeId, visual]);
 
@@ -203,8 +206,6 @@ export function Soul08Scene() {
     gsap.set(cameraRef.current, { ...S08_CAMERA.start });
     const timeline = gsap.timeline({ onComplete: completeEnter });
     timeline.fromTo(rootRef.current, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "none" });
-    timeline.fromTo(ruptureRef.current, { opacity: 0, xPercent: -1.5 }, { opacity: 0.46, xPercent: 1.5, duration: 0.12, ease: "power2.out" }, 0.06);
-    timeline.to(ruptureRef.current, { opacity: 0, xPercent: 0, duration: 0.13, ease: "power2.in" }, 0.18);
     timeline.call(() => playCue(S08_AUDIO_CUE_ORDER[0]), [], 0.2);
     timeline.fromTo(hallRef.current, {
       opacity: 0,
@@ -217,6 +218,29 @@ export function Soul08Scene() {
       duration: S08_TIMING.entryReveal,
       ease: "power2.out",
     }, 0.18);
+    timeline.call(() => {
+      if (!impactFrameRef.current || !fractureHostRef.current) return;
+      fractureControllerRef.current ??= new CinematicFractureController(impactFrameRef.current, fractureHostRef.current);
+      fractureControllerRef.current.fracture({
+        intensity: 0.48,
+        sliceAmount: 7,
+        sliceCount: 3,
+        chromaticOffset: 1.4,
+        verticalShear: 0.8,
+        lumaTear: 0.08,
+        frameEcho: 0,
+        scanlineWarp: 0.1,
+        edgeEnergy: 0.16,
+        duration: 112,
+        seed: 8081,
+        blackTears: 1,
+        radialStretch: 0,
+      }, {
+        quality: visual.quality,
+        motionMode: visual.motionMode,
+        mobile: window.matchMedia("(max-width: 760px)").matches,
+      });
+    }, [], 0.24);
     return visual.addScopeCleanup(scopeId, () => timeline.kill());
   }, [audio, completeEnter, phase, playCue, scopeId, visual]);
 
@@ -425,9 +449,6 @@ export function Soul08Scene() {
       data-music-state={PHASE9_MUSIC_STATE}
       aria-label="Queen"
     >
-      <div ref={ruptureRef} className={styles.rupture} aria-hidden="true">
-        {displacement ? <MediaImage asset={displacement} alt="" eager /> : null}
-      </div>
       <div ref={impactFrameRef} className={styles.impactFrame}>
         <div ref={cameraRef} className={styles.camera}>
           <div ref={hallRef} className={styles.hall} aria-hidden="true">
@@ -486,6 +507,7 @@ export function Soul08Scene() {
           </div>
         </div>
       </div>
+      <div ref={fractureHostRef} className={styles.fractureHost} data-cinematic-fracture-host="true" aria-hidden="true" />
       <div className={styles.fragments} aria-hidden="true">
         {fragments ? FRAGMENTS.slice(0, fragmentCount).map((fragment, index) => (
           <span

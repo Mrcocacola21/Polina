@@ -12,6 +12,7 @@ export const VIDEO_FALLBACK_POLICIES: readonly VideoFallbackPolicy[] = Object.fr
   { semanticRef: "visual:screens.polinaCircle", kind: "poster", fallbackSemanticRef: "visual:screens.polina", description: "canonical Polina still" },
   { semanticRef: "visual:sections.section09Asset02", kind: "atmosphere", description: "CSS rain and dark atmospheric field" },
   { semanticRef: "visual:requirements.asset04", kind: "atmosphere", description: "CSS radial Requiem release" },
+  { semanticRef: "visual:requirements.shadowFiendRequiem", kind: "atmosphere", description: "CSS central Requiem manifestation" },
 ]);
 
 export function fallbackForSemanticRefs(refs: readonly string[]): VideoFallbackPolicy | null {

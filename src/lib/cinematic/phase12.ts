@@ -11,8 +11,18 @@ export const REQUIEM_BUILDUP_TIMING = FILM_TIMING.requiem;
 export const REQUIEM_RADIAL_CONFIG = Object.freeze({
   startAngle: -Math.PI / 2,
   radiusRatio: 0.31,
-  contractedRatio: 0.92,
+  inboundRatios: Object.freeze([0.265, 0.215, 0.17, 0.135] as const),
+  gatheredRatio: 0.115,
+  lockedRatio: 0.105,
   exitRatio: 0.78,
+});
+
+export const REQUIEM_HERO_VIDEO = Object.freeze({
+  semanticRef: "visual:requirements.shadowFiendRequiem",
+  startBeforeHero: 0.2,
+  sourceReleaseTime: 1.96,
+  sourceDuration: 5.383333,
+  resyncThreshold: 0.18,
 });
 
 export const REQUIEM_AUDIO = Object.freeze({

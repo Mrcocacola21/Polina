@@ -1,0 +1,20 @@
+.lab { position: absolute; inset: 0; z-index: var(--layer-diagnostics); overflow: hidden; background: #010101; color: #eee7e7; }
+.preview { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 48%, rgb(76 6 21 / 34%), transparent 26%), linear-gradient(145deg, #050203, #000 72%); }
+.preview strong { position: absolute; left: 50%; top: 47%; color: rgb(244 218 220 / 92%); font: 300 clamp(86px, 16vw, 240px)/1 var(--font-system); letter-spacing: -.08em; transform: translate(-50%, -50%); text-shadow: 0 0 32px rgb(176 18 45 / 25%); }
+.preview i { position: absolute; left: 50%; top: 68%; color: rgb(214 175 181 / 48%); font: 10px/1 var(--font-system); letter-spacing: .38em; transform: translateX(-50%); white-space: nowrap; }
+.depth { position: absolute; left: 50%; top: 50%; width: 16vw; height: 100vh; background: linear-gradient(90deg, transparent, rgb(91 5 22 / 24%), transparent); transform: translate(-50%, -50%) perspective(600px) rotateX(68deg); }
+.ring { position: absolute; left: 50%; top: 48%; width: min(48vmin, 640px); aspect-ratio: 1; border: 1px solid rgb(183 28 52 / 30%); border-radius: 50%; transform: translate(-50%, -50%) rotate(-8deg) scaleY(.72); }
+.ringB { width: min(64vmin, 860px); border-color: rgb(148 17 40 / 18%); transform: translate(-50%, -50%) rotate(23deg) scaleY(.8); }
+.fractureHost { position: absolute; inset: 0; display: none; overflow: hidden; pointer-events: none; contain: strict; }
+.panel { position: absolute; top: 12px; right: 12px; display: grid; gap: 9px; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 24px); padding: 12px; overflow: auto; border: 1px solid rgb(212 35 63 / 34%); border-radius: 4px; background: rgb(0 0 0 / 90%); font: 10px/1.35 ui-monospace, monospace; }
+.panel > strong { letter-spacing: .12em; }
+.panel label { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 7px; }
+.panel select, .panel input, .panel button { min-height: 28px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 3px; background: #151215; color: inherit; font: inherit; }
+.triggers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+.toggles label { display: flex; gap: 5px; }
+.metrics { display: grid; gap: 2px; margin: 0; }
+.metrics div { display: grid; grid-template-columns: 120px 1fr; gap: 6px; }
+.metrics dt, .metrics dd { margin: 0; }
+.metrics dd { color: #fff; }
+@media (max-width: 760px) { .panel { top: auto; bottom: 12px; max-height: 54vh; } }

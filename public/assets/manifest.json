@@ -28,7 +28,8 @@
   "requirements": {
     "asset02": "REQ/REQ-02.png",
     "asset03": "REQ/REQ-03.png",
-    "asset04": "REQ/REQ-04.mp4"
+    "asset04": "REQ/REQ-04.mp4",
+    "shadowFiendRequiem": "REQ/ShadowFiendREQ-keyed.webm"
   },
   "sections": {
     "section01Asset01": "S/S01-01.png",

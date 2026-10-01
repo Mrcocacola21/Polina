@@ -4,7 +4,12 @@ import path from "node:path";
 
 const endpoint = process.env.SOULBOUND_CDP ?? "http://127.0.0.1:9223";
 const appUrl = process.env.SOULBOUND_URL ?? "http://localhost:3000/?debug=1&soulSandbox=1&requiemSync=1";
-const artifactDirectory = path.resolve(".next", "phase12-browser");
+const viewportWidth = Number(process.env.SOULBOUND_VIEWPORT_WIDTH ?? 1440);
+const viewportHeight = Number(process.env.SOULBOUND_VIEWPORT_HEIGHT ?? 900);
+const viewportMobile = process.env.SOULBOUND_VIEWPORT_MOBILE === "1";
+const artifactDirectory = path.resolve(".next", `phase12-browser-${viewportWidth}x${viewportHeight}`);
+const requireAudioClock = process.env.SOULBOUND_REQUIRE_AUDIO_CLOCK === "1";
+const skipRestart = process.env.SOULBOUND_SKIP_RESTART === "1";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const tabs = await fetch(`${endpoint}/json/list`).then((response) => response.json());
@@ -78,9 +83,21 @@ async function snapshot() {
       requiemStatus: requiem?.getAttribute('data-status'),
       rings: requiem?.getAttribute('data-rings'),
       requiemPhase: requiem?.getAttribute('data-requiem-phase'),
+      reviewStage: requiem?.getAttribute('data-review-stage'),
+      soulRadiusRatio: requiem?.getAttribute('data-soul-radius-ratio'),
       cue: requiem?.getAttribute('data-current-cue'),
+      clockMode: requiem?.getAttribute('data-clock-mode'),
+      fractureCue: requiem?.getAttribute('data-fracture-cue'),
+      fractureDuration: requiem?.getAttribute('data-fracture-duration'),
+      fractureSlices: requiem?.getAttribute('data-fracture-slices'),
+      fractureActive: requiem?.querySelector('[data-cinematic-fracture-host]')?.getAttribute('data-fracture-active'),
+      oldMapImages: [...document.images].filter((image) => image.src.includes('GLOBAL-06')).length,
       soulPositions: requiem?.getAttribute('data-soul-positions'),
       video: requiem?.getAttribute('data-video-state'),
+      heroVideo: requiem?.getAttribute('data-hero-video-state'),
+      heroVideoTime: requiem?.getAttribute('data-hero-video-time'),
+      heroVideoSource: requiem?.querySelector('video[src*="ShadowFiendREQ-keyed"]')?.getAttribute('src'),
+      heroVideoMuted: requiem?.querySelector('video[src*="ShadowFiendREQ-keyed"]')?.muted,
       releasedCount: release?.getAttribute('data-released-count') ?? requiem?.getAttribute('data-released-count'),
       count: hud?.querySelector('[data-testid="soul-count"]')?.textContent?.trim(),
       hudMode: hud?.getAttribute('data-hud-mode'),
@@ -91,7 +108,7 @@ async function snapshot() {
       audioContext: document.querySelector('[data-testid="audio-context-state"]')?.textContent?.trim(),
       canvases: document.querySelectorAll('canvas').length,
       videosPlaying: [...document.querySelectorAll('video')].filter((video) => !video.paused).length,
-      silenceText: document.querySelector('[data-testid="silence-boundary-scene"]')?.textContent ?? null,
+      silenceBeat: document.querySelector('[data-testid="silence-scene"]')?.getAttribute('data-scene-beat') ?? null,
     };
   })()`);
 }
@@ -100,7 +117,9 @@ await fs.mkdir(artifactDirectory, { recursive: true });
 await send("Page.enable");
 await send("Runtime.enable");
 await send("Log.enable");
-await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+await send("Network.enable");
+await send("Network.setCacheDisabled", { cacheDisabled: true });
+await send("Emulation.setDeviceMetricsOverride", { width: viewportWidth, height: viewportHeight, deviceScaleFactor: 1, mobile: viewportMobile });
 await send("Page.navigate", { url: "about:blank" });
 await sleep(120);
 await send("Page.navigate", { url: appUrl });
@@ -132,16 +151,18 @@ assert.equal(state.count, "10 / 10");
 assert.equal(state.releaseState, "RELEASED");
 assert.equal(state.releasedCount, "10");
 assert.equal(state.cursor, "HIDDEN");
-assert.equal(state.canvases, 1);
+assert.equal(state.canvases, 2);
 await screenshot("release-detachment.png");
 
-const releaseRunId = state.runId;
-await evaluate(`window.dispatchEvent(new Event('soulbound:debug-restart-scene'))`);
-await waitFor("release restart", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-run-id') !== '${releaseRunId}'`);
-await waitFor("release replay", `document.querySelector('[data-testid="souls-release-scene"]')?.getAttribute('data-release-status') === 'released'`);
-state = await snapshot();
-assert.equal(state.releasedCount, "10");
-assert.equal(state.count, "10 / 10");
+if (!requireAudioClock && !skipRestart) {
+  const releaseRunId = state.runId;
+  await evaluate(`window.dispatchEvent(new Event('soulbound:debug-restart-scene'))`);
+  await waitFor("release restart", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-run-id') !== '${releaseRunId}'`);
+  await waitFor("release replay", `document.querySelector('[data-testid="souls-release-scene"]')?.getAttribute('data-release-status') === 'released'`);
+  state = await snapshot();
+  assert.equal(state.releasedCount, "10");
+  assert.equal(state.count, "10 / 10");
+}
 
 await waitFor("REQUIEM", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === 'REQUIEM'`, 12_000);
 await waitFor("Requiem ready", `document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-status') === 'ready'`, 8_000);
@@ -150,45 +171,75 @@ state = await snapshot();
 console.log("ring snapshot", state);
 assert.equal(state.releasedCount, "10");
 assert.equal(state.hudMode, "HIDDEN");
-assert.equal(state.canvases, 1);
+assert.equal(state.canvases, 2);
+if (requireAudioClock) {
+  assert.equal(state.clockMode, "audio");
+}
 await screenshot("requiem-rings.png");
 
-const firstRequiemRunId = state.runId;
-await evaluate(`window.dispatchEvent(new Event('soulbound:debug-restart-scene'))`);
-await waitFor("Requiem restart", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-run-id') !== '${firstRequiemRunId}'`);
-await waitFor("restarted Requiem ready", `document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-status') === 'ready'`, 8_000);
-await waitFor("restarted arcs", `['arcs','compressed','hero','release'].includes(document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-requiem-phase'))`, 8_000);
+await waitFor("ten Souls gathered at center", `(() => { const scene = document.querySelector('[data-testid="requiem-scene"]'); return scene?.dataset.reviewStage === 'CENTER_GATHER' && Number(scene.dataset.soulRadiusRatio) <= ${viewportMobile ? 0.165 : 0.115}; })()`, 8_000);
 state = await snapshot();
-assert.equal(state.scene, "REQUIEM");
-assert.notEqual(state.black, "true");
+assert.equal(state.reviewStage, "CENTER_GATHER");
+assert.equal(state.soulRadiusRatio, viewportMobile ? "0.165" : "0.115");
+await screenshot("requiem-center-gather.png");
+
+if (!requireAudioClock && !skipRestart) {
+  const firstRequiemRunId = state.runId;
+  await evaluate(`window.dispatchEvent(new Event('soulbound:debug-restart-scene'))`);
+  await waitFor("Requiem restart", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-run-id') !== '${firstRequiemRunId}'`);
+  await waitFor("restarted Requiem ready", `document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-status') === 'ready'`, 8_000);
+  await waitFor("restarted arcs", `['arcs','compressed','hero','release'].includes(document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-requiem-phase'))`, 8_000);
+  state = await snapshot();
+  assert.equal(state.scene, "REQUIEM");
+  assert.notEqual(state.black, "true");
+}
+
+await waitFor("Shadow Fiend established", `(() => { const scene = document.querySelector('[data-testid="requiem-scene"]'); return scene?.dataset.reviewStage === 'CAST_START' && scene.dataset.heroVideoState === 'playing'; })()`, 8_000);
+await screenshot("requiem-shadow-fiend-established.png");
 
 await waitFor("primary hero release", `document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-requiem-phase') === 'release'`, 8_000);
-await waitFor("smoke playback result", `['playing','failed'].includes(document.querySelector('[data-testid="requiem-scene"]')?.getAttribute('data-video-state'))`, 3_000);
+await waitFor("Shadow Fiend hero playback", `(() => { const scene = document.querySelector('[data-testid="requiem-scene"]'); return scene?.dataset.reviewStage === 'HERO_RELEASE' && scene.dataset.heroVideoState === 'playing'; })()`, 2_000);
+await waitFor("primary fracture", `(() => { const requiem = document.querySelector('[data-testid="requiem-scene"]'); return requiem?.dataset.fractureCue === 'primaryImpact' && requiem.querySelector('[data-cinematic-fracture-host]')?.dataset.fractureActive === 'true'; })()`, 2_000);
 state = await snapshot();
-assert.equal(state.video, "playing");
+assert.equal(["prepared", "playing", "failed"].includes(state.video), true);
 assert.equal(state.releasedCount, "10");
+assert.equal(state.reviewStage, "HERO_RELEASE");
+assert.equal(state.soulRadiusRatio, viewportMobile ? "0.165" : "0.105");
+assert.equal(state.heroVideo, "playing");
+assert.equal(state.heroVideoMuted, true);
+assert.match(state.heroVideoSource ?? "", /ShadowFiendREQ-keyed\.webm/);
+assert.ok(Number(state.heroVideoTime) >= 1.8 && Number(state.heroVideoTime) <= 2.35);
+assert.equal(state.fractureCue, "primaryImpact");
+assert.equal(state.fractureDuration, "196");
+assert.equal(Number(state.fractureSlices) >= 4, true);
+assert.equal(state.oldMapImages, 0);
+if (requireAudioClock) assert.equal(state.clockMode, "audio");
 await screenshot("requiem-primary-impact.png");
 
 await waitFor("SILENCE hard cut", `document.querySelector('[data-testid="scene-director"]')?.getAttribute('data-scene-id') === 'SILENCE'`, 10_000);
-await sleep(2500);
 state = await snapshot();
 assert.equal(state.phase, "active");
 assert.equal(state.black, "true");
+assert.equal(state.silenceBeat, "initial-black");
 assert.equal(state.cursor, "HIDDEN");
 assert.equal(state.hudMode, "HIDDEN");
 assert.equal(state.releaseState, "RELEASED");
-assert.equal(state.silenceText, "");
 assert.equal(state.audio, "A 0 · S 0 · P 0");
 assert.equal(state.videosPlaying, 0);
 assert.equal(state.canvases, 1);
 await evaluate(`document.querySelectorAll('[data-testid="scene-debug-overlay"], [data-testid="audio-debug-panel"], [data-testid="media-debug-panel"], [data-testid="asset-diagnostics"], nextjs-portal').forEach((node) => { if (node instanceof HTMLElement) node.style.display = 'none'; })`);
 await screenshot("silence-black.png");
+await sleep(2500);
+state = await snapshot();
+assert.equal(state.black, "false");
+assert.equal(state.silenceBeat, "line-1");
 
 const seriousErrors = browserErrors.filter((message) =>
   !message.includes("favicon.ico") &&
+  !message.includes("AudioContext was not allowed to start") &&
   !message.includes("/_next/hmr") &&
   !message.includes("Failed to load resource: the server responded with a status of 404"),
 );
 assert.deepEqual(seriousErrors, []);
-console.log(JSON.stringify({ ok: true, state, browserErrors: seriousErrors, artifacts: artifactDirectory }, null, 2));
+console.log(JSON.stringify({ ok: true, viewport: [viewportWidth, viewportHeight, viewportMobile], state, browserErrors: seriousErrors, artifacts: artifactDirectory }, null, 2));
 socket.close();

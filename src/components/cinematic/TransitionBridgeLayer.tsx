@@ -113,7 +113,6 @@ export function TransitionBridgeLayer() {
       <span className={styles.haze} />
       <span className={styles.ring} />
       <span className={styles.ringSecondary} />
-      <span className={styles.fracture} />
       <span className={styles.particles}>
         {PARTICLES.map((index) => <i key={index} style={{ "--particle-index": index } as CSSProperties} />)}
       </span>

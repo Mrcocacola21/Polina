@@ -27,6 +27,7 @@ const s10 = read("src/components/scenes/Soul10Scene.tsx");
 const preFinal = read("src/components/scenes/PreFinalScene.tsx");
 const soulsRelease = read("src/components/scenes/SoulsReleaseScene.tsx");
 const requiem = read("src/components/scenes/RequiemScene.tsx");
+const cinematicFracture = read("src/lib/visuals/cinematic-fracture.ts");
 const silence = read("src/components/scenes/SilenceBoundaryScene.tsx");
 const final = read("src/components/scenes/FinalScene.tsx");
 const audioEngine = read("src/lib/audio/AudioEngine.ts");
@@ -112,9 +113,12 @@ for (const [source, ref, label] of [
   [s01, "visual:sections.section01Asset01", "S01 environment"],
   [s01, "visual:screens.discord", "Discord screenshot"],
   [prologue, "audio:prologue.soulAwakening", "Prologue awakening audio"],
-  [s02, "audio:scenes.s02.cue01", "S02 ordinary cue"],
-  [s02, "audio:scenes.s02.cue02", "S02 special cue"],
-  [s02, "audio:scenes.s02.cue03", "S02 open cue"],
+  [phase6, "audio:scenes.s02.cue01", "S02 ordinary cue"],
+  [phase6, "audio:scenes.s02.cue02", "S02 special cue"],
+  [phase6, "audio:scenes.s02.cue03", "S02 open cue"],
+  [s02, "S02_NOTIFICATION_AUDIO.ordinary", "S02 ordinary cue binding"],
+  [s02, "S02_NOTIFICATION_AUDIO.special", "S02 special cue binding"],
+  [s02, "S02_NOTIFICATION_AUDIO.open", "S02 open cue binding"],
   [s03, "visual:sections.section03Asset02", "S03 memory environment"],
   [s03, "visual:sections.section03Asset04", "S03 temporal streaks"],
   [s03, "visual:screens.together", "S03 together memory"],
@@ -142,12 +146,12 @@ for (const [source, ref, label] of [
   [s07, "audio:scenes.s07.cue02", "S07 infinity cue"],
   [s07, "audio:scenes.s07.cue03", "S07 aside cue"],
   [s07, "startRatingRise", "S07 procedural rating rise"],
-  [s07, "visual:global.asset06", "S07 controlled displacement handoff"],
+  [s07, "CinematicFractureController", "S07 geometric fracture handoff"],
   [s08, "visual:sections.section08Asset01", "S08 Queen Sigil"],
   [s08, "visual:sections.section08Asset02", "S08 Throne Hall"],
   [s08, "visual:sections.section08Asset03", "S08 crown fragments"],
   [s08, "visual:screens.queenCantDie", "S08 personal relic"],
-  [s08, "visual:global.asset06", "S08 displacement"],
+  [s08, "CinematicFractureController", "S08 clean fracture settle"],
   [s08, "setFog(\"CRIMSON\"", "S08 crimson fog controller"],
   [s08, "setLightLeak", "S08 light leak accent"],
   [phase9, "audio:scenes.s08.cue01", "S08 arrival cue"],
@@ -174,12 +178,21 @@ for (const [source, ref, label] of [
   [preFinal, 'data-procedural-audio="none"', "PRE_FINAL procedural silence"],
   [soulsRelease, "releaseAllForRequiem", "SOULS_RELEASE collection transaction"],
   [requiem, "RequiemClock", "REQUIEM AudioContext cue clock"],
+  [requiem, "CinematicFractureController", "REQUIEM geometric fracture controller"],
+  [cinematicFracture, "cloneNode(true)", "fracture samples scene pixels"],
+  [cinematicFracture, "cinematic-fracture-black-tear", "fracture black gaps"],
   [requiem, "enterAbsoluteBlack", "REQUIEM hard visual cut"],
   [silence, "enterCinematicSilence", "SILENCE cinematic audio gate"],
   [silence, "SILENCE_LINES", "SILENCE production copy"],
   [final, "FINAL_QUESTION", "Final exact question"],
   [final, "FINAL_AUDIO.musicState", "Final music semantics"],
 ]) requireText(source, ref, label);
+
+for (const [source, label] of [[s07, "S07"], [s08, "S08"], [requiem, "REQUIEM"]]) {
+  if (source.includes("visual:global.asset06")) {
+    errors.push(`${label} must not render GLOBAL-06 as a color layer.`);
+  }
+}
 
 if (/releaseAllForRequiem\s*\(/.test(s10) || /releaseAllForRequiem\s*\(/.test(preFinal)) {
   errors.push("Phase 11 must not release HUD Souls.");

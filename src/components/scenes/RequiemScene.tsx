@@ -3,7 +3,6 @@
 import gsap from "gsap";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
-import { MediaImage } from "@/components/media/MediaImage";
 import { MediaVideo } from "@/components/media/MediaVideo";
 import { useAudioEngine, useSceneAudio } from "@/lib/audio/AudioEngineContext";
 import {
@@ -11,6 +10,7 @@ import {
   REQUIEM_AUDIO,
   REQUIEM_AUDIO_CUES,
   REQUIEM_BUILDUP_TIMING,
+  REQUIEM_HERO_VIDEO,
   REQUIEM_RADIAL_CONFIG,
   RequiemClock,
   sampleRequiemEnvelope,
@@ -25,6 +25,10 @@ import type { ReleasedSoul } from "@/lib/souls/SoulCollectionRuntime";
 import type { ParticleFieldController } from "@/lib/visuals/VisualRuntime";
 import { useVisualRuntime } from "@/lib/visuals/VisualRuntimeContext";
 import { createSceneVisualScopeId } from "@/lib/visuals/VisualScope";
+import {
+  CinematicFractureController,
+  type CinematicFracturePreset,
+} from "@/lib/visuals/cinematic-fracture";
 
 import styles from "./RequiemScene.module.css";
 
@@ -39,6 +43,39 @@ const ARC_SEGMENTS = Object.freeze([
   { rotation: 210, frame: "100% 100%" },
 ]);
 
+const REQUIEM_FRACTURES = Object.freeze({
+  pressureAccent: Object.freeze({
+    intensity: 0.22, sliceAmount: 4, sliceCount: 2, chromaticOffset: 0.8,
+    verticalShear: 0, lumaTear: 0.04, frameEcho: 0, scanlineWarp: 0.06,
+    edgeEnergy: 0.06, duration: 72, seed: 1201, blackTears: 0, radialStretch: 0.004,
+  }),
+  ignition: Object.freeze({
+    intensity: 0.48, sliceAmount: 8, sliceCount: 4, chromaticOffset: 1.6,
+    verticalShear: 1.1, lumaTear: 0.08, frameEcho: 0.06, scanlineWarp: 0.12,
+    edgeEnergy: 0.14, duration: 108, seed: 1202, blackTears: 0, radialStretch: 0.009,
+  }),
+  primaryImpact: Object.freeze({
+    intensity: 1, sliceAmount: 18, sliceCount: 7, chromaticOffset: 3.5,
+    verticalShear: 3, lumaTear: 0.18, frameEcho: 0.12, scanlineWarp: 0.24,
+    edgeEnergy: 0.36, duration: 196, seed: 1203, blackTears: 2, radialStretch: 0.026,
+  }),
+  secondaryWave: Object.freeze({
+    intensity: 0.62, sliceAmount: 11, sliceCount: 5, chromaticOffset: 2.2,
+    verticalShear: 1.4, lumaTear: 0.1, frameEcho: 0.07, scanlineWarp: 0.15,
+    edgeEnergy: 0.2, duration: 128, seed: 1204, blackTears: 1, radialStretch: 0.013,
+  }),
+  finalSurge: Object.freeze({
+    intensity: 0.76, sliceAmount: 14, sliceCount: 6, chromaticOffset: 2.8,
+    verticalShear: 2, lumaTear: 0.14, frameEcho: 0.09, scanlineWarp: 0.2,
+    edgeEnergy: 0.28, duration: 154, seed: 1205, blackTears: 1, radialStretch: 0.018,
+  }),
+  tailRelease: Object.freeze({
+    intensity: 0.3, sliceAmount: 5, sliceCount: 2, chromaticOffset: 0.6,
+    verticalShear: 0, lumaTear: 0.05, frameEcho: 0, scanlineWarp: 0.06,
+    edgeEnergy: 0.08, duration: 82, seed: 1206, blackTears: 0, radialStretch: 0.004,
+  }),
+} satisfies Readonly<Record<Exclude<RequiemCueName, "hardCut">, CinematicFracturePreset>>);
+
 function isSyncDebugEnabled(): boolean {
   return process.env.NODE_ENV === "development" &&
     typeof window !== "undefined" &&
@@ -48,7 +85,10 @@ function isSyncDebugEnabled(): boolean {
 export function RequiemScene() {
   const rootRef = useRef<HTMLElement>(null);
   const cameraRef = useRef<HTMLDivElement>(null);
+  const fractureHostRef = useRef<HTMLDivElement>(null);
+  const fractureControllerRef = useRef<CinematicFractureController | null>(null);
   const smokeRef = useRef<HTMLVideoElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const clockRef = useRef<RequiemClock | null>(null);
   const orbitParticlesRef = useRef<ParticleFieldController | null>(null);
   const impactParticlesRef = useRef<ParticleFieldController | null>(null);
@@ -61,6 +101,7 @@ export function RequiemScene() {
   const [heroElapsed, setHeroElapsed] = useState(-1);
   const [firedCues, setFiredCues] = useState<readonly RequiemCueName[]>([]);
   const [videoState, setVideoState] = useState("prepared");
+  const [heroVideoState, setHeroVideoState] = useState("prepared");
   const [syncDebug, setSyncDebug] = useState(false);
   const debugUpdateRef = useRef(0);
   const { phase, runId, completeEnter, completeExit, setCanAdvance, requestAdvance } = useSceneRuntime();
@@ -72,19 +113,74 @@ export function RequiemScene() {
   const sigil = useMediaAsset("visual:requirements.asset02");
   const arcs = useMediaAsset("visual:requirements.asset03");
   const smoke = useMediaAsset("visual:requirements.asset04");
+  const shadowFiend = useMediaAsset(REQUIEM_HERO_VIDEO.semanticRef);
   const fog = useMediaAsset("visual:global.asset04VariantB");
-  const displacement = useMediaAsset("visual:global.asset06");
   const lightLeak = useMediaAsset("visual:global.asset07");
+
+  const attractSouls = useCallback((
+    released: readonly ReleasedSoul[],
+    radiusRatio: number,
+    duration: number,
+    curve: number,
+    scale: number,
+  ) => {
+    const mobile = window.innerWidth <= 700;
+    const resolvedRadiusRatio = mobile ? Math.max(radiusRatio, 0.165) : radiusRatio;
+    const resolvedScale = mobile && radiusRatio <= REQUIEM_RADIAL_CONFIG.inboundRatios[2]
+      ? scale * 0.78
+      : scale;
+    const radial = calculateRadialPositions(window.innerWidth, window.innerHeight, resolvedRadiusRatio);
+    radialRef.current = radial;
+    if (rootRef.current) rootRef.current.dataset.soulRadiusRatio = resolvedRadiusRatio.toFixed(3);
+    released.forEach((soul, index) => {
+      const point = radial[index];
+      if (!point) return;
+      const delay = visual.motionMode === "REDUCED" ? 0 : index * 0.01;
+      const delayed = gsap.delayedCall(delay, () => {
+        void soul.controller.flyTo(
+          { screen: [point.x, point.y], z: (index % 3 - 1) * 0.045 },
+          {
+            duration,
+            curve: (index % 2 === 0 ? 1 : -1) * (curve + (index % 3) * 0.025),
+            trail: true,
+            scale: resolvedScale,
+          },
+        );
+      });
+      visual.addScopeCleanup(scopeId, () => delayed.kill());
+    });
+  }, [scopeId, visual]);
 
   const cameraImpulse = useCallback((strength: number) => {
     const target = cameraRef.current;
-    if (!target) return;
+    if (!target || visual.motionMode === "REDUCED") return;
     const amount = strength * visual.motionIntensity;
     gsap.killTweensOf(target);
     gsap.timeline()
       .to(target, { x: 9 * amount, y: -5 * amount, scale: 1 + 0.022 * amount, duration: 0.055, ease: "power3.out" })
       .to(target, { x: -5 * amount, y: 3 * amount, duration: 0.07, ease: "none" })
       .to(target, { x: 0, y: 0, scale: 1, duration: 0.42, ease: "elastic.out(1, .55)" });
+  }, [visual]);
+
+  const fractureFrame = useCallback((cue: Exclude<RequiemCueName, "hardCut">) => {
+    const source = cameraRef.current;
+    const host = fractureHostRef.current;
+    const root = rootRef.current;
+    if (!source || !host) return;
+    // Reduced motion keeps one strong, still-readable event instead of six
+    // repeated jolts through the hero sequence.
+    if (visual.motionMode === "REDUCED" && cue !== "primaryImpact") return;
+    fractureControllerRef.current ??= new CinematicFractureController(source, host);
+    const resolved = fractureControllerRef.current.fracture(REQUIEM_FRACTURES[cue], {
+      quality: visual.quality,
+      motionMode: visual.motionMode,
+      mobile: window.matchMedia("(max-width: 700px)").matches,
+    });
+    if (root) {
+      root.dataset.fractureCue = cue;
+      root.dataset.fractureDuration = String(resolved.duration);
+      root.dataset.fractureSlices = String(resolved.sliceCount);
+    }
   }, [visual]);
 
   const markPulse = useCallback((name: string) => {
@@ -124,6 +220,7 @@ export function RequiemScene() {
     hardCutCommittedRef.current = true;
     const root = rootRef.current;
     if (root) root.dataset.requiemPhase = "hard-cut";
+    fractureControllerRef.current?.clear();
     visual.enterAbsoluteBlack();
     audio.enterCinematicSilence();
     audio.stopMusic({ fadeSeconds: 0 });
@@ -139,6 +236,10 @@ export function RequiemScene() {
       smokeRef.current.pause();
       try { smokeRef.current.currentTime = 0; } catch { /* already silent */ }
     }
+    if (heroVideoRef.current) {
+      heroVideoRef.current.pause();
+      try { heroVideoRef.current.currentTime = 0; } catch { /* already silent */ }
+    }
     visual.setFog(null, 0, 0);
     visual.setGrain(0);
     visual.setVignette(0, 1);
@@ -152,6 +253,7 @@ export function RequiemScene() {
   useEffect(() => {
     const debugTimer = window.setTimeout(() => setSyncDebug(isSyncDebugEnabled()), 0);
     const smokeVideo = smokeRef.current;
+    const heroVideo = heroVideoRef.current;
     visual.leaveAbsoluteBlack();
     audio.leaveCinematicSilence();
     collection.hideHud();
@@ -169,8 +271,11 @@ export function RequiemScene() {
       impactParticlesRef.current?.dispose();
       orbitParticlesRef.current = null;
       impactParticlesRef.current = null;
+      fractureControllerRef.current?.dispose();
+      fractureControllerRef.current = null;
       window.clearTimeout(debugTimer);
       smokeVideo?.pause();
+      heroVideo?.pause();
       if (!hardCutCommittedRef.current) {
         audio.leaveCinematicSilence();
         visual.leaveAbsoluteBlack();
@@ -186,6 +291,17 @@ export function RequiemScene() {
     video.playsInline = true;
     try { video.currentTime = 0; } catch { /* metadata can arrive later */ }
   }, [smoke]);
+
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+    video.pause();
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.playbackRate = 1;
+    try { video.currentTime = 0; } catch { /* metadata can arrive later */ }
+  }, [shadowFiend]);
 
   useEffect(() => {
     if (phase !== "entering" || entryStartedRef.current) return;
@@ -308,13 +424,19 @@ export function RequiemScene() {
         if (root) root.dataset.currentCue = cue;
         if (cue === "pressureAccent") {
           markPulse("pressure");
+          fractureFrame("pressureAccent");
           cameraImpulse(0.22);
         } else if (cue === "ignition") {
           markPulse("ignition");
+          fractureFrame("ignition");
           cameraImpulse(0.42);
         } else if (cue === "primaryImpact") {
-          if (root) root.dataset.requiemPhase = "release";
+          if (root) {
+            root.dataset.requiemPhase = "release";
+            root.dataset.reviewStage = "HERO_RELEASE";
+          }
           markPulse("primary");
+          fractureFrame("primaryImpact");
           cameraImpulse(1);
           releaseSoulsRadially(released);
           impactParticlesRef.current = visual.spawnParticleField({
@@ -336,13 +458,19 @@ export function RequiemScene() {
           }
         } else if (cue === "secondaryWave") {
           markPulse("secondary");
+          fractureFrame("secondaryWave");
           cameraImpulse(0.62);
         } else if (cue === "finalSurge") {
           markPulse("final");
+          fractureFrame("finalSurge");
           cameraImpulse(0.72);
         } else if (cue === "tailRelease") {
-          if (root) root.dataset.requiemPhase = "tail";
+          if (root) {
+            root.dataset.requiemPhase = "tail";
+            root.dataset.reviewStage = "PRE_HARD_CUT";
+          }
           markPulse("tail");
+          fractureFrame("tailRelease");
         } else if (cue === "hardCut") {
           commitHardCut();
         }
@@ -376,12 +504,16 @@ export function RequiemScene() {
         const root = rootRef.current;
         fireBuildup("ring1", REQUIEM_BUILDUP_TIMING.ring1, () => {
           if (root) root.dataset.rings = "1";
+          if (root) root.dataset.reviewStage = "SOULS_INBOUND";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.inboundRatios[0], 0.72, 0.34, 0.74);
         }, buildupElapsed);
         fireBuildup("ring2", REQUIEM_BUILDUP_TIMING.ring2, () => {
           if (root) root.dataset.rings = "2";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.inboundRatios[1], 0.7, 0.28, 0.76);
         }, buildupElapsed);
         fireBuildup("ring3", REQUIEM_BUILDUP_TIMING.ring3, () => {
           if (root) root.dataset.rings = "3";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.inboundRatios[2], 0.64, 0.22, 0.78);
           released.forEach((soul, index) => {
             const delayed = gsap.delayedCall(index * 0.052 * visual.motionIntensity, () => {
               void soul.controller.charge({ duration: 0.62, intensity: 1.04 });
@@ -391,23 +523,34 @@ export function RequiemScene() {
         }, buildupElapsed);
         fireBuildup("arcs", REQUIEM_BUILDUP_TIMING.arcs, () => {
           if (root) root.dataset.requiemPhase = "arcs";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.inboundRatios[3], 0.5, 0.16, 0.8);
           orbitParticlesRef.current?.update({ velocity: 0.72, opacity: 0.5, spread: [5.5, 5.5, 1.8] });
         }, buildupElapsed);
         fireBuildup("contraction", REQUIEM_BUILDUP_TIMING.contraction, () => {
           if (root) root.dataset.requiemPhase = "compressed";
-          radialRef.current = calculateRadialPositions(
-            window.innerWidth,
-            window.innerHeight,
-            REQUIEM_RADIAL_CONFIG.radiusRatio * REQUIEM_RADIAL_CONFIG.contractedRatio,
-          );
-          released.forEach((soul, index) => {
-            const point = radialRef.current[index];
-            void soul.controller.flyTo({ screen: [point.x, point.y] }, { duration: 0.48, curve: 0.08, trail: true, scale: 0.76 });
-          });
+          if (root) root.dataset.reviewStage = "CENTER_GATHER";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.gatheredRatio, 0.3, 0.11, 0.8);
           orbitParticlesRef.current?.update({ velocity: 1.15, opacity: 0.66, spread: [4.2, 4.2, 1.4] });
+          if (cameraRef.current && visual.motionMode !== "REDUCED") {
+            gsap.timeline()
+              .to(cameraRef.current, { scale: 0.985, duration: 0.34, ease: "power2.in" })
+              .to(cameraRef.current, { scale: 1, duration: 0.17, ease: "power3.out" });
+          }
+        }, buildupElapsed);
+        fireBuildup("shadow-fiend", REQUIEM_BUILDUP_TIMING.heroStart - REQUIEM_HERO_VIDEO.startBeforeHero, () => {
+          if (root) root.dataset.reviewStage = "SF_ESTABLISHED";
+          attractSouls(released, REQUIEM_RADIAL_CONFIG.lockedRatio, 0.24, 0.08, 0.82);
+          const video = heroVideoRef.current;
+          if (!video) {
+            setHeroVideoState("failed");
+            return;
+          }
+          try { video.currentTime = 0; } catch { /* the prepared fallback remains */ }
+          void safePlayVideo(video).then((result) => setHeroVideoState(result.played ? "playing" : "failed"));
         }, buildupElapsed);
         fireBuildup("hero", REQUIEM_BUILDUP_TIMING.heroStart, () => {
           if (root) root.dataset.requiemPhase = "hero";
+          if (root) root.dataset.reviewStage = "CAST_START";
         }, buildupElapsed);
 
         const elapsed = now - heroStart;
@@ -417,10 +560,20 @@ export function RequiemScene() {
           );
         }
         if (elapsed >= 0 && clockRef.current) {
+          const heroVideo = heroVideoRef.current;
+          const desiredHeroTime = elapsed + REQUIEM_HERO_VIDEO.startBeforeHero;
+          if (
+            heroVideo &&
+            desiredHeroTime >= 0 &&
+            desiredHeroTime < REQUIEM_HERO_VIDEO.sourceDuration &&
+            heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+            Math.abs(heroVideo.currentTime - desiredHeroTime) > REQUIEM_HERO_VIDEO.resyncThreshold
+          ) {
+            try { heroVideo.currentTime = desiredHeroTime; } catch { /* keep continuous playback */ }
+          }
           for (const cue of clockRef.current.tick(now, runId)) handleHeroCue(cue);
           const envelope = sampleRequiemEnvelope(elapsed);
           root?.style.setProperty("--hero-envelope", envelope.toFixed(4));
-          root?.style.setProperty("--hero-distortion", (0.04 + envelope * 0.3 * visual.motionIntensity).toFixed(4));
           orbitParticlesRef.current?.updateContinuous({
             opacity: Math.min(0.82, 0.32 + envelope * 0.48),
             velocity: 0.82 + envelope * 1.15,
@@ -429,6 +582,7 @@ export function RequiemScene() {
             debugUpdateRef.current = now;
             setHeroElapsed(elapsed);
             setFiredCues([...fired]);
+            if (root) root.dataset.heroVideoTime = heroVideo?.currentTime.toFixed(3) ?? "unavailable";
           }
         }
         rafRef.current = window.requestAnimationFrame(frame);
@@ -441,7 +595,7 @@ export function RequiemScene() {
       window.cancelAnimationFrame(rafRef.current);
       if (!hardCutCommittedRef.current) playbackStartedRef.current = false;
     };
-  }, [audio, cameraImpulse, collection, commitHardCut, markPulse, phase, releaseSoulsRadially, runId, sceneAudio, scopeId, status, syncDebug, visual]);
+  }, [attractSouls, audio, cameraImpulse, collection, commitHardCut, fractureFrame, markPulse, phase, releaseSoulsRadially, runId, sceneAudio, scopeId, status, syncDebug, visual]);
 
   useEffect(() => {
     if (phase !== "exiting") return;
@@ -463,8 +617,15 @@ export function RequiemScene() {
       data-status={status}
       data-rings="0"
       data-requiem-phase="arranging"
+      data-review-stage="HUD_RELEASE"
+      data-soul-radius-ratio={REQUIEM_RADIAL_CONFIG.radiusRatio.toFixed(3)}
       data-current-cue="none"
+      data-fracture-cue="none"
+      data-fracture-duration="0"
+      data-fracture-slices="0"
       data-video-state={videoState}
+      data-hero-video-state={heroVideoState}
+      data-quality={visual.quality}
       data-released-count={collection.getSnapshot().releasedCount}
       data-hero-clock="AudioContext.currentTime"
       aria-label="Requiem"
@@ -479,6 +640,20 @@ export function RequiemScene() {
           <span className={`${styles.ring} ${styles.ring2}`} />
           <span className={`${styles.ring} ${styles.ring3}`} />
           <span className={styles.core} />
+        </div>
+        <div className={styles.shadowFiend} aria-hidden="true">
+          {shadowFiend ? (
+            <MediaVideo
+              ref={heroVideoRef}
+              asset={shadowFiend}
+              muted
+              playsInline
+              preload="auto"
+              resetOnUnmount
+              onPlaybackResult={(result) => setHeroVideoState(result.played ? "playing" : "failed")}
+            />
+          ) : null}
+          <span className={styles.heroIntegrationGlow} />
         </div>
         <div className={styles.arcs} aria-hidden="true">
           {ARC_SEGMENTS.map((segment) => (
@@ -504,14 +679,12 @@ export function RequiemScene() {
             />
           ) : null}
         </div>
-        <div className={styles.displacement} aria-hidden="true">
-          {displacement ? <MediaImage asset={displacement} alt="" eager /> : null}
-        </div>
         <div className={styles.lightLeak} aria-hidden="true" />
         <span className={`${styles.shockwave} ${styles.shockwaveA}`} aria-hidden="true" />
         <span className={`${styles.shockwave} ${styles.shockwaveB}`} aria-hidden="true" />
         <div className={styles.flash} aria-hidden="true" />
       </div>
+      <div ref={fractureHostRef} className={styles.fractureHost} data-cinematic-fracture-host="true" aria-hidden="true" />
       {process.env.NODE_ENV === "development" && status === "handoff-failed" ? (
         <output className={styles.warning}>REQUIEM requires 10 released Soul controllers.</output>
       ) : null}
@@ -520,7 +693,7 @@ export function RequiemScene() {
           <strong>REQUIEM SYNC</strong>
           <span>duration {REQUIEM_AUDIO_CUES.duration.toFixed(3)}s</span>
           <span>hero {heroElapsed.toFixed(3)}s · cut {REQUIEM_AUDIO_CUES.cues.hardCut.toFixed(3)}s</span>
-          <span>context {audio.getSnapshot().contextState} · video {videoState}</span>
+          <span>context {audio.getSnapshot().contextState} · smoke {videoState} · SF {heroVideoState}</span>
           <span>souls {collection.getSnapshot().releasedCount} · {status}</span>
           <span>fired {firedCues.join(", ") || "none"}</span>
           <div className={styles.waveform} aria-label="AUD-REQ-05 normalized RMS envelope">

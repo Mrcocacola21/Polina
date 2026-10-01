@@ -16,6 +16,10 @@
     "src/lib/cinematic/requiem-cues.json",
     "src/lib/souls/registry.ts",
     "src/lib/souls/soul-registry.json",
-    "src/lib/cinematic/scenes.ts"
+    "src/lib/cinematic/scenes.ts",
+    "src/lib/visuals/cinematic-fracture.ts",
+    "src/lib/visuals/cinematic-fracture.test.ts",
+    "src/lib/visuals/quality.ts",
+    "src/lib/accessibility/capabilities.ts"
   ]
 }

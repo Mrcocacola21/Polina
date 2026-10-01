@@ -42,9 +42,10 @@ test("mute and unavailable audio cannot block cinematic progression", () => {
 });
 
 test("every production video has a deterministic lightweight fallback", () => {
-  assert.equal(VIDEO_FALLBACK_POLICIES.length, 6);
+  assert.equal(VIDEO_FALLBACK_POLICIES.length, 7);
   assert.equal(fallbackForSemanticRefs(["visual:screens.polinaCircle"])?.fallbackSemanticRef, "visual:screens.polina");
   assert.equal(fallbackForSemanticRefs(["visual:requirements.asset04"])?.kind, "atmosphere");
+  assert.equal(fallbackForSemanticRefs(["visual:requirements.shadowFiendRequiem"])?.kind, "atmosphere");
 });
 
 test("failed media settles in cache and stays failed without an explicit retry", () => {

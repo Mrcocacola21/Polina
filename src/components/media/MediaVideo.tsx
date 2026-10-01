@@ -75,8 +75,10 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             // Metadata may not have loaded; pausing the owned element is sufficient.
           }
         }
-        video.removeAttribute("src");
-        video.load();
+        // Do not clear src here. React StrictMode replays effects without
+        // remounting the DOM node, so clearing it would strand the second
+        // setup pass with an empty video. A real unmount removes the owned
+        // element and releases the resource after this pause/reset.
       };
     }, [resetOnUnmount]);
 

@@ -14,6 +14,9 @@ const compile = spawnSync(tsc, ["--project", "tsconfig.phase12-tests.json"], {
   stdio: "inherit",
 });
 if (compile.status !== 0) process.exit(compile.status ?? 1);
-const testFile = path.join(repositoryRoot, ".next", "phase12-tests", "cinematic", "phase12.test.js");
-const result = spawnSync(process.execPath, ["--test", testFile], { cwd: repositoryRoot, stdio: "inherit" });
+const testFiles = [
+  path.join(repositoryRoot, ".next", "phase12-tests", "cinematic", "phase12.test.js"),
+  path.join(repositoryRoot, ".next", "phase12-tests", "visuals", "cinematic-fracture.test.js"),
+];
+const result = spawnSync(process.execPath, ["--test", ...testFiles], { cwd: repositoryRoot, stdio: "inherit" });
 process.exit(result.status ?? 1);

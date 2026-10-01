@@ -16,6 +16,8 @@ const required = [
   "public/assets/REQ/REQ-02.png",
   "public/assets/REQ/REQ-03.png",
   "public/assets/REQ/REQ-04.mp4",
+  "public/assets/REQ/ShadowFiendREQ.mp4",
+  "public/assets/REQ/ShadowFiendREQ-keyed.webm",
 ];
 
 const failures = [];

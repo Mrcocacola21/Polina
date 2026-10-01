@@ -1,6 +1,5 @@
 .scene {
   --hero-envelope: 0;
-  --hero-distortion: 0;
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -11,7 +10,7 @@
 
 .camera,
 .fogSuction,
-.displacement,
+.fractureHost,
 .lightLeak,
 .smokeBurst,
 .flash {
@@ -44,6 +43,7 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 0 calc(12px + var(--hero-envelope) * 32px) rgb(212 27 55 / 46%));
+  z-index: 1;
 }
 
 .sigilBase,
@@ -102,7 +102,66 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: 4;
+  mask-image: radial-gradient(circle, transparent 0 16%, #000 28% 78%, transparent 96%);
 }
+
+.shadowFiend {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: min(82vmin, 980px);
+  aspect-ratio: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.88);
+  transform-origin: 50% 50%;
+  transition: opacity .42s ease-out, transform 1.2s cubic-bezier(.18, .72, .24, 1);
+  filter: brightness(.84) contrast(1.14) saturate(.92)
+    drop-shadow(0 0 18px rgb(160 6 31 / 34%));
+  mask-image: radial-gradient(circle, #000 0 58%, rgb(0 0 0 / 94%) 63%, transparent 71%);
+}
+
+.shadowFiend > div,
+.shadowFiend video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shadowFiend video { mix-blend-mode: screen; }
+
+.heroIntegrationGlow {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 24%;
+  aspect-ratio: 2.8;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(218 24 54 / 32%), rgb(76 2 18 / 20%) 46%, transparent 74%);
+  opacity: calc(.24 + var(--hero-envelope) * .42);
+  transform: translate(-50%, -50%);
+  filter: blur(6px);
+  mix-blend-mode: screen;
+}
+
+.scene[data-review-stage="SF_ESTABLISHED"] .shadowFiend,
+.scene[data-review-stage="CAST_START"] .shadowFiend,
+.scene[data-review-stage="HERO_RELEASE"] .shadowFiend,
+.scene[data-review-stage="PRE_HARD_CUT"] .shadowFiend {
+  opacity: .94;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.scene[data-review-stage="HERO_RELEASE"] .shadowFiend {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.025);
+  filter: brightness(.92) contrast(1.18) saturate(1.02)
+    drop-shadow(0 0 28px rgb(199 14 46 / 52%));
+}
+
+.scene[data-review-stage="PRE_HARD_CUT"] .shadowFiend { opacity: .72; }
 
 .arc {
   position: absolute;
@@ -125,19 +184,28 @@
 .scene[data-requiem-phase="release"] .arc { opacity: calc(.2 + var(--hero-envelope) * .55); animation: arc-flicker .32s steps(2, end) infinite alternate; }
 .scene[data-requiem-phase="tail"] .arc { opacity: .05; transition: opacity .55s linear; }
 
-.smokeBurst { z-index: 5; opacity: 0; mix-blend-mode: screen; filter: brightness(.85) saturate(1.15) contrast(1.18); }
+.smokeBurst {
+  z-index: 2;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: brightness(.72) saturate(1.02) contrast(1.15);
+  mask-image: radial-gradient(circle, transparent 0 28%, rgb(0 0 0 / 48%) 42%, #000 74%, transparent 100%);
+}
 .smokeBurst > div,
 .smokeBurst video { width: 100%; height: 100%; object-fit: cover; }
 .scene[data-requiem-phase="release"] .smokeBurst { opacity: .62; animation: smoke-impact 2.4s ease-out both; }
 
-.displacement {
-  z-index: 7;
-  opacity: calc(var(--hero-distortion) * 1);
-  mix-blend-mode: screen;
-  filter: brightness(.44) sepia(.3) saturate(1.6) hue-rotate(325deg) contrast(1.45);
-  transform: scale(calc(1 + var(--hero-distortion) * .035)) translateX(calc(var(--hero-distortion) * 6px));
+.scene[data-quality="MEDIUM"] .smokeBurst { opacity: .38; }
+.scene[data-quality="LOW"] .smokeBurst { display: none; }
+.scene[data-quality="LOW"] .arc { filter: brightness(1.15) saturate(.92); }
+.scene[data-quality="LOW"] .shadowFiend { filter: brightness(.88) contrast(1.1) saturate(.9); }
+
+.fractureHost {
+  z-index: 9;
+  display: none;
+  overflow: hidden;
+  contain: strict;
 }
-.displacement > div { width: 100%; height: 100%; background: transparent; }
 
 .lightLeak {
   z-index: 6;
@@ -165,7 +233,7 @@
 .scene[data-pulse="secondary"] .shockwaveB,
 .scene[data-pulse="final"] .shockwaveB { animation: shockwave .82s cubic-bezier(.12, .62, .3, 1) both; }
 
-.flash { z-index: 10; background: radial-gradient(circle, #fff 0, #ffced5 12%, rgb(209 34 61 / 76%) 34%, transparent 72%); opacity: 0; }
+.flash { z-index: 10; background: radial-gradient(circle, transparent 0 18%, rgb(114 8 29 / 42%) 27%, rgb(35 1 8 / 32%) 41%, transparent 68%); opacity: 0; }
 .scene[data-pulse="primary"] .flash { animation: safe-flash 90ms linear both; }
 
 .warning {
@@ -207,11 +275,13 @@
 @keyframes smoke-impact { from { opacity: .72; transform: scale(.72); } 55% { opacity: .5; } to { opacity: 0; transform: scale(1.35); } }
 @keyframes leak-impact { 0% { opacity: 0; } 15% { opacity: .42; } 100% { opacity: 0; } }
 @keyframes shockwave { 0% { opacity: .78; transform: translate(-50%, -50%) scale(.3); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(9); } }
-@keyframes safe-flash { 0% { opacity: 0; } 28% { opacity: .78; } 100% { opacity: 0; } }
+@keyframes safe-flash { 0% { opacity: 0; } 28% { opacity: .34; } 100% { opacity: 0; } }
 
 @media (max-width: 700px) {
   .sigil { width: min(86vmin, 620px); }
   .arcs { width: min(90vmin, 650px); }
+  .shadowFiend { width: min(96vmin, 690px); }
+  .heroIntegrationGlow { width: 28%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -219,5 +289,6 @@
   .ring { animation: none; }
   .arc { animation-duration: 1.4s !important; }
   .scene[data-pulse="primary"] .flash { animation: none; opacity: 0; }
-  .displacement { opacity: calc(var(--hero-distortion) * .35); transform: none; }
+  .fractureHost { transform: none; }
+  .shadowFiend { transition-duration: .5s; }
 }

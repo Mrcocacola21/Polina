@@ -61,11 +61,22 @@ async function waitFor(label, expression, timeout = 35_000) {
     if (await evaluate(expression)) return;
     await sleep(80);
   }
+  console.error("S08 QA timeout snapshot", await evaluate(`(() => ({
+    scene: document.querySelector('[data-testid="scene-director"]')?.dataset.sceneId,
+    phase: document.querySelector('[data-testid="scene-director"]')?.dataset.scenePhase,
+    beat: document.querySelector('[data-testid="s08-scene"]')?.dataset.sceneBeat,
+    stage: document.querySelector('[data-testid="s08-scene"]')?.dataset.screenshotStage,
+    collectionStatus: document.querySelector('[data-testid="s08-scene"]')?.dataset.collectionStatus,
+    claimSoul: document.querySelector('[data-testid="soul-claim-target"]')?.dataset.soulId,
+    canvases: document.querySelectorAll('canvas').length,
+  }))()`));
   throw new Error(`Timed out waiting for ${label}.`);
 }
 
 async function capture(filename) {
-  const result = await send("Page.captureScreenshot", { format: "png", fromSurface: true });
+  // Large 2560px PNGs can otherwise block long enough to skip the next short
+  // narrative beat while Chromium is encoding the previous frame.
+  const result = await send("Page.captureScreenshot", { format: "png", fromSurface: true, optimizeForSpeed: true });
   await writeFile(path.join(artifactDirectory, filename), Buffer.from(result.data, "base64"));
 }
 

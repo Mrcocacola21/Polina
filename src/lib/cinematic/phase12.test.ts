@@ -5,6 +5,8 @@ import test from "node:test";
 import {
   calculateRadialPositions,
   REQUIEM_AUDIO_CUES,
+  REQUIEM_HERO_VIDEO,
+  REQUIEM_RADIAL_CONFIG,
   REQUIEM_SOUL_IDS,
   RequiemClock,
   releasePreconditionMet,
@@ -29,6 +31,16 @@ test("ten unique Soul identities form a deterministic clockwise radial layout", 
   for (let index = 1; index < first.length; index += 1) {
     assert.ok(first[index].angle > first[index - 1].angle);
   }
+});
+
+test("Soul choreography fully converges and the hero clip release follows the audio clock", () => {
+  assert.ok(REQUIEM_RADIAL_CONFIG.gatheredRatio < REQUIEM_RADIAL_CONFIG.radiusRatio * 0.4);
+  assert.ok(REQUIEM_RADIAL_CONFIG.lockedRatio <= REQUIEM_RADIAL_CONFIG.gatheredRatio);
+  assert.equal(REQUIEM_RADIAL_CONFIG.inboundRatios.length, 4);
+  const mappedRelease = REQUIEM_HERO_VIDEO.sourceReleaseTime - REQUIEM_HERO_VIDEO.startBeforeHero;
+  assert.ok(Math.abs(mappedRelease - REQUIEM_AUDIO_CUES.cues.primaryImpact) <= 0.02);
+  const mappedEnd = REQUIEM_HERO_VIDEO.sourceDuration - REQUIEM_HERO_VIDEO.startBeforeHero;
+  assert.ok(Math.abs(mappedEnd - REQUIEM_AUDIO_CUES.cues.hardCut) <= 0.01);
 });
 
 test("cue crossing fires exactly once and catches skipped frames", () => {

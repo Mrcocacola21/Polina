@@ -41,6 +41,7 @@ const PerformanceDebugPanel = dynamic(() => import("@/components/visuals/Perform
 const SceneDebugOverlay = dynamic(() => import("./SceneDebugOverlay").then((module) => module.SceneDebugOverlay), { ssr: false });
 const TransitionLab = dynamic(() => import("./TransitionLab").then((module) => module.TransitionLab), { ssr: false });
 const FailureLab = dynamic(() => import("@/components/accessibility/FailureLab").then((module) => module.FailureLab), { ssr: false });
+const FractureLab = dynamic(() => import("@/components/visuals/FractureLab").then((module) => module.FractureLab), { ssr: false });
 
 type SceneDirectorProps = Readonly<{
   debugEnabled?: boolean;
@@ -48,6 +49,7 @@ type SceneDirectorProps = Readonly<{
   requiemSandboxEnabled?: boolean;
   transitionLabEnabled?: boolean;
   failureLabEnabled?: boolean;
+  fractureLabEnabled?: boolean;
 }>;
 
 export function SceneDirector({
@@ -56,11 +58,12 @@ export function SceneDirector({
   requiemSandboxEnabled = false,
   transitionLabEnabled = false,
   failureLabEnabled = false,
+  fractureLabEnabled = false,
 }: SceneDirectorProps) {
   const sandboxPreparedRef = useRef(false);
   const [labRun, setLabRun] = useState<TransitionDefinition | null>(null);
   const [recoveryResolved, setRecoveryResolved] = useState(
-    sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled,
+    sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled || fractureLabEnabled,
   );
   const recoveryInitializedRef = useRef(false);
   const labStartedRef = useRef(false);
@@ -126,7 +129,7 @@ export function SceneDirector({
   useEffect(() => {
     if (recoveryInitializedRef.current) return;
     recoveryInitializedRef.current = true;
-    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled) {
+    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled || fractureLabEnabled) {
       return;
     }
     try {
@@ -147,10 +150,10 @@ export function SceneDirector({
     } finally {
       setRecoveryResolved(true);
     }
-  }, [collection, jumpToScene, requiemSandboxEnabled, sandboxEnabled, transitionLabEnabled]);
+  }, [collection, fractureLabEnabled, jumpToScene, requiemSandboxEnabled, sandboxEnabled, transitionLabEnabled]);
 
   useEffect(() => {
-    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled) return;
+    if (sandboxEnabled || requiemSandboxEnabled || transitionLabEnabled || fractureLabEnabled) return;
     if (!recoveryResolved || state.phase !== "active" || state.currentSceneId === "PRELOADER") return;
     if (parsePersistedAnswer(window.localStorage.getItem(ANSWER_PERSISTENCE_KEY))) {
       clearRecovery(window.sessionStorage);
@@ -168,6 +171,7 @@ export function SceneDirector({
     state.currentSceneId,
     state.phase,
     transitionLabEnabled,
+    fractureLabEnabled,
   ]);
 
   useEffect(() => {
@@ -244,7 +248,7 @@ export function SceneDirector({
     }
     window.setTimeout(
       () => dispatch({ type: "REQUEST_ADVANCE", runId: state.runId }),
-      labRun.id === "S03_S04" ? 180 : 40,
+      labRun.id === "S03_S04" || labRun.id === "S07_S08" ? 180 : 40,
     );
   }, [labRun, state.currentSceneId, state.phase, state.runId, transitionLabEnabled]);
 
@@ -331,6 +335,7 @@ export function SceneDirector({
             />
           ) : null}
           {failureLabEnabled ? <FailureLab /> : null}
+          {fractureLabEnabled ? <FractureLab /> : null}
         </>
       ) : null}
     </div>

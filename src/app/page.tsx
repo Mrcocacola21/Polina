@@ -14,11 +14,12 @@ type HomeProps = {
     requiemSandbox?: string | string[];
     transitionLab?: string | string[];
     failureLab?: string | string[];
+    fractureLab?: string | string[];
   }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { debug, visualSandbox, soulSandbox, requiemSandbox, transitionLab, failureLab } = await searchParams;
+  const { debug, visualSandbox, soulSandbox, requiemSandbox, transitionLab, failureLab, fractureLab } = await searchParams;
   const debugEnabled =
     process.env.NODE_ENV === "development" && debug === "1";
   const visualSandboxEnabled = debugEnabled && visualSandbox === "1";
@@ -26,6 +27,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const requiemSandboxEnabled = debugEnabled && requiemSandbox === "1";
   const transitionLabEnabled = debugEnabled && transitionLab === "1";
   const failureLabEnabled = debugEnabled && failureLab === "1";
+  const fractureLabEnabled = debugEnabled && fractureLab === "1";
   const anySandboxEnabled = visualSandboxEnabled || soulSandboxEnabled;
 
   return (
@@ -43,12 +45,13 @@ export default async function Home({ searchParams }: HomeProps) {
                 requiemSandboxEnabled={requiemSandboxEnabled}
                 transitionLabEnabled={transitionLabEnabled}
                 failureLabEnabled={failureLabEnabled}
+                fractureLabEnabled={fractureLabEnabled}
               />
             </GlobalVisualRoot>
           </AudioEngineProvider>
         </MediaPreloadProvider>
       </CapabilityProvider>
-      {debugEnabled && !anySandboxEnabled && !transitionLabEnabled ? <AssetDiagnostics /> : null}
+      {debugEnabled && !anySandboxEnabled && !transitionLabEnabled && !fractureLabEnabled ? <AssetDiagnostics /> : null}
     </FullscreenStage>
   );
 }
