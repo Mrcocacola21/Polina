@@ -1,4 +1,4 @@
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -57,6 +57,22 @@ function resolveAssetPath(assetPath) {
   return resolvedPath;
 }
 
+async function findCaseMismatch(assetPath) {
+  let directory = assetRoot;
+
+  for (const segment of assetPath.split("/")) {
+    const entries = await readdir(directory);
+    if (!entries.includes(segment)) {
+      const actual = entries.find((entry) => entry.toLowerCase() === segment.toLowerCase());
+      if (actual) return `${segment} (actual: ${actual})`;
+      return null;
+    }
+    directory = path.join(directory, segment);
+  }
+
+  return null;
+}
+
 async function validateManifest({ label, filename }) {
   const manifestPath = path.join(assetRoot, filename);
   let parsed;
@@ -70,6 +86,7 @@ async function validateManifest({ label, filename }) {
       entries: [],
       duplicates: [],
       missing: [],
+      caseMismatches: [],
       errors: [`Could not parse ${manifestPath}: ${error.message}`],
     };
   }
@@ -77,6 +94,7 @@ async function validateManifest({ label, filename }) {
   const entries = collectPaths(parsed);
   const duplicates = findDuplicates(entries);
   const missing = [];
+  const caseMismatches = [];
   const errors = [];
 
   await Promise.all(
@@ -95,13 +113,15 @@ async function validateManifest({ label, filename }) {
         if (!target.isFile()) {
           missing.push(`${assetPath} (${location}; target is not a file)`);
         }
+        const mismatch = await findCaseMismatch(assetPath);
+        if (mismatch) caseMismatches.push(`${assetPath} (${location}; ${mismatch})`);
       } catch {
         missing.push(`${assetPath} (${location})`);
       }
     }),
   );
 
-  return { label, filename, entries, duplicates, missing, errors };
+  return { label, filename, entries, duplicates, missing, caseMismatches, errors };
 }
 
 const results = await Promise.all(manifests.map(validateManifest));
@@ -119,7 +139,7 @@ let failed = false;
 
 for (const result of results) {
   console.log(
-    `${result.label}: ${result.entries.length} paths, ${result.duplicates.length} duplicates, ${result.missing.length} missing`,
+    `${result.label}: ${result.entries.length} paths, ${result.duplicates.length} duplicates, ${result.missing.length} missing, ${result.caseMismatches.length} case mismatches`,
   );
 
   if (result.duplicates.length > 0) {
@@ -133,6 +153,13 @@ for (const result of results) {
     failed = true;
     for (const missing of result.missing.sort()) {
       console.error(`  missing: ${missing}`);
+    }
+  }
+
+  if (result.caseMismatches.length > 0) {
+    failed = true;
+    for (const mismatch of result.caseMismatches.sort()) {
+      console.error(`  case mismatch: ${mismatch}`);
     }
   }
 

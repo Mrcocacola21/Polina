@@ -56,6 +56,12 @@ npm run build
 npm run start
 ```
 
+## Production deployment
+
+Install the locked dependency tree with `npm ci`, run the validators and tests declared in `package.json`, then run `npm run lint`, `npm run typecheck`, and `npm run build`. Production is deployed to the repository's linked Vercel project with `npx vercel --prod`; the machine-local project link lives in the ignored `.vercel/project.json` file and must be inspected before relinking or creating a project.
+
+After deployment, verify the production URL, the PRELOADER → PROLOGUE → Open Soul path, and representative image, video, music, notification, Requiem, and Final asset URLs. Media responses must use the expected MIME type and support byte ranges where applicable.
+
 ## Desktop visual lock
 
 Phase 17 locks the desktop art direction at 1920×1080 and 2560×1440 CSS pixels at 100% browser zoom. Later mobile, performance, and accessibility work may adapt the experience while preserving the locked desktop typography, line breaks, compositions, asset scales, grading, glow hierarchy, particle targets, camera framing, cursor, and controls.

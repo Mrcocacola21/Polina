@@ -65,8 +65,17 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
 
     useEffect(() => {
       const video = videoRef.current;
+      if (!video) return;
+
+      // React replays effects in development StrictMode. Restore the source in
+      // setup so cleanup can release the decoder on a real unmount without
+      // leaving the replayed DOM node empty.
+      if (video.getAttribute("src") !== asset.url) {
+        video.setAttribute("src", asset.url);
+        video.load();
+      }
+
       return () => {
-        if (!video) return;
         video.pause();
         if (resetOnUnmount) {
           try {
@@ -75,12 +84,10 @@ export const MediaVideo = forwardRef<HTMLVideoElement, MediaVideoProps>(
             // Metadata may not have loaded; pausing the owned element is sufficient.
           }
         }
-        // Do not clear src here. React StrictMode replays effects without
-        // remounting the DOM node, so clearing it would strand the second
-        // setup pass with an empty video. A real unmount removes the owned
-        // element and releases the resource after this pause/reset.
+        video.removeAttribute("src");
+        video.load();
       };
-    }, [resetOnUnmount]);
+    }, [asset.url, resetOnUnmount]);
 
     async function handleCanPlay() {
       setRenderStatus("ready");
