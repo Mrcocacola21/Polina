@@ -120,6 +120,28 @@ assert.equal(snapshot.count, "09 / 10");
 assert.equal(snapshot.cursor, "DIMMED");
 await screenshot("s10-early.png");
 
+await waitFor("S10 overthinking beat", `document.querySelector('[data-testid="s10-scene"]')?.getAttribute('data-scene-beat') === 'overthinking'`);
+await sleep(1700);
+const overthinkingState = await evaluate(`(() => {
+  const first = document.querySelector('[data-testid="s10-scene"] p > span:nth-child(1)');
+  const second = document.querySelector('[data-testid="s10-scene"] p > span:nth-child(2)');
+  return {
+    firstOpacity: first instanceof HTMLElement ? getComputedStyle(first).opacity : null,
+    text: second?.querySelector('span')?.textContent,
+    jitter: second instanceof HTMLElement ? second.style.getPropertyValue('--jitter') : null,
+    liquid: second instanceof HTMLElement ? second.style.getPropertyValue('--liquid') : null,
+    edge: second instanceof HTMLElement ? second.style.getPropertyValue('--edge') : null,
+  };
+})()`);
+assert.deepEqual(overthinkingState, {
+  firstOpacity: "0",
+  text: "и могу надумать себе всякого,",
+  jitter: "0",
+  liquid: "0",
+  edge: "0",
+});
+await screenshot("s10-overthinking.png");
+
 await waitFor("S10 calm beat", `document.querySelector('[data-testid="s10-scene"]')?.getAttribute('data-scene-beat') === 'calm'`);
 await sleep(1500);
 const calmState = await evaluate(`(() => {

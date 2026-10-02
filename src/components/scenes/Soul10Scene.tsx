@@ -224,18 +224,18 @@ export function Soul10Scene() {
       ease: "sine.inOut",
     }, 0);
     timeline.call(() => {
-      reveal(0, S10_DISTORTION.early, "first");
+      reveal(0, S10_DISTORTION.overthinking, "first");
       rumbleRef.current?.setGain(S10_AUDIO_LEVELS.rumble.early, 2.2);
     }, [], S10_TIMING.first);
     timeline.fromTo(lines[0], { opacity: 0, filter: "blur(5px)", y: 7 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.35, ease: "sine.out" }, S10_TIMING.first);
     timeline.call(() => {
-      reveal(1, S10_DISTORTION.overthinking, "overthinking");
+      reveal(1, S10_DISTORTION.stable, "overthinking");
       rumbleRef.current?.setGain(S10_AUDIO_LEVELS.rumble.peak, 2.4);
       applyTone(S10_AUDIO_LEVELS.tone.overthinking, 2.8);
       visual.setVignette(S10_VISUAL_LEVELS.vignette.middle, 0.78);
     }, [], S10_TIMING.second);
-    timeline.fromTo(lines[1], { opacity: 0, filter: "blur(5px)", y: 7 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.45, ease: "sine.out" }, S10_TIMING.second);
-    timeline.to(lines[0], { opacity: 0.2, duration: 1.8, ease: "sine.inOut" }, S10_TIMING.second + 2.1);
+    timeline.to(lines[0], { opacity: 0, filter: "blur(2px)", duration: 0.55, ease: "sine.inOut" }, S10_TIMING.second - 0.45);
+    timeline.fromTo(lines[1], { opacity: 0, filter: "blur(3px)", y: 5 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.2, ease: "sine.out" }, S10_TIMING.second + 0.18);
     timeline.call(() => {
       setSceneBeat("calm");
       applyDistortion(2, S10_DISTORTION.stable);
